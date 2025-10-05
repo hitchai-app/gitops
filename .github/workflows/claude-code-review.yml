@@ -40,16 +40,23 @@ jobs:
             REPO: ${{ github.repository }}
             PR NUMBER: ${{ github.event.pull_request.number }}
 
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
+            Review this PR with extreme skepticism. This is GitOps infrastructure - changes affect production cluster state.
 
-            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
+            Find problems. Assume the PR will break something. Focus on:
+            - What will fail in production
+            - Resource limits and cluster impact
+            - Breaking changes to existing workloads
+            - Security vulnerabilities
+            - Missing validations or error handling
+            - Untested edge cases
 
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+            Be critical, not supportive. Point out flaws. Challenge assumptions. If something looks wrong, it probably is.
+
+            Review CLAUDE.md and ADRs for architectural context. Verify changes align with existing patterns.
+
+            Output: Concise bullet points of issues found. No compliments. Lead with blocking concerns.
+
+            Use `gh pr comment` to post review.
 
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://docs.claude.com/en/docs/claude-code/cli-reference for available options
