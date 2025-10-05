@@ -45,8 +45,13 @@ jobs:
 
           # Allow broad tool access for GitOps operations
           # Branch protection on master prevents direct pushes
+          # kubectl: readonly access only (no certs for write operations anyway)
           allowed_tools: |
-            Bash(kubectl:*),
+            Bash(kubectl get:*),
+            Bash(kubectl describe:*),
+            Bash(kubectl logs:*),
+            Bash(kubectl top:*),
+            Bash(kubectl explain:*),
             Bash(helm:*),
             Bash(kustomize:*),
             Bash(argocd:*),
