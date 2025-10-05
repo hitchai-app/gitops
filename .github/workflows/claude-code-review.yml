@@ -1,0 +1,75 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    # Optional: Only run on specific file changes
+    # paths:
+    #   - "src/**/*.ts"
+    #   - "src/**/*.tsx"
+    #   - "src/**/*.js"
+    #   - "src/**/*.jsx"
+
+jobs:
+  claude-review:
+    # Optional: Filter by PR author
+    # if: |
+    #   github.event.pull_request.user.login == 'external-contributor' ||
+    #   github.event.pull_request.user.login == 'new-developer' ||
+    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # Allow creating reviews and comments
+      issues: write # Allow commenting on issues
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          # Allow all bots to trigger the review
+          allowed_bots: '*'
+
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Review this PR with extreme skepticism. This is GitOps infrastructure - changes affect production cluster state.
+
+            Find problems. Assume the PR will break something. Focus on:
+            - What will fail in production
+            - Resource limits and cluster impact
+            - Breaking changes to existing workloads
+            - Security vulnerabilities
+            - Missing validations or error handling
+            - Untested edge cases
+
+            Be critical, not supportive. Point out flaws. Challenge assumptions. If something looks wrong, it probably is.
+
+            Review CLAUDE.md and ADRs for architectural context. Verify changes align with existing patterns.
+
+            Output: Concise bullet points of issues found. No compliments. Lead with blocking concerns.
+
+            Use MCP GitHub tools:
+            1. mcp__github__get_pull_request_diff to analyze changes
+            2. mcp__github__create_pending_pull_request_review to start review
+            3. mcp__github__add_pull_request_review_comment_to_pending_review for inline comments on specific lines
+            4. mcp__github__submit_pending_pull_request_review with verdict (APPROVE/REQUEST_CHANGES)
+
+          # Enable MCP GitHub tools for creating inline review comments
+          allowed_tools: |
+            mcp__github__create_pending_pull_request_review,
+            mcp__github__add_pull_request_review_comment_to_pending_review,
+            mcp__github__submit_pending_pull_request_review,
+            mcp__github__get_pull_request_diff
+
