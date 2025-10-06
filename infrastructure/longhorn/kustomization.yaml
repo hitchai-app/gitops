@@ -5,3 +5,4 @@ resources:
   - storageclass-single-replica.yaml
   - storageclass-replicated.yaml
   - storageclass-ephemeral.yaml
+  - backup-secret-sealed.yaml
