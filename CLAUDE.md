@@ -30,6 +30,7 @@ See @adr/0010-gitops-repository-structure.md for details.
 - **Object Storage**: MinIO Operator (@adr/0006-minio-operator-with-4-drives.md)
 - **Certificates**: cert-manager + Let's Encrypt DNS-01 (@adr/0008-cert-manager-for-tls.md)
 - **Secrets**: Sealed Secrets BYOK (@adr/0009-secrets-management-strategy.md)
+- **Ingress**: Traefik (@adr/0011-traefik-ingress-controller.md)
 
 ## Environments
 
@@ -67,6 +68,7 @@ All major architectural decisions are documented in `adr/`:
 - @adr/0008-cert-manager-for-tls.md
 - @adr/0009-secrets-management-strategy.md
 - @adr/0010-gitops-repository-structure.md
+- @adr/0011-traefik-ingress-controller.md
 
 See @adr/README.md for ADR format guidelines.
 
