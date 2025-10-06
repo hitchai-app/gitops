@@ -83,6 +83,7 @@ See @adr/README.md for ADR format guidelines.
 - Resources: 12 CPU / 128GB RAM / 280GB SSD
 - Nodes: 1 (single node) → scaling to multi-node
 - Target availability: 99%
+- Domain: `*.ops.last-try.org` (internal infrastructure services)
 
 See individual ADRs for infrastructure and workload details.
 
