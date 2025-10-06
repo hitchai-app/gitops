@@ -43,6 +43,10 @@ jobs:
           # Use sticky comments for consistent review updates
           use_sticky_comment: true
 
+          # Allow gh CLI for PR reviews
+          allowed_tools: |
+            Bash(gh pr:*)
+
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
