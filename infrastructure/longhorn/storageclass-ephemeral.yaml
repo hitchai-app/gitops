@@ -1,12 +1,12 @@
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: single-replica
+  name: ephemeral
   annotations:
     storageclass.kubernetes.io/is-default-class: "false"
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
-reclaimPolicy: Retain
+reclaimPolicy: Delete
 volumeBindingMode: WaitForFirstConsumer
 parameters:
   numberOfReplicas: "1"
@@ -14,5 +14,5 @@ parameters:
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"
-  # Keep replica on same node as pod (minimize latency)
-  # For applications with built-in replication (PostgreSQL, MinIO)
+  # Automatic cleanup on PVC deletion
+  # For non-critical data (temp files, caches, testing)

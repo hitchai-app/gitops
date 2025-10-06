@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://charts.longhorn.io
     chart: longhorn
-    targetRevision: 1.10.0
+    targetRevision: 1.10.0  # Latest stable (Sept 2025)
     helm:
       valuesObject:
         # Default replica count (single node configuration)

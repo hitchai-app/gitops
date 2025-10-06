@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - storageclass-single-replica.yaml
   - storageclass-replicated.yaml
+  - storageclass-ephemeral.yaml
