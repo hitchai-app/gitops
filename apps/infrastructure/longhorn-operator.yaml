@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: longhorn-operator
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.longhorn.io
+    chart: longhorn
+    targetRevision: 1.10.0
+    helm:
+      valuesObject:
+        # Default replica count (single node configuration)
+        defaultSettings:
+          defaultReplicaCount: 1
+          backupTarget: ""  # Configure with S3 after deployment (see infrastructure/longhorn/README.md)
+          backupTargetCredentialSecret: ""  # Set to "longhorn-backup-secret" after creating SealedSecret
+
+        # Resource limits for Longhorn components
+        longhornManager:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+        longhornDriver:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+
+        longhornUI:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+
+        # Storage class configuration
+        # Note: We create explicit StorageClass manifests in infrastructure/longhorn/
+        # This prevents Helm from creating the default "longhorn" StorageClass
+        persistence:
+          defaultClass: false
+          defaultClassReplicaCount: 1
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: longhorn-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
