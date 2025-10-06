@@ -73,17 +73,15 @@ gitops/
 │
 ├── apps/                                # ArgoCD Application CRDs
 │   ├── infrastructure.yaml              # Root app: infrastructure
-│   ├── workloads-stage.yaml             # Root app: workloads (stage)
-│   ├── workloads-prod.yaml              # Root app: workloads (prod)
+│   ├── workloads.yaml                   # Root app: workloads
 │   ├── infrastructure/
 │   │   ├── sealed-secrets.yaml
 │   │   ├── longhorn.yaml
 │   │   ├── cert-manager.yaml
 │   │   ├── cloudnativepg.yaml
+│   │   ├── postgres.yaml                # Shared PostgreSQL cluster
 │   │   └── monitoring.yaml
 │   └── workloads/
-│       ├── postgres-stage.yaml
-│       ├── postgres-prod.yaml
 │       ├── product-a-stage.yaml
 │       └── product-a-prod.yaml
 │
@@ -142,8 +140,7 @@ kubectl -n sealed-secrets label secret sealed-secrets-key \
 
 # 3. Apply root apps
 kubectl apply -f apps/infrastructure.yaml
-kubectl apply -f apps/workloads-stage.yaml
-kubectl apply -f apps/workloads-prod.yaml
+kubectl apply -f apps/workloads.yaml
 ```
 
 **After this:** All changes via Git → ArgoCD syncs automatically.
