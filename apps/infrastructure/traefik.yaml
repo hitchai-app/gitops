@@ -20,6 +20,12 @@ spec:
         service:
           type: LoadBalancer
 
+        # Global HTTP to HTTPS redirect
+        ports:
+          web:
+            redirectTo:
+              port: websecure
+
         # Resource limits
         resources:
           requests:
