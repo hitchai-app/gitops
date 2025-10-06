@@ -14,7 +14,7 @@ spec:
         # Default replica count (single node configuration)
         defaultSettings:
           defaultReplicaCount: 1
-          backupTarget: ""  # Configure with S3 after deployment (see infrastructure/longhorn/README.md)
+          backupTarget: ""  # Configure S3 backup (see ADR 0002)
           backupTargetCredentialSecret: ""  # Set to "longhorn-backup-secret" after creating SealedSecret
 
         # Resource limits for Longhorn components
