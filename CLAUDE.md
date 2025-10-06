@@ -31,6 +31,7 @@ See @adr/0010-gitops-repository-structure.md for details.
 - **Certificates**: cert-manager + Let's Encrypt DNS-01 (@adr/0008-cert-manager-for-tls.md)
 - **Secrets**: Sealed Secrets BYOK (@adr/0009-secrets-management-strategy.md)
 - **Ingress**: Traefik (@adr/0011-traefik-ingress-controller.md)
+- **LoadBalancer**: MetalLB Layer 2 (@adr/0012-metallb-load-balancer.md)
 
 ## Environments
 
@@ -69,6 +70,7 @@ All major architectural decisions are documented in `adr/`:
 - @adr/0009-secrets-management-strategy.md
 - @adr/0010-gitops-repository-structure.md
 - @adr/0011-traefik-ingress-controller.md
+- @adr/0012-metallb-load-balancer.md
 
 See @adr/README.md for ADR format guidelines.
 
