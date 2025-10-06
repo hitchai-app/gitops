@@ -1,0 +1,61 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://traefik.github.io/charts
+    chart: traefik
+    targetRevision: 37.1.2
+    helm:
+      valuesObject:
+        # IngressClass configuration
+        ingressClass:
+          enabled: true
+          isDefaultClass: true
+
+        # Service type
+        service:
+          type: LoadBalancer
+
+        # Resource limits
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+
+        # Prometheus metrics
+        metrics:
+          prometheus:
+            service:
+              enabled: true
+            serviceMonitor:
+              enabled: false  # Enable when Prometheus Operator is deployed
+
+        # Dashboard (insecure, only enable temporarily for debugging)
+        ingressRoute:
+          dashboard:
+            enabled: false  # Enable only when needed, exposes metrics/config
+
+        # Logs
+        logs:
+          general:
+            level: INFO
+          access:
+            enabled: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
