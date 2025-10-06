@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: postgres
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - env: stage
+      - env: prod
+
+  template:
+    metadata:
+      name: postgres-{{env}}
+      namespace: argocd
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/hitchai-app/gitops.git
+        targetRevision: master
+        path: infrastructure/postgres/overlays/{{env}}
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: postgres-{{env}}
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true

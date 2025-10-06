@@ -1,0 +1,88 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-shared
+spec:
+  # Single instance initially (scale to 3 on multi-node)
+  instances: 1
+
+  # PostgreSQL version (explicit, avoid tags like 'latest')
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+
+  # Storage configuration
+  storage:
+    storageClass: longhorn-single-replica
+    size: 10Gi
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  # Monitoring
+  monitoring:
+    enablePodMonitor: true
+
+  # PostgreSQL configuration
+  postgresql:
+    parameters:
+      # Connection settings
+      max_connections: "100"
+      shared_buffers: "256MB"
+
+      # WAL settings
+      wal_level: "replica"
+      max_wal_senders: "10"
+      max_replication_slots: "10"
+
+      # Performance tuning
+      effective_cache_size: "512MB"
+      maintenance_work_mem: "64MB"
+
+      # Logging
+      log_destination: "csvlog"
+      logging_collector: "on"
+      log_directory: "/controller/log"
+      log_filename: "postgres"
+      log_rotation_age: "1d"
+      log_rotation_size: "0"
+      log_truncate_on_rotation: "false"
+      log_checkpoints: "on"
+      log_connections: "on"
+      log_disconnections: "on"
+      log_lock_waits: "on"
+      log_min_duration_statement: "1000"
+
+  # Backup configuration (requires S3 credentials secret)
+  # NOTE: Create SealedSecret at infrastructure/postgres/backup-s3-credentials-sealed.yaml
+  # with keys: ACCESS_KEY_ID and ACCESS_SECRET_KEY
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: s3://cloudnativepg-backups/postgres
+      s3Credentials:
+        accessKeyId:
+          name: postgres-backup-s3-credentials
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: postgres-backup-s3-credentials
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+        maxParallel: 2
+      data:
+        compression: gzip
+        jobs: 2
+
+  # Bootstrap configuration (for new cluster)
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+      encoding: "UTF8"
+      localeCollate: "en_US.UTF-8"
+      localeCType: "en_US.UTF-8"

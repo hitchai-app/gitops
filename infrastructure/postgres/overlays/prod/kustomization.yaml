@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: postgres-prod
+
+resources:
+  - ../../base
+
+patches:
+  - patch: |-
+      apiVersion: postgresql.cnpg.io/v1
+      kind: Cluster
+      metadata:
+        name: postgres-shared
+      spec:
+        # Production configuration
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+
+        # Larger storage for production
+        storage:
+          size: 50Gi
+
+        # Production backup path
+        backup:
+          barmanObjectStore:
+            destinationPath: s3://cloudnativepg-backups/postgres-prod
