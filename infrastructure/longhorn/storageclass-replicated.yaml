@@ -13,7 +13,7 @@ parameters:
   staleReplicaTimeout: "30"
   fromBackup: ""
   fsType: "ext4"
-  dataLocality: "disabled"
+  dataLocality: "best-effort"  # TODO: Change to "disabled" when multi-node (spread replicas)
   # For applications without built-in replication (Redis, single-instance workloads)
-  # Single node: 1 replica (only 1 node available)
-  # Multi-node: Update to 3 replicas for redundancy across nodes
+  # Single node: 1 replica, best-effort locality (same node as pod)
+  # Multi-node: Update to 3 replicas + disabled locality (spread across nodes)
