@@ -1,0 +1,19 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: replicated
+  annotations:
+    storageclass.kubernetes.io/is-default-class: "true"
+provisioner: driver.longhorn.io
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  numberOfReplicas: "1"  # TODO: Change to "3" when adding second node
+  staleReplicaTimeout: "30"
+  fromBackup: ""
+  fsType: "ext4"
+  dataLocality: "best-effort"  # TODO: Change to "disabled" when multi-node (spread replicas)
+  # For applications without built-in replication (Redis, single-instance workloads)
+  # Single node: 1 replica, best-effort locality (same node as pod)
+  # Multi-node: Update to 3 replicas + disabled locality (spread across nodes)
