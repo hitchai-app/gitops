@@ -40,36 +40,40 @@ jobs:
           # Allow all bots to trigger the review
           allowed_bots: '*'
 
+          # Enable necessary tools for PR review
+          settings: |
+            {
+              "permissions": {
+                "allowAll": true
+              }
+            }
+
           prompt: |
-            REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
-            Review this PR with extreme skepticism. This is GitOps infrastructure - changes affect production cluster state.
+            CRITICAL: You MUST post your review using GitHub's review API. Follow these steps:
 
-            Find problems. Assume the PR will break something. Focus on:
+            1. Get PR diff using available tools (mcp__github__get_pull_request_diff or gh pr diff)
+            2. Review CLAUDE.md and ADRs for architectural context
+            3. Create a pending review: mcp__github__create_pending_pull_request_review
+            4. Add specific inline comments on problematic lines: mcp__github__add_pull_request_review_comment_to_pending_review
+            5. Submit the review with verdict: mcp__github__submit_pending_pull_request_review
+
+            Review criteria (GitOps infrastructure - changes affect production):
             - What will fail in production
             - Resource limits and cluster impact
             - Breaking changes to existing workloads
             - Security vulnerabilities
             - Missing validations or error handling
             - Untested edge cases
+            - Alignment with ADR patterns
 
-            Be critical, not supportive. Point out flaws. Challenge assumptions. If something looks wrong, it probably is.
+            Be skeptical and critical. If something looks wrong, it probably is.
 
-            Review CLAUDE.md and ADRs for architectural context. Verify changes align with existing patterns.
+            Verdict rules:
+            - APPROVE: Only if no blocking issues AND aligns with ADRs
+            - REQUEST_CHANGES: If any blocking concerns exist
+            - COMMENT: For minor suggestions only
 
-            Output: Concise bullet points of issues found. No compliments. Lead with blocking concerns.
-
-            Use MCP GitHub tools:
-            1. mcp__github__get_pull_request_diff to analyze changes
-            2. mcp__github__create_pending_pull_request_review to start review
-            3. mcp__github__add_pull_request_review_comment_to_pending_review for inline comments on specific lines
-            4. mcp__github__submit_pending_pull_request_review with verdict (APPROVE/REQUEST_CHANGES)
-
-          # Enable MCP GitHub tools for creating inline review comments
-          allowed_tools: |
-            mcp__github__create_pending_pull_request_review,
-            mcp__github__add_pull_request_review_comment_to_pending_review,
-            mcp__github__submit_pending_pull_request_review,
-            mcp__github__get_pull_request_diff
+            DO NOT just post a comment - you MUST submit a formal review with APPROVE or REQUEST_CHANGES.
 
