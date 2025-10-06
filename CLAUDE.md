@@ -88,9 +88,12 @@ See individual ADRs for infrastructure and workload details.
 
 ## Development Workflow
 
-1. Make changes in feature branch
-2. Submit PR for review
-3. Merge to master → ArgoCD auto-syncs to cluster
+**IMPORTANT: All changes MUST go through pull requests. Never commit directly to master.**
+
+1. Create feature branch from master
+2. Make changes in feature branch
+3. Submit PR for review
+4. Merge to master → ArgoCD auto-syncs to cluster
 
 ## Disaster Recovery
 
