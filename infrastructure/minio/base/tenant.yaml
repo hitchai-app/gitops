@@ -1,0 +1,72 @@
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: minio-shared
+  namespace: minio
+spec:
+  image: quay.io/minio/minio:RELEASE.2025-10-01T00-00-00Z
+  imagePullPolicy: IfNotPresent
+
+  ## Root credentials (Sealed Secret required)
+  configuration:
+    name: minio-shared-root
+
+  ## Disable auto-cert (use cert-manager)
+  requestAutoCert: false
+
+  ## External TLS certificate
+  externalCertSecret:
+    - name: minio-shared-tls
+      type: kubernetes.io/tls
+
+  ## 4-drive SNMD topology (Single Node Multi-Drive)
+  pools:
+    - servers: 1
+      name: pool-0
+      volumesPerServer: 4
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: longhorn-single-replica
+          resources:
+            requests:
+              storage: 5Gi
+
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        runAsNonRoot: true
+
+  ## Features
+  features:
+    bucketDNS: false
+    domains: {}
+
+  ## Liveness probe
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  ## Readiness probe
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+
+  ## Expose services
+  exposeServices:
+    minio: true
+    console: true

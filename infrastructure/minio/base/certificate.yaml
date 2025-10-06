@@ -1,0 +1,21 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: minio-shared-tls
+  namespace: minio
+spec:
+  secretName: minio-shared-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+  dnsNames:
+    - minio.ops.last-try.org
+    - "*.minio.ops.last-try.org"
+    - minio-shared-console.ops.last-try.org
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  duration: 2160h  # 90 days
+  renewBefore: 720h  # 30 days
