@@ -40,10 +40,11 @@ jobs:
           # Allow all bots to trigger the review
           allowed_bots: '*'
 
-          # Claude args to allow all tools
-          claude_args: '--permissions allowAll'
+          # Use sticky comments for consistent review updates
+          use_sticky_comment: true
 
-          prompt: |
+          # Direct prompt for automated review (no @claude mention needed)
+          direct_prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
             CRITICAL: You MUST post your review using GitHub's review API. Follow these steps:
