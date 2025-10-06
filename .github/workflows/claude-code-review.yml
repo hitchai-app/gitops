@@ -47,13 +47,15 @@ jobs:
           direct_prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
-            CRITICAL: You MUST post your review using GitHub's review API. Follow these steps:
+            CRITICAL: You MUST submit a formal GitHub PR review. Follow these steps:
 
-            1. Get PR diff using available tools (mcp__github__get_pull_request_diff or gh pr diff)
+            1. Get PR diff: `gh pr diff ${{ github.event.pull_request.number }}`
             2. Review CLAUDE.md and ADRs for architectural context
-            3. Create a pending review: mcp__github__create_pending_pull_request_review
-            4. Add specific inline comments on problematic lines: mcp__github__add_pull_request_review_comment_to_pending_review
-            5. Submit the review with verdict: mcp__github__submit_pending_pull_request_review
+            3. Analyze changes against review criteria
+            4. Submit formal review using gh CLI:
+               - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve --body "Review summary"`
+               - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Issues found"`
+               - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment --body "Minor suggestions"`
 
             Review criteria (GitOps infrastructure - changes affect production):
             - What will fail in production
@@ -71,5 +73,5 @@ jobs:
             - REQUEST_CHANGES: If any blocking concerns exist
             - COMMENT: For minor suggestions only
 
-            DO NOT just post a comment - you MUST submit a formal review with APPROVE or REQUEST_CHANGES.
+            DO NOT just post a comment - you MUST use `gh pr review` to submit a formal review with APPROVE, REQUEST_CHANGES, or COMMENT.
 
