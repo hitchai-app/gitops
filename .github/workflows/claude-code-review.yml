@@ -40,13 +40,8 @@ jobs:
           # Allow all bots to trigger the review
           allowed_bots: '*'
 
-          # Enable necessary tools for PR review
-          settings: |
-            {
-              "permissions": {
-                "allowAll": true
-              }
-            }
+          # Claude args to allow all tools
+          claude_args: '--permissions allowAll'
 
           prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
