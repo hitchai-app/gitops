@@ -84,11 +84,30 @@ Requirements:
 
 **How Sealed Secrets works:**
 
-1. Controller generates RSA key pair on install
-   - Private key: Stored as Secret in cluster (`kube-system` namespace)
-   - Public key: Fetchable by users
+We use **BYOK (Bring Your Own Keys)** - generate keys offline before cluster exists.
 
-2. Encrypt locally with `kubeseal` CLI:
+1. Generate RSA key pair offline (before installing controller):
+   ```bash
+   openssl req -x509 -nodes -newkey rsa:4096 \
+     -keyout sealed-secrets.key -out sealed-secrets.crt \
+     -subj "/CN=sealed-secret/O=sealed-secret"
+   ```
+
+2. Inject key into cluster:
+   ```bash
+   kubectl create namespace sealed-secrets
+   kubectl -n sealed-secrets create secret tls sealed-secrets-key \
+     --cert=sealed-secrets.crt --key=sealed-secrets.key
+   kubectl -n sealed-secrets label secret sealed-secrets-key \
+     sealedsecrets.bitnami.com/sealed-secrets-key=active
+   ```
+
+3. Install Sealed Secrets controller (uses your key):
+   ```bash
+   helm install sealed-secrets sealed-secrets/sealed-secrets -n sealed-secrets
+   ```
+
+4. Encrypt locally with `kubeseal` CLI:
    ```bash
    kubeseal --fetch-cert > pub.pem
    kubectl create secret generic cloudflare-api-token \
@@ -97,11 +116,17 @@ Requirements:
      kubeseal --cert pub.pem > sealed-secret.yaml
    ```
 
-3. Commit encrypted `SealedSecret` to Git (safe)
+5. Commit encrypted `SealedSecret` to Git (safe)
 
-4. ArgoCD syncs to cluster
+6. ArgoCD syncs to cluster
 
-5. Controller decrypts with private key → creates plain `Secret`
+7. Controller decrypts with private key → creates plain `Secret`
+
+**Why BYOK:**
+- ✅ Generate keys before cluster exists
+- ✅ Control key backup from day 0
+- ✅ Same key across multiple clusters (no re-sealing)
+- ✅ Better disaster recovery (you own the key)
 
 **Security model:**
 - Protects secrets in Git (encrypted)
@@ -112,17 +137,23 @@ Requirements:
 
 ## Critical: Private Key Backup
 
-```bash
-# Backup immediately after install
-kubectl get secret -n kube-system \
-  -l sealedsecrets.bitnami.com/sealed-secrets-key \
-  -o yaml > sealed-secrets-key-backup.yaml
+**BYOK means you already have the key offline** - backup immediately after generation:
 
-# Store encrypted externally (1Password, S3, etc.)
+```bash
+# Backup the files you generated
+# sealed-secrets.key (private key)
+# sealed-secrets.crt (public cert)
+
+# Store in pass (password store)
+pass insert -m gitops/sealed-secrets-key < sealed-secrets.key
+pass insert -m gitops/sealed-secrets-cert < sealed-secrets.crt
+
 # NOT in Git
 ```
 
 **Key loss = disaster:** All SealedSecrets become undecryptable, must re-encrypt everything
+
+**Benefit of BYOK:** You control the backup from the start, not dependent on cluster state
 
 ## Disaster Recovery
 
