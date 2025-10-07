@@ -14,5 +14,6 @@ parameters:
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"
+  dataEngine: "v1"
   # Automatic cleanup on PVC deletion
   # For non-critical data (temp files, caches, testing)

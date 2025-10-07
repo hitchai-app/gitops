@@ -14,6 +14,7 @@ parameters:
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"  # TODO: Change to "disabled" when multi-node (spread replicas)
+  dataEngine: "v1"
   # For applications without built-in replication (Redis, single-instance workloads)
   # Single node: 1 replica, best-effort locality (same node as pod)
   # Multi-node: Update to 3 replicas + disabled locality (spread across nodes)
