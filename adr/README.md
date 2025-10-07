@@ -100,9 +100,25 @@ Don't create ADRs for:
 - Obvious/standard practices
 - Decisions that can be easily reversed
 
+## Writing Good ADRs
+
+**Document decisions, not implementations.**
+
+❌ Bad: "Use StorageClass named `longhorn-single-replica` with `numberOfReplicas: "1"`"
+✅ Good: "Use single-replica class for apps with built-in replication"
+
+**Why:** Implementation details (exact names, parameters, configs) belong in manifests. ADRs explain *why* decisions were made, not *how* to implement them.
+
+**Lesson learned:** ADR 0007 included exact names and configurations, causing automated reviews to flag reasonable implementation choices as "violations." Simplified from 200 to 85 lines by removing specs while keeping the decision intact.
+
 ## Updating ADRs
 
 ADRs are immutable historical records. To change a decision:
 1. Create a new ADR
 2. Reference the old ADR
 3. Mark the old ADR as "Superseded by ADR-XXXX"
+
+To refine (remove unnecessary detail):
+- Keep core decision and rationale
+- Remove implementation specifications
+- Note refinement in commit message
