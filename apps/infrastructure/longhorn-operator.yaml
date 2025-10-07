@@ -11,6 +11,11 @@ spec:
     targetRevision: 1.10.0  # Latest stable (Sept 2025)
     helm:
       valuesObject:
+        # Disable pre-upgrade checker for ArgoCD compatibility
+        # https://github.com/longhorn/longhorn/issues/8707
+        preUpgradeChecker:
+          jobEnabled: false
+
         # Default replica count (single node configuration)
         defaultSettings:
           defaultReplicaCount: "1"
