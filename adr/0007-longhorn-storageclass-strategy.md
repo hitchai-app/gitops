@@ -66,7 +66,33 @@ Question: Should redundancy live at the storage layer (Longhorn replication) or 
 
 ## Implementation Notes
 
-- Use `volumeBindingMode: WaitForFirstConsumer` for proper pod/volume placement
+### Volume Binding Mode
+
+**Use `volumeBindingMode: Immediate` (not WaitForFirstConsumer)**
+
+**Observed Issue:** In our Longhorn v1.10.0 deployment, CSIStorageCapacity objects are not being created despite the feature being listed in release notes ([GitHub Issue #10685](https://github.com/longhorn/longhorn/issues/10685), [v1.10.0 Release Notes](https://github.com/longhorn/longhorn/releases/tag/v1.10.0)).
+
+**Problem with WaitForFirstConsumer:**
+- Kubernetes scheduler needs CSIStorageCapacity objects to determine available storage per node
+- Without them, scheduler assumes no storage available
+- Results in: `0/1 nodes are available: 1 node(s) did not have enough free storage`
+- Pods remain in Pending state indefinitely
+- Verified: `kubectl get csistoragecapacities -A` returns no resources
+- CSI provisioner logs show no errors, but no capacity objects created
+
+**Why Immediate binding works:**
+- PVC binds immediately to any available node with Longhorn storage
+- Scheduler doesn't need capacity information upfront
+- Pod scheduling happens after volume is already provisioned
+- Tested successfully: PVC binds, pod runs, data persists
+
+**When to reconsider WaitForFirstConsumer:**
+- If CSIStorageCapacity objects start appearing (verify with `kubectl get csistoragecapacities -A`)
+- After investigating why feature isn't working in our deployment
+- Benefit: Better pod/volume co-location, especially with data locality requirements
+
+### Replica Configuration
+
 - Single node: All classes use 1 replica (only 1 node available)
 - Multi-node: Replicated class increases to 3 replicas for redundancy across nodes
 
@@ -81,5 +107,8 @@ Question: Should redundancy live at the storage layer (Longhorn replication) or 
 
 - [CNCF PostgreSQL Recommendations](https://www.cncf.io/blog/2023/09/29/recommended-architectures-for-postgresql-in-kubernetes/)
 - [CloudNativePG Best Practices](https://cloudnative-pg.io/documentation/current/architecture/)
+- [Longhorn CSIStorageCapacity Issue #10685](https://github.com/longhorn/longhorn/issues/10685) - Feature request and implementation
+- [Longhorn v1.10.0 Release Notes](https://github.com/longhorn/longhorn/releases/tag/v1.10.0) - CSIStorageCapacity mentioned
+- [Kubernetes Storage Capacity Tracking](https://kubernetes-csi.github.io/docs/storage-capacity-tracking.html)
 - ADR 0002: Longhorn Storage from Day One
 - ADR 0004: CloudNativePG for PostgreSQL
