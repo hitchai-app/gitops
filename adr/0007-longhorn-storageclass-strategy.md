@@ -74,7 +74,7 @@ Question: Should redundancy live at the storage layer (Longhorn replication) or 
 
 **Root Cause (Investigated 2025-10-07):**
 
-After systematic investigation (documented in `.tmp/csistoragecapacity-investigation.md`), we discovered TWO issues preventing CSIStorageCapacity object creation:
+After systematic investigation, we discovered TWO issues preventing CSIStorageCapacity object creation:
 
 1. **Stale leader election lease**: External-provisioner pods couldn't acquire leadership, preventing the capacity controller from starting. The lease holder referenced a pod that no longer existed. Fixed by deleting the stale lease.
 
