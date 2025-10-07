@@ -7,12 +7,13 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 reclaimPolicy: Retain
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate  # WaitForFirstConsumer requires CSIStorageCapacity (Longhorn v1.12.0+)
 parameters:
   numberOfReplicas: "1"
   staleReplicaTimeout: "30"
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"
+  dataEngine: "v1"
   # Keep replica on same node as pod (minimize latency)
   # For applications with built-in replication (PostgreSQL, MinIO)

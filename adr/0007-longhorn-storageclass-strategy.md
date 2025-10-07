@@ -66,7 +66,47 @@ Question: Should redundancy live at the storage layer (Longhorn replication) or 
 
 ## Implementation Notes
 
-- Use `volumeBindingMode: WaitForFirstConsumer` for proper pod/volume placement
+### Volume Binding Mode
+
+**Use `volumeBindingMode: Immediate` (not WaitForFirstConsumer)**
+
+**Observed Issue:** In our Longhorn v1.10.0 deployment, CSIStorageCapacity objects are not being created despite the feature being listed in release notes ([GitHub Issue #10685](https://github.com/longhorn/longhorn/issues/10685), [v1.10.0 Release Notes](https://github.com/longhorn/longhorn/releases/tag/v1.10.0)).
+
+**Root Cause (Investigated 2025-10-07):**
+
+After systematic investigation, we discovered TWO issues preventing CSIStorageCapacity object creation:
+
+1. **Stale leader election lease**: External-provisioner pods couldn't acquire leadership, preventing the capacity controller from starting. The lease holder referenced a pod that no longer existed. Fixed by deleting the stale lease.
+
+2. **Missing `dataEngine` parameter**: After fixing leader election, the capacity controller started but GetCapacity calls immediately failed with:
+   ```
+   CSI GetCapacity for {storageClassName:replicated}:
+   rpc error: code = InvalidArgument desc = storage class parameters missing 'dataEngine' key
+   ```
+   This appears to be an undocumented requirement in Longhorn v1.10.0. Regular volume provisioning doesn't require explicit `dataEngine` (defaults to v1), but CSIStorageCapacity GetCapacity calls do. Fixed by adding `dataEngine: "v1"` to all StorageClass parameters.
+
+**Problem with WaitForFirstConsumer:**
+- Kubernetes scheduler needs CSIStorageCapacity objects to determine available storage per node
+- Without them, scheduler assumes no storage available
+- Results in: `0/1 nodes are available: 1 node(s) did not have enough free storage`
+- Pods remain in Pending state indefinitely
+- Verified: `kubectl get csistoragecapacities -A` returns no resources
+
+**Why Immediate binding works:**
+- PVC binds immediately to any available node with Longhorn storage
+- Scheduler doesn't need capacity information upfront
+- Pod scheduling happens after volume is already provisioned
+- Tested successfully: PVC binds, pod runs, data persists
+
+**When to reconsider WaitForFirstConsumer:**
+- Now that `dataEngine` parameter is added, CSIStorageCapacity objects should be created
+- Verify after merge: `kubectl get csistoragecapacities -A`
+- If objects appear, can switch to WaitForFirstConsumer in follow-up PR when scaling to multi-node
+- Benefit: Better pod/volume co-location across nodes (minimal benefit on single node)
+- Single-node cluster: `Immediate` binding is sufficient (everything co-located anyway)
+
+### Replica Configuration
+
 - Single node: All classes use 1 replica (only 1 node available)
 - Multi-node: Replicated class increases to 3 replicas for redundancy across nodes
 
@@ -81,5 +121,8 @@ Question: Should redundancy live at the storage layer (Longhorn replication) or 
 
 - [CNCF PostgreSQL Recommendations](https://www.cncf.io/blog/2023/09/29/recommended-architectures-for-postgresql-in-kubernetes/)
 - [CloudNativePG Best Practices](https://cloudnative-pg.io/documentation/current/architecture/)
+- [Longhorn CSIStorageCapacity Issue #10685](https://github.com/longhorn/longhorn/issues/10685) - Feature request and implementation
+- [Longhorn v1.10.0 Release Notes](https://github.com/longhorn/longhorn/releases/tag/v1.10.0) - CSIStorageCapacity mentioned
+- [Kubernetes Storage Capacity Tracking](https://kubernetes-csi.github.io/docs/storage-capacity-tracking.html)
 - ADR 0002: Longhorn Storage from Day One
 - ADR 0004: CloudNativePG for PostgreSQL

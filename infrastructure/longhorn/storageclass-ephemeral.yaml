@@ -7,12 +7,13 @@ metadata:
 provisioner: driver.longhorn.io
 allowVolumeExpansion: true
 reclaimPolicy: Delete
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate  # WaitForFirstConsumer requires CSIStorageCapacity (Longhorn v1.12.0+)
 parameters:
   numberOfReplicas: "1"
   staleReplicaTimeout: "30"
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "best-effort"
+  dataEngine: "v1"
   # Automatic cleanup on PVC deletion
   # For non-critical data (temp files, caches, testing)
