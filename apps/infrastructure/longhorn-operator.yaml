@@ -13,7 +13,7 @@ spec:
       valuesObject:
         # Default replica count (single node configuration)
         defaultSettings:
-          defaultReplicaCount: 1
+          defaultReplicaCount: "1"
           backupTarget: "s3://longhorn-backups@auto/"
           backupTargetCredentialSecret: "longhorn-backup-secret"
 
