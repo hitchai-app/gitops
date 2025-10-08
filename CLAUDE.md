@@ -2,6 +2,8 @@
 
 GitOps repository for Kubernetes cluster infrastructure using ArgoCD.
 
+For contributor expectations and workflow checklists, see [`AGENTS.md`](AGENTS.md).
+
 ## Project Overview
 
 This repository manages infrastructure for an in-house Kubernetes cluster running on Hetzner (12 CPU / 128GB RAM / 280GB SSD). The cluster hosts microservices architecture with stage and prod environments, following GitOps practices with ArgoCD.
