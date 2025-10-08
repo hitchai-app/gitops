@@ -38,7 +38,7 @@ Run Valkey 8.x as a single-replica Kubernetes StatefulSet that we manage directl
 
 ### Redis Operator (OT-CONTAINER-KIT)
 - **Pros**: declarative replicas/Sentinel/cluster topologies, automated failover, built-in exporter wiring.
-- **Cons**: open issues such as #1403 (failover leaves the cluster without a primary), #1164 (data loss during restart), #1513 (passwords logged via CLI), and slow turnaround on CVE-2025-49844 image rebuilds show ongoing maturity gaps; reconciler debugging overhead the team cannot absorb yet.
+- **Cons**: open issues such as #1403 (failover leaves the cluster without a primary), #1164 (data loss during restart), and #1513 (passwords logged via CLI) show ongoing maturity gaps; reconciler debugging overhead the team cannot absorb yet.
 - **Why not now**: the automation does not offset the operational risk for a workload that already tolerates downtime.
 
 ### Valkey + Helm/Operator (future options)
@@ -55,7 +55,7 @@ Run Valkey 8.x as a single-replica Kubernetes StatefulSet that we manage directl
 
 ### StatefulSet Guards
 
-- The container entrypoint calculates `maxmemory` at runtime from the cgroup limit (target ~80 %), ensuring `noeviction` engages before the kernel OOM killer. The GitOps manifest carries the authoritative script.
+- The container entrypoint calculates `maxmemory` at runtime from the cgroup limit (target ~80 %), ensuring `noeviction` engages before the kernel OOM killer. The script includes a fallback to a static value when the cgroup file is missing or reports `max`, so pods still start predictably across container runtimes. The GitOps manifest carries the authoritative script.
 - Pin Valkey and `redis_exporter` images to known tags/digests; upgrade new versions only after staging validation.
 - Longhorn backs the PVC; in a single-node cluster there is no failover if the node disappears.
 - Liveness/readiness probes issue `valkey-cli ping`; BullMQ clients already handle reconnects.
