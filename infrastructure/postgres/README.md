@@ -27,7 +27,8 @@ This directory contains the manifests for the production PostgreSQL cluster mana
 
 - Single instance PostgreSQL 17.2 (`postgres-prod` in namespace `postgres-prod`).
 - Longhorn-backed 50 GiB volume (`longhorn-single-replica`).
-- Continuous WAL/base backups to `s3://cloudnativepg-backups/postgres-prod` with gzip compression and 30‑day retention.
+- Continuous WAL/base backups to `s3://cloudnativepg-backups/postgres-prod` with gzip compression, AES256 server-side encryption, and 30‑day retention.
+- If you use a KMS-managed key (e.g. AWS KMS), replace `encryption: AES256` in `cluster.yaml` with `encryption: aws:kms` and add the key ARN via additional Barman command args.
 - PodMonitor for Prometheus.
 
 ## Verification cheatsheet
