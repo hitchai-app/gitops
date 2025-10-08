@@ -19,9 +19,7 @@ This directory contains the manifests for the production PostgreSQL cluster mana
 
    rm /tmp/backup-s3-credentials.yaml
    ```
-3. Commit the sealed secret alongside `cluster.yaml` so ArgoCD can apply both. An
-   example template (`backup-s3-credentials-sealed.yaml.example`) is included
-   for reference.
+3. Commit the sealed secret alongside `cluster.yaml` so ArgoCD can apply both.
 
 ## What gets deployed
 
