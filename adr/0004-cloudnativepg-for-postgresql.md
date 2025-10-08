@@ -154,7 +154,7 @@ Configuration guardrails:
 - **Backups**: configure CloudNativePG’s managed backups to stream WAL to S3 with a documented retention policy (target ~30 days) and verify restores regularly. Treat upstream documentation as the authority for supported fields rather than mirroring them here.
 - **Runbooks**: maintain procedures for storage exhaustion cleanup, manual failover recovery, operator restart, and full restore; exercise them on a recurring schedule.
 - **Monitoring**: alert on disk thresholds (≥70 %), operator health, replication lag, and failover events so issues surface before they become outages.
-- **Upgrades**: pin operator/image versions, subscribe to release notes, and rehearse upgrades in staging before touching production manifests.
+- **Upgrades**: pin operator/image versions, subscribe to release notes, and rehearse upgrades in a non-production environment before touching production manifests.
 
 ## When to Reconsider
 
