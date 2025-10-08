@@ -61,7 +61,7 @@ Configuration:
 - ✅ Ready for multi-node growth
 
 **Data Integrity:**
-- ✅ Erasure coding EC:2 (tolerates 2 drive failures)
+- ✅ Erasure coding EC:2 (protects against silent corruption and single-drive faults)
 - ✅ Bitrot protection (silent corruption detection)
 - ✅ 50% capacity efficiency (10Gi usable from 20Gi raw)
 
@@ -82,7 +82,8 @@ Configuration:
 **Single-Node Limitations:**
 - ⚠️ No HA on single node (all drives on same pod)
 - ⚠️ Erasure coding provides integrity, not availability (until multi-node)
-- ⚠️ Redundancy is theoretical (pod failure takes all drives)
+- ⚠️ Redundancy is theoretical (Longhorn single-replica PVCs land on the same physical disk; node or disk loss removes every shard)
+- ⚠️ Migrating to multi-node means standing up a new distributed tenant and copying data; existing SNMD pools cannot be reshaped into multi-node pools
 
 **Known Issues:**
 - ⚠️ Auto-cert frequently broken (mitigated: use cert-manager)
@@ -107,11 +108,14 @@ Configuration:
 - Uses EC:2 (2 data + 2 parity)
 - Can add pools (new pool needs ≥ 2 × EC:2 = 4 drives)
 - MinIO rule: "New pool must support minimum 2 × EC:N drives"
+- When we outgrow single-node, we must provision a new multi-node pool/tenant and migrate data; existing SNMD pools stay single-node forever
 
 **Capacity with 4 × 5Gi drives:**
 - Raw: 20Gi
 - Usable: 10Gi (50% due to EC:2 parity)
-- Can lose: 2 drives and recover
+- Theoretically tolerates 2 drive failures within the pool
+
+**Reality check:** In our Longhorn single-replica setup the four PVCs share the same node. An actual node or disk failure still wipes the tenant; EC:2 mainly guards against silent corruption and prepares us for future distributed pools.
 
 ## Critical Mitigations
 
@@ -126,6 +130,7 @@ Configuration:
 - ✅ Use MinIO replication for backups (not Velero)
 - ✅ Test tenant upgrades in staging
 - ✅ Set up external backup strategy
+- ✅ Replicate critical buckets to off-cluster object storage (so Velero and uploads survive a cluster loss)
 
 ## When to Reconsider
 
@@ -148,4 +153,5 @@ Configuration:
 - [MinIO Operator](https://github.com/minio/operator)
 - [Erasure Coding Guide](https://min.io/docs/minio/linux/operations/concepts/erasure-coding.html)
 - [MinIO AGPL License](https://blog.min.io/from-open-source-to-free-and-open-source-minio-is-now-fully-licensed-under-gnu-agplv3/)
+- [MinIO Core Operational Concepts (SNMD vs MNMD)](https://min.io/docs/minio/linux/operations/concepts.html#what-system-topologies-does-minio-support)
 - ADR 0007: Longhorn StorageClass Strategy

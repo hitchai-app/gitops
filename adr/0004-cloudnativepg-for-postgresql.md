@@ -22,11 +22,10 @@ Team context:
 
 We will use **CloudNativePG** as our PostgreSQL operator.
 
-Configuration:
-- PITR backups to S3 with 30-day retention
-- Single replica on single node (no HA initially)
-- When adding node 2: Enable multi-replica with automated failover
-- Pin operator version, upgrade cautiously
+Configuration guardrails:
+- Stream WAL to S3 using CloudNativePG’s managed backups with a documented 30-day retention target.
+- Run a single instance while the cluster is single-node; enable replicas and automated failover only after adding more nodes.
+- Pin operator and Postgres versions and upgrade only after staging validation.
 
 ## Alternatives Considered
 
@@ -151,48 +150,11 @@ Configuration:
 
 ## Implementation Notes
 
-### Deployment Strategy
-- **Single node phase**: 1 replica, no HA, S3 backups only
-- **Multi-node phase**: 2-3 replicas, automated failover enabled
-- **Backup configuration**: 30-day retention, continuous WAL archiving
-- **Version pinning**: Pin operator version, read release notes before upgrading
-
-### Operational Requirements
-- ✅ **Runbook for manual failover recovery**: Test and document stuck state recovery
-- ✅ **Monthly disaster recovery testing**: Restore from S3 backup, verify procedures
-- ✅ **Aggressive monitoring**:
-  - Disk usage alerts at 70% (prevent death spiral)
-  - Operator health monitoring (failover depends on it)
-  - Failover detection and alerting
-- ✅ **Safe defaults**: Don't optimize for speed, keep conservative `switchoverDelay`
-- ✅ **Backup verification**: Test restore process before production
-
-### Mitigation Strategies
-- **Storage exhaustion**: Alert at 70% disk, automated cleanup, volume expansion
-- **Stuck failover**: Documented manual recovery procedure, tested monthly
-- **Operator downtime**: Monitor operator pod health, auto-restart, redundancy when possible
-- **Breaking changes**: Subscribe to release notes, test upgrades in stage first
-
-### Configuration Example
-```yaml
-apiVersion: postgresql.cnpg.io/v1
-kind: Cluster
-metadata:
-  name: postgres
-spec:
-  instances: 1  # Start with 1, increase when adding nodes
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://backups/postgres
-      s3Credentials:
-        accessKeyId: ...
-        secretAccessKey: ...
-      wal:
-        compression: gzip
-      retention: "30d"
-  # Conservative failover settings (favor safety over speed)
-  failoverDelay: 0  # Default, don't optimize prematurely
-```
+- **Deployment phasing**: keep the cluster single-instance while the Kubernetes footprint is a single node. Introduce replicas and automated failover only after additional nodes are online and tested.
+- **Backups**: configure CloudNativePG’s managed backups to stream WAL to S3 with a documented retention policy (target ~30 days) and verify restores regularly. Treat upstream documentation as the authority for supported fields rather than mirroring them here.
+- **Runbooks**: maintain procedures for storage exhaustion cleanup, manual failover recovery, operator restart, and full restore; exercise them on a recurring schedule.
+- **Monitoring**: alert on disk thresholds (≥70 %), operator health, replication lag, and failover events so issues surface before they become outages.
+- **Upgrades**: pin operator/image versions, subscribe to release notes, and rehearse upgrades in staging before touching production manifests.
 
 ## When to Reconsider
 
