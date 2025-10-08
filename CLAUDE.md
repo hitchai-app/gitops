@@ -28,8 +28,8 @@ See @adr/0010-gitops-repository-structure.md for details.
 - **GitOps**: ArgoCD (@adr/0001-gitops-with-argocd.md)
 - **Storage**: Longhorn (@adr/0002-longhorn-storage-from-day-one.md, @adr/0007-longhorn-storageclass-strategy.md)
 - **Databases**: CloudNativePG (@adr/0004-cloudnativepg-for-postgresql.md)
-- **Cache**: Redis StatefulSet (@adr/0005-statefulset-for-redis.md)
-- **Object Storage**: MinIO Operator (@adr/0006-minio-operator-with-4-drives.md)
+- **Cache**: Valkey StatefulSet (@adr/0005-statefulset-for-valkey.md)
+- **Object Storage**: MinIO Operator (@adr/0006-minio-operator-single-drive-bootstrap.md)
 - **Certificates**: cert-manager + Let's Encrypt DNS-01 (@adr/0008-cert-manager-for-tls.md)
 - **Secrets**: Sealed Secrets BYOK (@adr/0009-secrets-management-strategy.md)
 - **Ingress**: Traefik (@adr/0011-traefik-ingress-controller.md)
@@ -65,8 +65,8 @@ All major architectural decisions are documented in `adr/`:
 - @adr/0002-longhorn-storage-from-day-one.md
 - @adr/0003-operators-over-statefulsets.md
 - @adr/0004-cloudnativepg-for-postgresql.md
-- @adr/0005-statefulset-for-redis.md
-- @adr/0006-minio-operator-with-4-drives.md
+- @adr/0005-statefulset-for-valkey.md
+- @adr/0006-minio-operator-single-drive-bootstrap.md
 - @adr/0007-longhorn-storageclass-strategy.md
 - @adr/0008-cert-manager-for-tls.md
 - @adr/0009-secrets-management-strategy.md
