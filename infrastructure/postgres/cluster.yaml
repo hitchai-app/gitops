@@ -10,7 +10,7 @@ spec:
 
   storage:
     storageClass: longhorn-single-replica
-    size: 50Gi
+    size: 20Gi
 
   resources:
     requests:
