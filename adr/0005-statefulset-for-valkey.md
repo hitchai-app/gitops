@@ -53,123 +53,13 @@ Run Valkey 8.x as a single-replica Kubernetes StatefulSet that we manage directl
 
 ## Implementation Guidance
 
-### StatefulSet Skeleton
+### StatefulSet Guards
 
-```yaml
-apiVersion: apps/v1
-kind: StatefulSet
-metadata:
-  name: valkey
-spec:
-  serviceName: valkey
-  replicas: 1
-  selector:
-    matchLabels:
-      app: valkey
-  template:
-    metadata:
-      labels:
-        app: valkey
-    spec:
-      containers:
-      - name: valkey
-        image: valkeyio/valkey:8.1.4-alpine
-        command:
-        - /bin/sh
-        - -c
-        - |
-          mem_file=/sys/fs/cgroup/memory.max
-          if [ -f "$mem_file" ]; then
-            raw=$(cat "$mem_file")
-            if [ "$raw" = "max" ]; then
-              maxmemory=512mb
-            else
-              maxmemory_bytes=$((raw * 80 / 100))
-              maxmemory="${maxmemory_bytes}B"
-            fi
-          else
-            maxmemory=512mb
-          fi
-          exec valkey-server \
-            --appendonly yes \
-            --appendfsync everysec \
-            --maxmemory "$maxmemory" \
-            --maxmemory-policy noeviction
-        ports:
-        - containerPort: 6379
-          name: valkey
-        volumeMounts:
-        - name: data
-          mountPath: /data
-        resources:
-          requests:
-            cpu: 100m
-            memory: 512Mi
-          limits:
-            cpu: 500m
-            memory: 512Mi
-        livenessProbe:
-          exec:
-            command: ["valkey-cli", "ping"]
-          initialDelaySeconds: 10
-          periodSeconds: 15
-        readinessProbe:
-          exec:
-            command: ["valkey-cli", "ping"]
-          initialDelaySeconds: 5
-          periodSeconds: 5
-      - name: redis-exporter
-        image: oliver006/redis_exporter:v1.61.0
-        args:
-        - --redis.addr=redis://localhost:6379
-        ports:
-        - containerPort: 9121
-          name: metrics
-        resources:
-          requests:
-            cpu: 10m
-            memory: 32Mi
-          limits:
-            cpu: 50m
-            memory: 64Mi
-  volumeClaimTemplates:
-  - metadata:
-      name: data
-    spec:
-      storageClassName: longhorn
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 10Gi
-```
-
-**Notes**
-- Adjust the fallback value (`512mb`) to stay under the pod limit if the kernel reports `max`. Update resources as we collect usage data.
-- Longhorn will bind the PVC to the node hosting the pod; no failover occurs until the cluster adds additional nodes.
-- Probes keep the pod cycling if the process wedges; BullMQ workers must handle reconnects (they already do).
-
-### Monitoring
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: valkey
-  labels:
-    app: valkey
-spec:
-  selector:
-    matchLabels:
-      app: valkey
-  endpoints:
-  - port: metrics
-    interval: 30s
-```
-
-Alerting expectations:
-- Warn when `valkey_memory_used_bytes / container_memory_limit_bytes > 0.75` for 10 m.
-- Critical when `valkey_up == 0` for 2 scrape intervals.
-- Track BullMQ queue depth (from app metrics) to spot backlog after restarts.
+- The container entrypoint calculates `maxmemory` at runtime from the cgroup limit (target ~80 %), ensuring `noeviction` engages before the kernel OOM killer. The GitOps manifest carries the authoritative script.
+- Pin Valkey and `redis_exporter` images to known tags/digests; upgrade new versions only after staging validation.
+- Longhorn backs the PVC; in a single-node cluster there is no failover if the node disappears.
+- Liveness/readiness probes issue `valkey-cli ping`; BullMQ clients already handle reconnects.
+- A ServiceMonitor scrapes the exporter; alerts cover availability (`valkey_up`), memory saturation, client count, and BullMQ queue depth.
 
 ### Security Posture
 
