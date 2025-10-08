@@ -21,7 +21,7 @@ Non-goals right now:
 
 ## Decision
 
-Operate a **Single-Node Single-Drive (SNSD) MinIO tenant** via the MinIO Operator. We accept zero in-cluster durability in exchange for the simplest possible footprint while the cluster is single-node. TLS is issued by cert-manager (operator auto-cert disabled). When additional nodes arrive, we will provision a new distributed MinIO tenant and migrate data rather than stretching the single-node deployment.
+Operate a **Single-Node Single-Drive (SNSD) MinIO tenant** via the MinIO Operator. We accept zero in-cluster durability in exchange for the simplest possible footprint—this is the easiest way to get S3 storage running on day one while the cluster is single-node. TLS is issued by cert-manager (operator auto-cert disabled). When additional nodes arrive, we will provision a new distributed MinIO tenant and migrate data rather than stretching the single-node deployment.
 
 ## Alternatives Considered
 
@@ -44,6 +44,7 @@ Operate a **Single-Node Single-Drive (SNSD) MinIO tenant** via the MinIO Operato
 
 ### Positive
 - **Small blast radius**: one PVC and one pod are easy to reason about and debug.
+- **Operationally easiest**: no parity tuning, pool math, or additional PVCs to juggle; provisioning stays straightforward in GitOps.
 - **Zero parity overhead**: all allocated storage is usable; no silent assumption of resilience.
 - **Clear migration plan**: we explicitly plan to move to a distributed tenant once multi-node hardware is available.
 - **Operator ergonomics**: declarative tenants, TLS integration with cert-manager, namespace-scoped isolation per environment.
