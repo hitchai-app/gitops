@@ -1,0 +1,56 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-shared
+spec:
+  # Start with a single instance; scale out when additional Kubernetes nodes exist
+  instances: 1
+
+  # Explicit PostgreSQL image (avoid floating tags)
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+
+  # Longhorn-backed persistent storage
+  storage:
+    storageClass: longhorn-single-replica
+    size: 50Gi
+
+  # Baseline resource profile (overlays may adjust)
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2
+      memory: 2Gi
+
+  # Expose metrics for Prometheus
+  monitoring:
+    enablePodMonitor: true
+
+  # Continuous backups to S3 via Barman
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: s3://cloudnativepg-backups/postgres-prod
+      s3Credentials:
+        accessKeyId:
+          name: backup-s3-credentials
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: backup-s3-credentials
+          key: ACCESS_SECRET_KEY
+      wal:
+        compression: gzip
+        maxParallel: 2
+      data:
+        compression: gzip
+        jobs: 2
+
+  # Initial bootstrap configuration
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+      encoding: "UTF8"
+      localeCollate: "en_US.UTF-8"
+      localeCType: "en_US.UTF-8"

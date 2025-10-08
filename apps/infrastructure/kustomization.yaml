@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Secrets management (must be first)
+  - sealed-secrets.yaml
+
+  # TLS certificate management
+  - cert-manager.yaml
+  - letsencrypt-issuer.yaml
+
+  # Ingress controller
+  - traefik.yaml
+  - argocd-ingress.yaml
+
+  # Database operator and clusters
+  - cloudnativepg.yaml
+  - postgres.yaml

@@ -171,7 +171,7 @@ Configuration:
 - **Storage exhaustion**: Alert at 70% disk, automated cleanup, volume expansion
 - **Stuck failover**: Documented manual recovery procedure, tested monthly
 - **Operator downtime**: Monitor operator pod health, auto-restart, redundancy when possible
-- **Breaking changes**: Subscribe to release notes, test upgrades in stage first
+- **Breaking changes**: Subscribe to release notes, test upgrades in a non-production environment first
 
 ### Configuration Example
 ```yaml
