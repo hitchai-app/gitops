@@ -1,0 +1,89 @@
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          # Single-node cluster: use single-replica StorageClass (no redundancy yet).
+          storageClassName: single-replica
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 2Gi
+    secrets:
+      - alertmanager-discord-webhook
+  config: |
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname','namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 3h
+      receiver: discord
+    receivers:
+      - name: discord
+        webhook_configs:
+          - url_file: /etc/alertmanager/secrets/alertmanager-discord-webhook/url
+            send_resolved: true
+
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - grafana.ops.last-try.org
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.ops.last-try.org
+  persistence:
+    enabled: true
+    storageClassName: single-replica
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+  serviceMonitor:
+    enabled: true
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    retentionSize: 15GiB
+    resources:
+      requests:
+        cpu: 300m
+        memory: 1Gi
+      limits:
+        cpu: "2"
+        memory: 3Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          # Single-node cluster: use single-replica StorageClass (no redundancy yet).
+          storageClassName: single-replica
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 20Gi
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
