@@ -14,7 +14,7 @@ spec:
         config:
           clusterWide: true
         monitoring:
-          podMonitorEnabled: false
+          podMonitorEnabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: cnpg-system
