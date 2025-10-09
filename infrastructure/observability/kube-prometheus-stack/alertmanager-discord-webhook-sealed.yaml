@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: alertmanager-discord-webhook
+  namespace: monitoring
+spec:
+  encryptedData:
+    url: AgCC8YQuEYPu+zeR/pHLS6gubgY0RjDdK0IlHYWx6rZThW3CebTBIZqZv7kyrM2zPcyjZE5JnU+w8UvJpLoY0+Nm8qZu4ngxheyldJHh+wu6o0OKd+rT9J2qJoIR/VFaQMArrlCQIEwMSudmRHN95sW9jB+nS95QOj4CWEQvPGHgY/5bRep28VL9a0GFH2f9xhVhvB6iTzszSkSTJmKSx4XMxI0yczU+ljlVjGE9Tj6pPOGxYbD8ww67nEEJwBYAixI743n7bhyWMha6Ewc5yKvRz9xUUfjV2xEqqmNyz1MOP165vgUm6XmYLMSPL/FFv8yU9tycnJeqNdFbGhltko12826iWd9q/MrR2JEHbY9aoFB7ZOLCoHRpIomdBzMld8/jjnXSdiclEkCS69NOzIjPSEpvQAwOuzYFXK7/SuTJqm9QuR6zbf5CKXrMiwbZitkg3LKFm4vfuoAtI2WfuCFalwjdmXsDaHwsYL0uGxSn7GOPyUMD6ExQ2VZF01gUn1Zkhb7boj5pXX+JoEZ5brmjrwcA7ti1tlbybzpwyq9EMgifrpCAaaW4rJM/N9QOdG5O44qD3k3dO01piG82w8YjUnOkQDDJMJf5CpKOIU17lP7exefWPpRGBWuS9bouqZI5VYfNp6f0rku/fI3yO7Jc5MCUx0Q9OA441Kds0XqcfbffUjNFg9gfLBffUSGnlKY1ByksDGN+VYC2/j7GVvpt1PZOOvKaGYKfqdxk8dNx41ukd0wkkfF0roSqYO/JW33cL+bTKHnwHhd+mDeXtsBwThdz4hsjSbmVGq0U4VpRMRO5wWC5UE6GZtSVhwzE0OpskfC0G0CVmDNi+AZlUe5bE5t0lTPUCZbj
+  template:
+    metadata:
+      creationTimestamp: null
+      name: alertmanager-discord-webhook
+      namespace: monitoring
