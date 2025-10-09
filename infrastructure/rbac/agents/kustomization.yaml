@@ -6,3 +6,5 @@ resources:
   - clusterrolebinding-agent-readonly.yaml
   - role-agent-writer-workloads.yaml
   - rolebinding-agent-writer-workloads.yaml
+  - resourcequota-agent-workloads.yaml
+  - limitrange-agent-workloads.yaml
