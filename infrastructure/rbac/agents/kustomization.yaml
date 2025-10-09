@@ -4,7 +4,9 @@ kind: Kustomization
 resources:
   - clusterrole-agent-readonly.yaml
   - clusterrolebinding-agent-readonly.yaml
-  - role-agent-writer-workloads.yaml
-  - rolebinding-agent-writer-workloads.yaml
-  - resourcequota-agent-workloads.yaml
-  - limitrange-agent-workloads.yaml
+
+# Optional namespace-scoped permissions can be enabled by referencing the sample manifests:
+#   - role-agent-writer-workloads.yaml
+#   - rolebinding-agent-writer-workloads.yaml
+#   - resourcequota-agent-workloads.yaml
+#   - limitrange-agent-workloads.yaml

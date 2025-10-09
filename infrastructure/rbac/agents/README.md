@@ -1,8 +1,7 @@
 # Agent RBAC Profiles
 
-This bundle defines two access tiers driven by Kubernetes RBAC:
+This bundle defines a cluster-scoped observer role:
 
 - `agent-readonly` ClusterRole: cluster-wide read access to workloads and core resources (no `secrets`). Bound to the `agent-readers` group via ClusterRoleBinding.
-- `agent-writer` namespace Role (scoped to `workloads`): limited create privileges for pods/services plus read-only access elsewhere. No delete verbs and no job creation powers. Bound to `agent-writers` group via RoleBinding.
 
-ResourceQuota and LimitRange in the `workloads` namespace cap agent-created resources to prevent exhaustion. Add or remove namespace-specific RoleBindings as needed for other environments.
+Namespace-specific write access is **not** applied by default. Sample manifests are provided in this directory (`role-agent-writer-workloads.yaml`, `rolebinding-agent-writer-workloads.yaml`, `resourcequota-agent-workloads.yaml`, `limitrange-agent-workloads.yaml`). Copy or reference them from a separate Kustomization when you are ready to grant controlled write access to a particular namespace.
