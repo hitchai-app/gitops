@@ -1,0 +1,31 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: agent-writer
+  namespace: workloads
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/log
+      - services
+      - persistentvolumeclaims
+    verbs: ["get", "list", "watch", "create", "delete", "patch"]
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - statefulsets
+    verbs: ["get", "list", "watch", "patch"]
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups:
+      - "autoscaling"
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["get", "list", "watch", "patch"]

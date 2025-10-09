@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - clusterrole-agent-readonly.yaml
+  - clusterrolebinding-agent-readonly.yaml
+  - role-agent-writer-workloads.yaml
+  - rolebinding-agent-writer-workloads.yaml
