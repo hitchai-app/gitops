@@ -49,9 +49,33 @@ Future enhancements (logging, tracing, OIDC SSO) will be handled in follow-up AD
    - Pros: Minimal components.
    - Cons: Larger manual configuration burden (ServiceMonitors, rules, dashboards). Operator bundle provides faster time-to-value.
 
+## Implementation Notes
+
+### ArgoCD CRD Deployment Issue
+
+During initial deployment (2025-10-10), we encountered missing Prometheus Operator CRDs (`prometheuses.monitoring.coreos.com`, `alertmanagers.monitoring.coreos.com`). Investigation revealed:
+
+**Root Cause**: ArgoCD uses `kubectl apply` by default, which stores the entire manifest in the `kubectl.kubernetes.io/last-applied-configuration` annotation. The Prometheus and Alertmanager CRDs exceed Kubernetes' 262,144 byte annotation limit, causing silent deployment failures.
+
+**Solution**: Add `ServerSideApply=true` to the ArgoCD Application's `syncOptions`. Server-side apply stores metadata in `metadata.managedFields` instead of annotations, bypassing the size limit.
+
+**Deployment Configuration**:
+```yaml
+syncOptions:
+  - CreateNamespace=true
+  - ServerSideApply=true  # Required for large CRDs
+```
+
+This is a known issue with kube-prometheus-stack on ArgoCD (documented in ArgoCD issue [#8128](https://github.com/argoproj/argo-cd/issues/8128)) and affects all large CRDs from the Prometheus Operator. The ServerSideApply feature has been available since ArgoCD 2.5 (2023) and is the recommended solution for 2025.
+
+**Verification**: After applying ServerSideApply, verify CRDs are installed:
+```bash
+kubectl get crd prometheuses.monitoring.coreos.com
+kubectl get crd alertmanagers.monitoring.coreos.com
+```
+
 ## Follow-up Work
 
-- Implement ArgoCD application and Kustomize wrapper for kube-prometheus-stack.
 - Add SealedSecrets for Grafana admin credentials and Discord webhook.
 - Create dashboards/alert rules for Longhorn, Traefik, CloudNativePG as workloads onboard.
 - Draft a separate ADR for logging/tracing (Loki, Tempo, Alloy) and another for OIDC single sign-on when needed.
