@@ -1,0 +1,19 @@
+# Example SealedSecret for AI API keys
+#
+# To create the actual sealed secret:
+#
+# kubectl create secret generic ai-api-keys \
+#   --from-literal=openai=sk-proj-YOUR-PROD-KEY \
+#   --dry-run=client -o yaml | \
+#   kubeseal --format=yaml > ai-api-keys-sealed.yaml
+#
+# Then add to kustomization.yaml resources
+
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: ai-api-keys
+  namespace: steady-prod
+spec:
+  encryptedData:
+    openai: AgA...  # Your encrypted OpenAI API key here

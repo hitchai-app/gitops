@@ -29,34 +29,24 @@ spec:
         ports:
         - containerPort: 4000
         env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: litellm-db-credentials
-              key: uri
         - name: LITELLM_MASTER_KEY
           valueFrom:
             secretKeyRef:
-              name: litellm-master-key
-              key: key
+              name: litellm-secrets
+              key: master-key
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
               name: ai-api-keys
               key: openai
-              optional: true
-        - name: ANTHROPIC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ai-api-keys
-              key: anthropic
-              optional: true
         - name: REDIS_HOST
           value: valkey
         - name: REDIS_PORT
           value: "6379"
         - name: LITELLM_MODE
           value: PRODUCTION
+        - name: DATABASE_URL
+          value: postgresql://litellm_user@postgres:5432/litellm_db
         volumeMounts:
         - name: config
           mountPath: /app/config.yaml

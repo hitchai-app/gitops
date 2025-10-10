@@ -35,13 +35,31 @@ spec:
           name: http
         - containerPort: 10000
           name: grpc
+        env:
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: centrifugo-secrets
+              key: admin-password
+        - name: ADMIN_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: centrifugo-secrets
+              key: admin-secret
+        - name: API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: centrifugo-secrets
+              key: api-key
         volumeMounts:
         - name: config
           mountPath: /centrifugo
         command:
-        - centrifugo
-        args:
-        - --config=/centrifugo/config.json
+        - sh
+        - -c
+        - |
+          envsubst < /centrifugo/config.json > /tmp/config.json
+          centrifugo --config=/tmp/config.json
         resources:
           requests:
             memory: "128Mi"

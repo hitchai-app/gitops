@@ -10,11 +10,11 @@ data:
       },
       "admin": {
         "enabled": true,
-        "password": "change-in-production",
-        "secret": "change-in-production-secret"
+        "password": "$ADMIN_PASSWORD",
+        "secret": "$ADMIN_SECRET"
       },
       "http_api": {
-        "key": "change-in-production-api-key"
+        "key": "$API_KEY"
       },
       "log": {
         "level": "info"
