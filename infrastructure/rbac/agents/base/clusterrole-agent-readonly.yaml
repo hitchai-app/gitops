@@ -11,10 +11,12 @@ rules:
       - services
       - endpoints
       - persistentvolumeclaims
+      - persistentvolumes
       - configmaps
       - events
       - namespaces
       - nodes
+      - replicationcontrollers
     verbs: ["get", "list", "watch"]
   - apiGroups:
       - "apps"
@@ -44,6 +46,7 @@ rules:
       - "networking.k8s.io"
     resources:
       - ingresses
+      - networkpolicies
     verbs: ["get", "list", "watch"]
   - apiGroups:
       - monitoring.coreos.com
@@ -51,4 +54,84 @@ rules:
       - servicemonitors
       - podmonitors
       - prometheusrules
+      - prometheuses
+      - alertmanagers
+      - thanosrulers
+    verbs: ["get", "list", "watch"]
+  # ArgoCD - GitOps visibility
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - applications
+      - applicationsets
+      - appprojects
+    verbs: ["get", "list", "watch"]
+  # cert-manager - TLS certificate management
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates
+      - certificaterequests
+      - issuers
+      - clusterissuers
+    verbs: ["get", "list", "watch"]
+  - apiGroups:
+      - acme.cert-manager.io
+    resources:
+      - challenges
+      - orders
+    verbs: ["get", "list", "watch"]
+  # Longhorn - Storage backend
+  - apiGroups:
+      - longhorn.io
+    resources:
+      - volumes
+      - replicas
+      - engines
+      - nodes
+      - backups
+      - backupvolumes
+      - backuptargets
+      - snapshots
+      - recurringjobs
+      - engineimages
+      - backingimages
+      - settings
+    verbs: ["get", "list", "watch"]
+  # CloudNativePG - PostgreSQL operator
+  - apiGroups:
+      - postgresql.cnpg.io
+    resources:
+      - clusters
+      - backups
+      - scheduledbackups
+      - poolers
+    verbs: ["get", "list", "watch"]
+  # Sealed Secrets - Encrypted secrets (safe to read, already encrypted)
+  - apiGroups:
+      - bitnami.com
+    resources:
+      - sealedsecrets
+    verbs: ["get", "list", "watch"]
+  # Storage - Storage classes and capacity
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - storageclasses
+      - csistoragecapacities
+    verbs: ["get", "list", "watch"]
+  # Policy - Pod disruption budgets
+  - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets
+    verbs: ["get", "list", "watch"]
+  # RBAC - Cluster-wide visibility for roles and bindings
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
     verbs: ["get", "list", "watch"]
