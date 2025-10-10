@@ -5,6 +5,7 @@ namespace: steady-prod
 
 resources:
 - ../../base
+- backup-s3-credentials-sealed.yaml
 
 patches:
 - patch: |-

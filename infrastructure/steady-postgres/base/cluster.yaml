@@ -16,6 +16,14 @@ spec:
     size: 20Gi
     storageClass: single-replica
 
+  managed:
+    roles:
+    - name: litellm_user
+      ensure: present
+      login: true
+      createdb: false
+      createrole: false
+
   backup:
     retentionPolicy: "30d"
     barmanObjectStore:
