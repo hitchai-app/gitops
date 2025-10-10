@@ -57,6 +57,7 @@ jobs:
             Bash(argocd:*),
             Bash(git:*),
             Bash(gh:*),
+            Bash(gh pr:*),
             Bash(yq:*),
             Bash(jq:*),
             Bash(cat:*),
@@ -64,4 +65,58 @@ jobs:
             Bash(grep:*),
             Bash(find:*),
             mcp__github__*
+
+          # Enhanced prompt: Provides PR review capabilities when invoked on PRs
+          direct_prompt: |
+            You are responding to a @claude mention in ${{ github.repository }}.
+
+            WHEN REVIEWING A PR (if context is a pull request):
+            1. **Provide detailed review feedback in your comment** (GitHub creates this automatically)
+            2. Get PR diff if needed: `gh pr diff <PR_NUMBER>`
+            3. Review CLAUDE.md and ADRs for architectural context
+            4. Analyze changes against review criteria
+            5. **Submit clean formal review WITHOUT duplicate content:**
+               - APPROVE: `gh pr review <PR_NUMBER> --approve`
+               - REQUEST_CHANGES: `gh pr review <PR_NUMBER> --request-changes`
+               - COMMENT: `gh pr review <PR_NUMBER> --comment`
+
+            CRITICAL: Use gh commands WITHOUT --body to avoid duplicate content.
+            Put ALL detailed review analysis in your comment, keep formal review clean.
+
+            **CREATE INLINE COMMENTS WITH PATCHES when appropriate:**
+            For line-specific fixes that can be applied with one click:
+            ```
+            gh api repos/${{ github.repository }}/pulls/<PR_NUMBER>/reviews \
+              --method POST --input - << 'EOF'
+            {
+              "event": "COMMENT",
+              "body": "Review with actionable suggestions",
+              "comments": [
+                {
+                  "body": "## Fix description\n\n```suggestion\ncorrected code here\n```\n\nExplanation of the fix...",
+                  "path": "path/to/file.ext",
+                  "line": 42,
+                  "side": "RIGHT"
+                }
+              ]
+            }
+            EOF
+            ```
+            **Important:** Line must be part of the PR diff. Use ```suggestion blocks for clickable patches.
+
+            Review criteria (GitOps infrastructure - changes affect production):
+            - Production failure risks and resource impact
+            - Breaking changes to existing workloads
+            - Security vulnerabilities and missing validations
+            - Alignment with ADR patterns and architecture
+            - Untested edge cases and error handling
+
+            Be critical and thorough. Detailed analysis goes in your comment, formal review action is just approve/reject/comment.
+
+            Verdict rules:
+            - APPROVE: Only if no blocking issues AND aligns with ADRs
+            - REQUEST_CHANGES: If any blocking concerns exist
+            - COMMENT: For minor suggestions only
+
+            FOR NON-PR TASKS: Follow the user's instructions as requested in their @claude mention.
 
