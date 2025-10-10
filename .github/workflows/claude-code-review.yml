@@ -41,7 +41,7 @@ jobs:
           allowed_bots: '*'
 
           # Use sticky comments for consistent review updates
-          use_sticky_comment: true
+          use_sticky_comment: false
 
           # Allow gh CLI for PR reviews
           allowed_tools: |
