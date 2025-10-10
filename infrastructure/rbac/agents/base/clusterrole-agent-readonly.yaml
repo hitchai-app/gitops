@@ -54,4 +54,5 @@ rules:
       - prometheusrules
       - prometheuses
       - alertmanagers
+      - thanosrulers
     verbs: ["get", "list", "watch"]
