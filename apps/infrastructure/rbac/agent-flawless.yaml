@@ -13,7 +13,7 @@ spec:
     path: infrastructure/rbac/agents/accounts/agent-flawless
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: rbac-agents
   syncPolicy:
     automated:
       prune: true

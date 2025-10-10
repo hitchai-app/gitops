@@ -1,17 +1,18 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: rbac-agents
+  name: rbac
   namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/hitchai-app/gitops
-    path: infrastructure/rbac/agents
+    repoURL: https://github.com/hitchai-app/gitops.git
     targetRevision: master
+    path: infrastructure/rbac/agents/base
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
   syncPolicy:
     automated:
       prune: true

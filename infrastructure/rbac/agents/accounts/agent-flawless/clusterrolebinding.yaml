@@ -2,14 +2,10 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: agent-readonly-flawless
-  labels:
-    app.kubernetes.io/name: agent-flawless
-    app.kubernetes.io/component: rbac
-    app.kubernetes.io/managed-by: argocd
 subjects:
 - kind: ServiceAccount
   name: agent-flawless
-  namespace: kube-system
+  namespace: rbac-agents
 roleRef:
   kind: ClusterRole
   name: agent-readonly
