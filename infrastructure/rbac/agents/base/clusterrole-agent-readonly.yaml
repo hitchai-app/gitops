@@ -11,6 +11,7 @@ rules:
       - services
       - endpoints
       - persistentvolumeclaims
+      - persistentvolumes
       - configmaps
       - events
       - namespaces
@@ -45,6 +46,7 @@ rules:
       - "networking.k8s.io"
     resources:
       - ingresses
+      - networkpolicies
     verbs: ["get", "list", "watch"]
   - apiGroups:
       - monitoring.coreos.com
@@ -114,4 +116,13 @@ rules:
       - policy
     resources:
       - poddisruptionbudgets
+    verbs: ["get", "list", "watch"]
+  # RBAC - Cluster-wide visibility for roles and bindings
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
     verbs: ["get", "list", "watch"]
