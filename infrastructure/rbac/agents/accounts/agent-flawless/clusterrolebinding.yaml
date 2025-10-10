@@ -1,11 +1,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: agent-readonly
+  name: agent-readonly-flawless
 subjects:
-  - kind: Group
-    name: agent-readers
-    apiGroup: rbac.authorization.k8s.io
+- kind: ServiceAccount
+  name: agent-flawless
+  namespace: rbac-agents
 roleRef:
   kind: ClusterRole
   name: agent-readonly

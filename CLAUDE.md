@@ -100,6 +100,30 @@ See individual ADRs for infrastructure and workload details.
 3. Submit PR for review
 4. Merge to master → ArgoCD auto-syncs to cluster
 
+## Best Practices
+
+### Kubernetes Manifests
+
+**Labels**: Do NOT add labels manually to Kubernetes resources. ArgoCD automatically adds tracking labels to all resources it manages. Manual labels are redundant and create maintenance overhead.
+
+```yaml
+# ❌ Don't do this
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/name: my-app
+
+# ✅ Do this instead - minimal, let ArgoCD handle tracking
+metadata:
+  name: my-resource
+```
+
+ArgoCD automatically adds:
+- `app.kubernetes.io/instance: <app-name>`
+- `argocd.argoproj.io/instance: <namespace>_<app-name>`
+
+These are sufficient for resource tracking and querying.
+
 ## Disaster Recovery
 
 - **Storage**: Longhorn S3 backups (@adr/0002-longhorn-storage-from-day-one.md)
