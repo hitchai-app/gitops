@@ -7,3 +7,4 @@ namePrefix: steady-stage-
 
 resources:
 - ../../base
+- centrifugo-secrets-sealed.yaml

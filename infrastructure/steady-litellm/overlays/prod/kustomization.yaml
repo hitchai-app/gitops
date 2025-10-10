@@ -8,6 +8,7 @@ namePrefix: steady-prod-
 resources:
 - ../../base
 - ai-api-keys-sealed.yaml
+- litellm-secrets-sealed.yaml
 
 patches:
 - patch: |-
