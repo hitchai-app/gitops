@@ -41,29 +41,7 @@ jobs:
           allowed_bots: '*'
 
           # Use sticky comments for consistent review updates
-          use_sticky_comment: false
-
-          # Allow gh CLI for PR reviews  
-          allowed_tools: |
-            Bash(gh pr:*)
-            
-          # IMPROVED PROMPT: Add inline comment support + fix duplicates
-          direct_prompt: |
-            REVIEW PROCESS:
-            1. **Provide detailed review feedback in THIS comment** (action creates this automatically)
-            2. Get PR diff and analyze changes
-            3. **Submit clean formal review without duplicate content:**
-               - APPROVE: `gh pr review --approve` (no --body to avoid duplicates)
-               - REQUEST_CHANGES: `gh pr review --request-changes`
-               - COMMENT: `gh pr review --comment`
-            
-            **CREATE INLINE COMMENTS WITH PATCHES:**
-            Use GitHub API for actionable suggestions:
-            ```
-            gh api repos/OWNER/REPO/pulls/PR/reviews --method POST --input review.json
-            ```
-            
-            Use ```suggestion blocks for one-click fixes.
+          use_sticky_comment: true
 
           # Allow gh CLI for PR reviews
           allowed_tools: |
@@ -73,15 +51,20 @@ jobs:
           direct_prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
-            CRITICAL: You MUST submit a formal GitHub PR review. Follow these steps:
+            REVIEW PROCESS:
+            1. **Provide detailed review feedback in THIS comment** (action creates this automatically)
+            2. Get PR diff: `gh pr diff ${{ github.event.pull_request.number }}`
+            3. Review CLAUDE.md and ADRs for architectural context
+            4. Analyze changes against review criteria
+            5. **Submit clean formal review WITHOUT duplicate content:**
+               - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve` (no --body to avoid duplicates)
+               - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes`
+               - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment`
 
-            1. Get PR diff: `gh pr diff ${{ github.event.pull_request.number }}`
-            2. Review CLAUDE.md and ADRs for architectural context
-            3. Analyze changes against review criteria
-            4. Submit formal review using gh CLI:
-               - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve --body "Review summary"`
-               - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Issues found"`
-               - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment --body "Minor suggestions"`
+            **USE SUGGESTION BLOCKS** for actionable fixes (one-click apply):
+            ```suggestion
+            fixed code here
+            ```
 
             Review criteria (GitOps infrastructure - changes affect production):
             - What will fail in production
@@ -99,5 +82,5 @@ jobs:
             - REQUEST_CHANGES: If any blocking concerns exist
             - COMMENT: For minor suggestions only
 
-            DO NOT just post a comment - you MUST use `gh pr review` to submit a formal review with APPROVE, REQUEST_CHANGES, or COMMENT.
+            CRITICAL: Submit formal review with `gh pr review` - do NOT just post a comment!
 
