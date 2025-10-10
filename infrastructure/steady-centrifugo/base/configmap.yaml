@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: centrifugo-config
+data:
+  config.json: |
+    {
+      "health": {
+        "enabled": true
+      },
+      "admin": {
+        "enabled": true,
+        "password": "change-in-production",
+        "secret": "change-in-production-secret"
+      },
+      "http_api": {
+        "key": "change-in-production-api-key"
+      },
+      "log": {
+        "level": "info"
+      }
+    }

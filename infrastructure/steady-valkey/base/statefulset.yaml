@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: valkey
+spec:
+  selector:
+    app: valkey
+  ports:
+  - port: 6379
+    targetPort: 6379
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: valkey
+spec:
+  serviceName: valkey
+  replicas: 1
+  selector:
+    matchLabels:
+      app: valkey
+  template:
+    metadata:
+      labels:
+        app: valkey
+    spec:
+      containers:
+      - name: valkey
+        image: valkey/valkey:8.0-alpine
+        ports:
+        - containerPort: 6379
+        command:
+        - sh
+        - -c
+        - |
+          CGROUP_LIMIT=$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo "max")
+          if [ "$CGROUP_LIMIT" = "max" ]; then
+            MAX_MEMORY="256mb"
+          else
+            MAX_MEMORY=$(awk "BEGIN {printf \"%.0fmb\", $CGROUP_LIMIT * 0.8 / 1024 / 1024}")
+          fi
+          valkey-server \
+            --appendonly yes \
+            --appendfsync everysec \
+            --maxmemory "$MAX_MEMORY" \
+            --maxmemory-policy noeviction
+        volumeMounts:
+        - name: valkey-storage
+          mountPath: /data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          exec:
+            command:
+            - valkey-cli
+            - ping
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - valkey-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: valkey-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      storageClassName: single-replica
+      resources:
+        requests:
+          storage: 5Gi
