@@ -18,3 +18,13 @@ patches:
   target:
     kind: Database
     name: litellm-db
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/env/2/value
+      value: steady-stage-valkey
+    - op: replace
+      path: /spec/template/spec/containers/0/env/4/value
+      value: postgresql://litellm_user@steady-stage-postgres-rw:5432/litellm_db
+  target:
+    kind: Deployment
+    name: litellm
