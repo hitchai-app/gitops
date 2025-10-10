@@ -81,3 +81,12 @@ rules:
       - clusterroles
       - clusterrolebindings
     verbs: ["get", "list", "watch"]
+  # CloudNativePG - full control for PostgreSQL testing
+  - apiGroups:
+      - "postgresql.cnpg.io"
+    resources:
+      - clusters
+      - backups
+      - scheduledbackups
+      - poolers
+    verbs: ["*"]

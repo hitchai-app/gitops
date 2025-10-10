@@ -98,6 +98,15 @@ rules:
       - backingimages
       - settings
     verbs: ["get", "list", "watch"]
+  # CloudNativePG - PostgreSQL operator
+  - apiGroups:
+      - postgresql.cnpg.io
+    resources:
+      - clusters
+      - backups
+      - scheduledbackups
+      - poolers
+    verbs: ["get", "list", "watch"]
   # Sealed Secrets - Encrypted secrets (safe to read, already encrypted)
   - apiGroups:
       - bitnami.com
