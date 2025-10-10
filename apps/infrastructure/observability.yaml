@@ -5,10 +5,23 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/hitchai-app/gitops
-    path: infrastructure/observability/kube-prometheus-stack
-    targetRevision: master
+  sources:
+    # Helm chart from prometheus-community repository
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 58.4.0
+      helm:
+        releaseName: kube-prometheus-stack
+        valueFiles:
+          - $values/infrastructure/observability/kube-prometheus-stack/values.yaml
+    # Git repository containing values file
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      ref: values
+    # Additional resources (sealed secrets)
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/observability/kube-prometheus-stack/resources
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -17,4 +30,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
