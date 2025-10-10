@@ -3,28 +3,7 @@ kind: Kustomization
 
 namespace: steady-prod
 
-namePrefix: steady-prod-
-
 resources:
 - ../../base
 - ai-api-keys-sealed.yaml
 - litellm-secrets-sealed.yaml
-
-patches:
-- patch: |-
-    - op: replace
-      path: /spec/cluster/name
-      value: steady-prod-postgres
-  target:
-    kind: Database
-    name: litellm-db
-- patch: |-
-    - op: replace
-      path: /spec/template/spec/containers/0/env/2/value
-      value: steady-prod-valkey
-    - op: replace
-      path: /spec/template/spec/containers/0/env/4/value
-      value: postgresql://litellm_user@steady-prod-postgres-rw:5432/litellm_db
-  target:
-    kind: Deployment
-    name: litellm

@@ -46,7 +46,7 @@ spec:
         - name: LITELLM_MODE
           value: PRODUCTION
         - name: DATABASE_URL
-          value: postgresql://litellm_user@postgres:5432/litellm_db
+          value: postgresql://litellm_user@postgres-rw:5432/litellm_db
         volumeMounts:
         - name: config
           mountPath: /app/config.yaml

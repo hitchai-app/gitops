@@ -3,8 +3,6 @@ kind: Kustomization
 
 namespace: steady-prod
 
-namePrefix: steady-prod-
-
 resources:
 - ../../base
 - centrifugo-secrets-sealed.yaml
