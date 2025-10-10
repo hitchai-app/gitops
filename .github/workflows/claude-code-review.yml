@@ -43,6 +43,28 @@ jobs:
           # Use sticky comments for consistent review updates
           use_sticky_comment: false
 
+          # Allow gh CLI for PR reviews  
+          allowed_tools: |
+            Bash(gh pr:*)
+            
+          # IMPROVED PROMPT: Add inline comment support + fix duplicates
+          direct_prompt: |
+            REVIEW PROCESS:
+            1. **Provide detailed review feedback in THIS comment** (action creates this automatically)
+            2. Get PR diff and analyze changes
+            3. **Submit clean formal review without duplicate content:**
+               - APPROVE: `gh pr review --approve` (no --body to avoid duplicates)
+               - REQUEST_CHANGES: `gh pr review --request-changes`
+               - COMMENT: `gh pr review --comment`
+            
+            **CREATE INLINE COMMENTS WITH PATCHES:**
+            Use GitHub API for actionable suggestions:
+            ```
+            gh api repos/OWNER/REPO/pulls/PR/reviews --method POST --input review.json
+            ```
+            
+            Use ```suggestion blocks for one-click fixes.
+
           # Allow gh CLI for PR reviews
           allowed_tools: |
             Bash(gh pr:*)
