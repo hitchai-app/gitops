@@ -15,6 +15,7 @@ rules:
       - events
       - namespaces
       - nodes
+      - replicationcontrollers
     verbs: ["get", "list", "watch"]
   - apiGroups:
       - "apps"
@@ -51,4 +52,6 @@ rules:
       - servicemonitors
       - podmonitors
       - prometheusrules
+      - prometheuses
+      - alertmanagers
     verbs: ["get", "list", "watch"]
