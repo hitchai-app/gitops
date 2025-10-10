@@ -2,3 +2,8 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: agent-sandbox
+  labels:
+    purpose: agent-testing
+    managed-by: gitops
+  annotations:
+    description: "Isolated namespace for AI agent testing and experimentation"

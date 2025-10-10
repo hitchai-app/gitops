@@ -14,6 +14,9 @@ rules:
       - persistentvolumeclaims
       - configmaps
       - events
+      - serviceaccounts
+      - limitranges
+      - resourcequotas
     verbs: ["*"]
   - apiGroups:
       - "apps"
@@ -39,4 +42,10 @@ rules:
     resources:
       - ingresses
       - networkpolicies
+    verbs: ["*"]
+  - apiGroups:
+      - "rbac.authorization.k8s.io"
+    resources:
+      - roles
+      - rolebindings
     verbs: ["*"]
