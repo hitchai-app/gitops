@@ -7,6 +7,7 @@ namePrefix: steady-prod-
 
 resources:
 - ../../base
+- ai-api-keys-sealed.yaml
 
 patches:
 - patch: |-
