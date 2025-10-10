@@ -48,4 +48,4 @@ rules:
     resources:
       - roles
       - rolebindings
-    verbs: ["*"]
+    verbs: ["get", "list", "watch"]
