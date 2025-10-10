@@ -1,0 +1,15 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  creationTimestamp: null
+  name: ai-api-keys
+  namespace: steady-prod
+spec:
+  encryptedData:
+    openai: AgBmfV54pMqahHY/jLi/9bnlJ3P1p0R5nmLtacpDqoxWhY7IHCWU3QvKEn2TyUXf2fpsI1UEf2g/CKWgoHxWiPfTYGQw9y0v5njB+ay5goQQFyQO+m049nfbYTkU+rPX6oIpTja8aXoENkMDYsqcJfPo2DdUXjW+Kz/Yx/pVO7ZBGiaAk0dRQ4BadZtgag08WIU/4E8fRUZUtokNsvhjyz1iTmf2eL1zc48Z+CYvYAs59HU5wl+m1Wn5A+4Om3YiEqPR7UzgNRKtj0KOFOsamQHRR2cINooGGI4mKKk944lc2cPl4PnJpndRXjw8h4ZLfu+QxQa89vzs7YAXc19drjannpBzWCnqVyTCMbGhkHGBFPawpZLRMysYK0X6If3Ic2ROh/4rZtTYjS7CkXu+BufgWEzreR/vVJl1d5Yc4tIAs5neLOllTz+zPwn7Q758FZ9v5Hfwgrb8ckeY0IQMHuMOR4oUxuKiD+aX0a1lqFrD5IDkeSZX706C1dnKfYibbpwfrZk5vQoQj6RjNz7SyEg66HVZnlDVphxMrea1hmCDYwL4IEBEZtOWNwitIoCyuSVGT9a76qWyTEcYXj/jrq1RpI7CeDX74CeDjbvVsWyJ2Aq08bB+qHmNfvKogbIhRDNmNRxuW2op77/+tYNRPjt3Zlviscc9GRDejU6V3Jck36Ebm5NkBiaMTfdHYdhvLMDkfpH2mw7XT/Y0XZet07Nw+DL9FS4PnNABVXwo6MD8wDi1muO+8o3eNVxPF6hKYeb5cA4gclwOaGFzYsbiolTfOEi3Pt5ksvLKQmb90MkZr82Omqu0iDWFajcqHSBUaKjcRnoPNXV5u9iZ5RdJi7G1//RA9vQuMy7foNbfhanKtTYADS23yD5obNdaEm+EncFaIDrdkj7NYnTbkI1mO76E8PVoug==
+  template:
+    metadata:
+      creationTimestamp: null
+      name: ai-api-keys
+      namespace: steady-prod

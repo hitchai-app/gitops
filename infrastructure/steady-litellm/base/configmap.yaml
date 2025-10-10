@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: litellm-config
+data:
+  config.yaml: |
+    model_list:
+      # GPT-5 Family (August 2025 - Flagship)
+      - model_name: gpt-5
+        litellm_params:
+          model: openai/gpt-5
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-5-mini
+        litellm_params:
+          model: openai/gpt-5-mini
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-5-nano
+        litellm_params:
+          model: openai/gpt-5-nano
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-5-thinking
+        litellm_params:
+          model: openai/gpt-5-thinking
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-5-codex
+        litellm_params:
+          model: openai/gpt-5-codex
+          api_key: os.environ/OPENAI_API_KEY
+
+      # GPT-4.1 Family (April 2025)
+      - model_name: gpt-4.1
+        litellm_params:
+          model: openai/gpt-4.1
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-4.1-nano
+        litellm_params:
+          model: openai/gpt-4.1-nano
+          api_key: os.environ/OPENAI_API_KEY
+
+      # Reasoning Models (o-series)
+      - model_name: o3
+        litellm_params:
+          model: openai/o3
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: o4-mini
+        litellm_params:
+          model: openai/o4-mini
+          api_key: os.environ/OPENAI_API_KEY
+
+      # Legacy Models (maintained for compatibility)
+      - model_name: gpt-4o
+        litellm_params:
+          model: openai/gpt-4o
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-4
+        litellm_params:
+          model: openai/gpt-4
+          api_key: os.environ/OPENAI_API_KEY
+      - model_name: gpt-3.5-turbo
+        litellm_params:
+          model: openai/gpt-3.5-turbo
+          api_key: os.environ/OPENAI_API_KEY
+
+    litellm_settings:
+      drop_params: true
+      set_verbose: false
+      json_logs: true
+
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+      cache: true
+      cache_params:
+        type: redis
+        host: valkey
+        port: 6379
