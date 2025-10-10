@@ -4,16 +4,29 @@
 
 Before deploying Steady infrastructure, create the following secrets:
 
-### 1. Centrifugo Secrets (Auto-generated)
+### 1. Centrifugo Secrets
 
-Run the provided scripts to generate random credentials:
+Generate random credentials and create secrets directly:
 
 ```bash
 # Stage
-bash infrastructure/steady-centrifugo/overlays/stage/centrifugo-secrets.sh
+kubectl create secret generic centrifugo-secrets \
+  --namespace=steady-stage \
+  --from-literal=admin-password=$(openssl rand -base64 32) \
+  --from-literal=admin-secret=$(openssl rand -base64 32) \
+  --from-literal=api-key=$(openssl rand -base64 32)
 
 # Prod
-bash infrastructure/steady-centrifugo/overlays/prod/centrifugo-secrets.sh
+kubectl create secret generic centrifugo-secrets \
+  --namespace=steady-prod \
+  --from-literal=admin-password=$(openssl rand -base64 32) \
+  --from-literal=admin-secret=$(openssl rand -base64 32) \
+  --from-literal=api-key=$(openssl rand -base64 32)
+```
+
+To retrieve credentials later:
+```bash
+kubectl get secret centrifugo-secrets -n steady-stage -o jsonpath='{.data.admin-password}' | base64 -d
 ```
 
 ### 2. LiteLLM Master Key (SealedSecret)
@@ -26,17 +39,23 @@ kubectl create secret generic litellm-secrets \
   --namespace=steady-stage \
   --from-literal=master-key=$(openssl rand -base64 32) \
   --dry-run=client -o yaml | \
-  kubeseal --format=yaml > infrastructure/steady-litellm/overlays/stage/litellm-secrets-sealed.yaml
+  kubeseal \
+    --controller-name=sealed-secrets-controller \
+    --controller-namespace=sealed-secrets \
+    --format=yaml > infrastructure/steady-litellm/overlays/stage/litellm-secrets-sealed.yaml
 
 # Prod
 kubectl create secret generic litellm-secrets \
   --namespace=steady-prod \
   --from-literal=master-key=$(openssl rand -base64 32) \
   --dry-run=client -o yaml | \
-  kubeseal --format=yaml > infrastructure/steady-litellm/overlays/prod/litellm-secrets-sealed.yaml
+  kubeseal \
+    --controller-name=sealed-secrets-controller \
+    --controller-namespace=sealed-secrets \
+    --format=yaml > infrastructure/steady-litellm/overlays/prod/litellm-secrets-sealed.yaml
 ```
 
-Add to kustomization:
+Then add to kustomization:
 ```yaml
 # infrastructure/steady-litellm/overlays/{stage,prod}/kustomization.yaml
 resources:
@@ -46,7 +65,7 @@ resources:
 
 ### 3. OpenAI API Keys (SealedSecret)
 
-Create separate keys for stage and prod in OpenAI dashboard, then seal:
+Create separate API keys for stage and prod in OpenAI dashboard, then seal:
 
 ```bash
 # Stage
@@ -54,17 +73,23 @@ kubectl create secret generic ai-api-keys \
   --namespace=steady-stage \
   --from-literal=openai=sk-proj-YOUR-STAGE-KEY \
   --dry-run=client -o yaml | \
-  kubeseal --format=yaml > infrastructure/steady-litellm/overlays/stage/ai-api-keys-sealed.yaml
+  kubeseal \
+    --controller-name=sealed-secrets-controller \
+    --controller-namespace=sealed-secrets \
+    --format=yaml > infrastructure/steady-litellm/overlays/stage/ai-api-keys-sealed.yaml
 
 # Prod
 kubectl create secret generic ai-api-keys \
   --namespace=steady-prod \
   --from-literal=openai=sk-proj-YOUR-PROD-KEY \
   --dry-run=client -o yaml | \
-  kubeseal --format=yaml > infrastructure/steady-litellm/overlays/prod/ai-api-keys-sealed.yaml
+  kubeseal \
+    --controller-name=sealed-secrets-controller \
+    --controller-namespace=sealed-secrets \
+    --format=yaml > infrastructure/steady-litellm/overlays/prod/ai-api-keys-sealed.yaml
 ```
 
-Add to kustomization:
+Then add to kustomization:
 ```yaml
 # infrastructure/steady-litellm/overlays/{stage,prod}/kustomization.yaml
 resources:
