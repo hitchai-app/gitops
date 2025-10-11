@@ -14,7 +14,7 @@ Current constraint: Single Hetzner node (128GB RAM) scaling to multi-node.
 
 Use **GitHub Actions Runner Controller (ARC)** with ephemeral Docker-in-Docker runners managed via ArgoCD.
 
-Initial deployment: Single heavy runner scale set (0-5 runners, Docker-in-Docker enabled)
+Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker enabled)
 
 ## Alternatives Considered
 
@@ -39,7 +39,13 @@ Initial deployment: Single heavy runner scale set (0-5 runners, Docker-in-Docker
 - ✅ Private network access (can reach internal cluster services)
 
 ### Negative
-- ❌ Privileged containers required for Docker-in-Docker (security risk)
+- ❌ **Privileged containers required for Docker-in-Docker** (security risk)
+  - ⚠️ **WARNING**: Docker-in-Docker mode (`containerMode: dind`) requires privileged containers, which have elevated security risks:
+    - Can access host resources
+    - Bypass container isolation
+    - Potential for container escape
+  - **Mitigation**: Ephemeral pods (destroyed after each job) limit exposure window
+  - **Alternative**: Kaniko for privileged-free builds (requires workflow changes)
 - ❌ Resource overhead: 1-4Gi memory + 500m-2 CPU per runner
 - ❌ Cold start: ~30-60s to spin up new runner
 
@@ -53,7 +59,11 @@ Initial deployment: Single heavy runner scale set (0-5 runners, Docker-in-Docker
 
 **Authentication**: GitHub App (sealed secret) - more secure than PAT, fine-grained permissions
 
-**Security**: Docker-in-Docker requires privileged containers. Mitigated by ephemeral pods (destroyed after job). Alternative: Kaniko (no privileged mode, requires workflow changes)
+**Security**:
+- ⚠️ **CRITICAL**: Docker-in-Docker mode requires privileged containers with elevated security risks
+- Privileged containers can access host resources and bypass container isolation
+- **Mitigation**: Ephemeral pods are destroyed after each job, limiting exposure window
+- **Alternative**: Kaniko for privileged-free builds (requires workflow changes, see Future Enhancements)
 
 ## Future Enhancements
 
