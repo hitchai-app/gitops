@@ -104,62 +104,7 @@ See individual ADRs for infrastructure and workload details.
 
 ### ArgoCD Applications with Helm Charts
 
-**Choose the right approach:**
-
-1. **ArgoCD Native Helm** (preferred for standalone charts):
-   ```yaml
-   spec:
-     sources:
-     - repoURL: https://prometheus-community.github.io/helm-charts
-       chart: kube-prometheus-stack
-       targetRevision: 58.4.0
-       helm:
-         releaseName: kube-prometheus-stack
-         valueFiles:
-           - $values/path/to/values.yaml
-   ```
-   - ✅ No `--enable-helm` flag needed
-   - ✅ Cleaner, more straightforward
-   - ✅ ArgoCD handles Helm natively
-   - Use when: Deploying just a Helm chart
-
-2. **Kustomize helmCharts** (when combining with other resources):
-   ```yaml
-   spec:
-     source:
-       path: infrastructure/my-app
-       kustomize:
-         buildOptions: "--enable-helm"  # REQUIRED!
-   ```
-   - ⚠️ **CRITICAL**: Always add `kustomize.buildOptions: "--enable-helm"`
-   - Use when: Combining Helm chart + other resources (sealed secrets, configmaps, etc.)
-   - Why the flag: Helm execution during build is opt-in for security (executes external binaries, downloads charts)
-
-**Common mistake:** Forgetting `--enable-helm` flag → ComparisonError: "must specify --enable-helm"
-
-### ⚠️ CRITICAL: App-of-Apps Pattern + Kustomize helmCharts Issue
-
-**Problem**: When using app-of-apps pattern (parent Application managing child Applications), child Application specs that use `kustomize.buildOptions` **get stripped** during Server-Side Apply.
-
-**Symptom:**
-```yaml
-# Git source (correct):
-spec:
-  source:
-    path: infrastructure/my-app
-    kustomize:
-      buildOptions: "--enable-helm"
-
-# Deployed to cluster (broken):
-spec:
-  source:
-    path: infrastructure/my-app
-    # kustomize section MISSING!
-```
-
-**Root Cause**: Kubernetes Server-Side Apply prunes fields it doesn't recognize during parent→child Application reconciliation in app-of-apps pattern. The `kustomize` section disappears even though it exists in Git.
-
-**Solution**: Use **ArgoCD native multi-source Helm** instead of kustomize helmCharts:
+**We use ArgoCD's native multi-source Helm** (not kustomize helmCharts):
 
 ```yaml
 spec:
@@ -177,23 +122,25 @@ spec:
     - repoURL: https://github.com/org/gitops.git
       targetRevision: HEAD
       ref: values
-    # 3. (Optional) Git repo with additional manifests
+    # 3. (Optional) Git repo with additional manifests (sealed secrets, etc.)
     - repoURL: https://github.com/org/gitops.git
       targetRevision: HEAD
-      path: infrastructure/my-app/resources
+      path: infrastructure/my-app
 ```
 
-**Benefits:**
-- ✅ No `--enable-helm` flag needed (not using kustomize)
-- ✅ Specs stay intact in app-of-apps pattern
+**Why this approach:**
+- ✅ Works perfectly with app-of-apps pattern (no field stripping)
+- ✅ Simpler - no kustomization files needed
 - ✅ ArgoCD handles Helm natively
-- ✅ Same pattern used by `observability.yaml`
+- ✅ Can combine Helm charts with plain manifests (sealed secrets, configmaps)
+- ✅ No `--enable-helm` flags or middleware complexity
 
-**When to use:**
-- Child Applications in app-of-apps pattern that need Helm charts
-- Any Application where kustomize buildOptions gets stripped
+**Why NOT kustomize helmCharts:**
+- ❌ In app-of-apps pattern, `kustomize.buildOptions` field gets stripped during Server-Side Apply
+- ❌ Requires kustomization.yaml files that add unnecessary complexity
+- ❌ Needs `--enable-helm` flag that may not survive parent→child Application sync
 
-**Examples:** See `apps/infrastructure/arc-controller.yaml`, `apps/infrastructure/observability.yaml`
+**Examples:** `apps/infrastructure/arc-controller.yaml`, `apps/infrastructure/arc-runners.yaml`, `apps/infrastructure/observability.yaml`
 
 ### Kubernetes Manifests
 
