@@ -10,8 +10,8 @@ image:
 
 # Logging configuration
 flags:
-  logLevel: "debug"
-  logFormat: "text"
+  logLevel: "info"
+  logFormat: "json"
   updateStrategy: "immediate"
   runnerMaxConcurrentReconciles: 2
 
