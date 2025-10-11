@@ -137,6 +137,64 @@ See individual ADRs for infrastructure and workload details.
 
 **Common mistake:** Forgetting `--enable-helm` flag → ComparisonError: "must specify --enable-helm"
 
+### ⚠️ CRITICAL: App-of-Apps Pattern + Kustomize helmCharts Issue
+
+**Problem**: When using app-of-apps pattern (parent Application managing child Applications), child Application specs that use `kustomize.buildOptions` **get stripped** during Server-Side Apply.
+
+**Symptom:**
+```yaml
+# Git source (correct):
+spec:
+  source:
+    path: infrastructure/my-app
+    kustomize:
+      buildOptions: "--enable-helm"
+
+# Deployed to cluster (broken):
+spec:
+  source:
+    path: infrastructure/my-app
+    # kustomize section MISSING!
+```
+
+**Root Cause**: Kubernetes Server-Side Apply prunes fields it doesn't recognize during parent→child Application reconciliation in app-of-apps pattern. The `kustomize` section disappears even though it exists in Git.
+
+**Solution**: Use **ArgoCD native multi-source Helm** instead of kustomize helmCharts:
+
+```yaml
+spec:
+  project: default
+  sources:
+    # 1. Helm chart from OCI/HTTP registry
+    - repoURL: oci://ghcr.io/org/charts
+      chart: my-chart
+      targetRevision: 1.0.0
+      helm:
+        releaseName: my-release
+        valueFiles:
+          - $values/infrastructure/my-app/values.yaml
+    # 2. Git repo with values file
+    - repoURL: https://github.com/org/gitops.git
+      targetRevision: HEAD
+      ref: values
+    # 3. (Optional) Git repo with additional manifests
+    - repoURL: https://github.com/org/gitops.git
+      targetRevision: HEAD
+      path: infrastructure/my-app/resources
+```
+
+**Benefits:**
+- ✅ No `--enable-helm` flag needed (not using kustomize)
+- ✅ Specs stay intact in app-of-apps pattern
+- ✅ ArgoCD handles Helm natively
+- ✅ Same pattern used by `observability.yaml`
+
+**When to use:**
+- Child Applications in app-of-apps pattern that need Helm charts
+- Any Application where kustomize buildOptions gets stripped
+
+**Examples:** See `apps/infrastructure/arc-controller.yaml`, `apps/infrastructure/observability.yaml`
+
 ### Kubernetes Manifests
 
 **Labels**: Do NOT add labels manually to Kubernetes resources. ArgoCD automatically adds tracking labels to all resources it manages. Manual labels are redundant and create maintenance overhead.
