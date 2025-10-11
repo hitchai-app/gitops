@@ -1,21 +1,13 @@
-# GitHub Actions Runner Scale Set for hitchai-app organization
+# GitHub Actions Runner Scale Set - hitchai-app
 
-# GitHub Configuration
+# Required: GitHub configuration
 githubConfigUrl: "https://github.com/hitchai-app"
-
-# GitHub App authentication
-# Secret must contain: github_app_id, github_app_installation_id, github_app_private_key
-githubConfigSecret: {}
 existingSecret: "hitchai-app-github-app"
 
-# Runner scaling
-minRunners: 0
+# Scaling (default: minRunners=0, maxRunners=unlimited)
 maxRunners: 4
 
-# Runner group
-runnerGroup: "Default"
-
-# Container mode - Docker-in-Docker
+# Container mode (required for Docker-in-Docker)
 containerMode:
   type: "dind"
 
@@ -24,7 +16,6 @@ template:
   spec:
     containers:
     - name: runner
-      image: ghcr.io/actions/actions-runner:latest
       resources:
         requests:
           cpu: "500m"
@@ -41,21 +32,3 @@ template:
       emptyDir:
         medium: Memory
         sizeLimit: 2Gi
-
-# Listener configuration
-listenerTemplate:
-  spec:
-    containers:
-    - name: listener
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "128Mi"
-        limits:
-          cpu: "500m"
-          memory: "512Mi"
-
-# Controller service account
-controllerServiceAccount:
-  name: arc-gha-rs-controller
-  namespace: arc-systems
