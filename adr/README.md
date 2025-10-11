@@ -81,6 +81,17 @@ ADRs are numbered sequentially with zero-padding:
 | [0001](0001-gitops-with-argocd.md) | GitOps with ArgoCD | Accepted | 2025-10-05 |
 | [0002](0002-longhorn-storage-from-day-one.md) | Longhorn Storage from Day One | Accepted | 2025-10-05 |
 | [0003](0003-operators-over-statefulsets.md) | Operators over StatefulSets | Accepted | 2025-10-05 |
+| [0004](0004-cloudnativepg-for-postgresql.md) | CloudNativePG for PostgreSQL | Accepted | 2025-10-05 |
+| [0005](0005-statefulset-for-valkey.md) | Valkey StatefulSet | Accepted | 2025-10-07 |
+| [0006](0006-minio-operator-single-drive-bootstrap.md) | MinIO Operator Single-Drive Bootstrap | Accepted | 2025-10-05 |
+| [0007](0007-longhorn-storageclass-strategy.md) | Longhorn StorageClass Strategy | Accepted | 2025-10-05 |
+| [0008](0008-cert-manager-for-tls.md) | cert-manager for TLS Certificates | Accepted | 2025-10-05 |
+| [0009](0009-secrets-management-strategy.md) | Secrets Management Strategy | Accepted | 2025-10-05 |
+| [0010](0010-gitops-repository-structure.md) | GitOps Repository Structure | Accepted | 2025-10-05 |
+| [0011](0011-traefik-ingress-controller.md) | Traefik Ingress Controller | Accepted | 2025-10-06 |
+| [0012](0012-metallb-load-balancer.md) | MetalLB for LoadBalancer | Accepted | 2025-10-06 |
+| [0013](0013-observability-foundation.md) | Observability Foundation | Accepted | 2025-10-08 |
+| [0014](0014-actions-runner-controller-for-github-actions.md) | Actions Runner Controller for GitHub Actions | Accepted | 2025-10-11 |
 
 ## When to Create an ADR
 
