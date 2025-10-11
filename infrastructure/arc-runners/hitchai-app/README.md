@@ -1,163 +1,64 @@
 # hitchai-app Runner Scale Set
 
-GitHub Actions self-hosted runners for the `hitchai-app` organization.
+Heavy runners with Docker-in-Docker for containerized builds.
 
 ## Overview
 
-This runner scale set provides ephemeral GitHub Actions runners that:
-- Scale automatically based on workflow demand (0-5 runners)
-- Use Docker-in-Docker for containerized jobs
-- Run in the `arc-runners` namespace
-- Are managed by the ARC controller in `arc-systems`
+- **Scale**: 0-5 runners (auto-scale based on GitHub Actions queue)
+- **Container mode**: Docker-in-Docker (privileged)
+- **Resources**: 500m-2 CPU, 1-4Gi memory per runner
+- **Authentication**: GitHub App (sealed secret)
+- **Workflow usage**: `runs-on: hitchai-app-runners`
 
-## Setup
+## Prerequisites
 
-### Prerequisites
+1. ARC Controller installed (`infrastructure/arc-controller/`)
+2. Sealed Secrets controller running
+3. GitHub App configured with Actions (read/write), Metadata (read) permissions
 
-1. **ARC Controller** must be installed first (see `infrastructure/arc-controller/`)
-2. **Sealed Secrets** controller must be running
-3. **GitHub PAT** with appropriate permissions
+Setup instructions: See `github-app-sealed.yaml.example`
 
-### GitHub Authentication
-
-This runner scale set uses **GitHub App authentication** (more secure than PAT):
-- ✅ Fine-grained permissions (not tied to user account)
-- ✅ Can be scoped to specific repositories
-- ✅ Better audit trail
-- ✅ Doesn't expire when user leaves org
-
-GitHub App requirements:
-- App installed on `hitchai-app` organization
-- Permissions: Actions (read/write), Metadata (read)
-- App has access to repositories where runners will be used
-
-See [GitHub App authentication docs](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/authenticating-to-the-github-api)
-
-### Create Sealed Secret from Existing Secret
-
-Since you already have the secret (`pre-defined-secret`) in the cluster, just extract and seal it:
-
-```bash
-# 1. Fetch sealed-secrets public cert
-kubeseal --fetch-cert > sealed-secrets-pub.pem
-
-# 2. Extract existing secret and rename it
-kubectl get secret pre-defined-secret -n arc-runners -o yaml | \
-  sed 's/name: pre-defined-secret/name: hitchai-app-github-app/' | \
-  sed '/uid:/d' | sed '/resourceVersion:/d' | sed '/creationTimestamp:/d' \
-  > /tmp/github-app-secret.yaml
-
-# 3. Seal it
-kubeseal --format=yaml --cert=sealed-secrets-pub.pem \
-  < /tmp/github-app-secret.yaml \
-  > github-app-sealed.yaml
-
-# 4. Clean up temporary file
-rm /tmp/github-app-secret.yaml
-
-# 5. Commit sealed secret
-git add github-app-sealed.yaml
-git commit -m "chore(arc): add sealed GitHub App credentials for hitchai-app runners"
-```
-
-## Usage in Workflows
-
-Reference this runner scale set in your GitHub Actions workflows:
+## Workflow Example
 
 ```yaml
-name: Example Workflow
-on: push
-
 jobs:
   build:
-    runs-on: hitchai-app-runners  # ← Use this runner scale set
+    runs-on: hitchai-app-runners
     steps:
       - uses: actions/checkout@v4
-      - run: echo "Running on self-hosted ARC runner!"
+      - run: docker build -t myapp .
 ```
 
-## Configuration
+## Common Operations
 
-Key settings in `values.yaml`:
-- **Min runners**: 0 (scale to zero when idle)
-- **Max runners**: 5
-- **Runner group**: Default
-- **Container mode**: Docker-in-Docker
-- **Resources**: 500m-2 CPU, 1-4Gi memory per runner
-
-## Monitoring
-
-Check runner status:
-
+**Check runner status:**
 ```bash
-# Check runner pods
 kubectl get pods -n arc-runners
-
-# Check listener pod
 kubectl get pods -n arc-systems -l app.kubernetes.io/name=hitchai-app-runners
-
-# Check autoscaling events
-kubectl describe autoscalingrunnerset hitchai-app-runners -n arc-runners
 ```
 
-## Troubleshooting
+**View logs:**
+```bash
+# Listener (polls GitHub queue)
+kubectl logs -n arc-systems -l app.kubernetes.io/name=hitchai-app-runners
 
-### Runners not scaling up
+# Controller
+kubectl logs -n arc-systems deployment/arc-gha-rs-controller
 
-1. Check listener pod logs:
-   ```bash
-   kubectl logs -n arc-systems -l app.kubernetes.io/name=hitchai-app-runners
-   ```
+# Runner (if pod exists)
+kubectl logs -n arc-runners <pod-name> -c runner
+kubectl logs -n arc-runners <pod-name> -c dind
+```
 
-2. Verify GitHub token secret:
-   ```bash
-   kubectl get secret hitchai-app-github-token -n arc-runners
-   ```
+**Adjust scaling:**
+Edit `values.yaml` → commit → ArgoCD syncs automatically
 
-3. Check controller logs:
-   ```bash
-   kubectl logs -n arc-systems deployment/arc-gha-rs-controller
-   ```
-
-### Runner pods failing
-
-1. Check runner pod logs:
-   ```bash
-   kubectl logs -n arc-runners <pod-name> -c runner
-   ```
-
-2. Check Docker-in-Docker container:
-   ```bash
-   kubectl logs -n arc-runners <pod-name> -c dind
-   ```
-
-### Authentication errors
-
-- Verify GitHub PAT has correct scopes
-- Check token hasn't expired
-- Ensure `githubConfigUrl` matches your organization
-
-## Scaling
-
-To adjust runner scaling:
-
-1. Edit `values.yaml`:
-   ```yaml
-   minRunners: 1  # Keep 1 runner warm
-   maxRunners: 10  # Allow up to 10 concurrent runners
-   ```
-
-2. Commit and push - ArgoCD will sync automatically
-
-## Security Notes
-
-- Runners use ephemeral pods (destroyed after each job)
-- Docker-in-Docker requires privileged containers
-- GitHub token stored as sealed secret (encrypted in Git)
-- Consider using GitHub App authentication for better security
+**Troubleshooting:**
+1. Verify secret exists: `kubectl get secret hitchai-app-github-app -n arc-runners`
+2. Check GitHub App has Actions (read/write) permission
+3. Ensure `githubConfigUrl` matches organization URL
 
 ## References
 
 - [ARC Documentation](https://github.com/actions/actions-runner-controller)
-- [GitHub App Authentication](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/authenticating-to-the-github-api)
-- ADR: (to be created)
+- ADR 0014: Actions Runner Controller for GitHub Actions
