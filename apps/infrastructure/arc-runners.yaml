@@ -5,12 +5,23 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/hitchai-app/gitops.git
-    targetRevision: HEAD
-    path: infrastructure/arc-runners
-    kustomize:
-      buildOptions: "--enable-helm"
+  sources:
+    # Helm chart from GitHub OCI registry
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts
+      chart: gha-runner-scale-set
+      targetRevision: 0.12.1
+      helm:
+        releaseName: hitchai-app-runners
+        valueFiles:
+          - $values/infrastructure/arc-runners/hitchai-app/values.yaml
+    # Git repository containing values file
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+    # Additional resources (sealed secret)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: infrastructure/arc-runners/hitchai-app
   destination:
     server: https://kubernetes.default.svc
     namespace: arc-runners

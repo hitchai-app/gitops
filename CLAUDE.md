@@ -104,38 +104,43 @@ See individual ADRs for infrastructure and workload details.
 
 ### ArgoCD Applications with Helm Charts
 
-**Choose the right approach:**
+**We use ArgoCD's native multi-source Helm** (not kustomize helmCharts):
 
-1. **ArgoCD Native Helm** (preferred for standalone charts):
-   ```yaml
-   spec:
-     sources:
-     - repoURL: https://prometheus-community.github.io/helm-charts
-       chart: kube-prometheus-stack
-       targetRevision: 58.4.0
-       helm:
-         releaseName: kube-prometheus-stack
-         valueFiles:
-           - $values/path/to/values.yaml
-   ```
-   - ✅ No `--enable-helm` flag needed
-   - ✅ Cleaner, more straightforward
-   - ✅ ArgoCD handles Helm natively
-   - Use when: Deploying just a Helm chart
+```yaml
+spec:
+  project: default
+  sources:
+    # 1. Helm chart from OCI/HTTP registry
+    - repoURL: oci://ghcr.io/org/charts
+      chart: my-chart
+      targetRevision: 1.0.0
+      helm:
+        releaseName: my-release
+        valueFiles:
+          - $values/infrastructure/my-app/values.yaml
+    # 2. Git repo with values file
+    - repoURL: https://github.com/org/gitops.git
+      targetRevision: HEAD
+      ref: values
+    # 3. (Optional) Git repo with additional manifests (sealed secrets, etc.)
+    - repoURL: https://github.com/org/gitops.git
+      targetRevision: HEAD
+      path: infrastructure/my-app
+```
 
-2. **Kustomize helmCharts** (when combining with other resources):
-   ```yaml
-   spec:
-     source:
-       path: infrastructure/my-app
-       kustomize:
-         buildOptions: "--enable-helm"  # REQUIRED!
-   ```
-   - ⚠️ **CRITICAL**: Always add `kustomize.buildOptions: "--enable-helm"`
-   - Use when: Combining Helm chart + other resources (sealed secrets, configmaps, etc.)
-   - Why the flag: Helm execution during build is opt-in for security (executes external binaries, downloads charts)
+**Why this approach:**
+- ✅ Works perfectly with app-of-apps pattern (no field stripping)
+- ✅ Simpler - no kustomization files needed
+- ✅ ArgoCD handles Helm natively
+- ✅ Can combine Helm charts with plain manifests (sealed secrets, configmaps)
+- ✅ No `--enable-helm` flags or middleware complexity
 
-**Common mistake:** Forgetting `--enable-helm` flag → ComparisonError: "must specify --enable-helm"
+**Why NOT kustomize helmCharts:**
+- ❌ In app-of-apps pattern, `kustomize.buildOptions` field gets stripped during Server-Side Apply
+- ❌ Requires kustomization.yaml files that add unnecessary complexity
+- ❌ Needs `--enable-helm` flag that may not survive parent→child Application sync
+
+**Examples:** `apps/infrastructure/arc-controller.yaml`, `apps/infrastructure/arc-runners.yaml`, `apps/infrastructure/observability.yaml`
 
 ### Kubernetes Manifests
 
