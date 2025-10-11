@@ -1,0 +1,107 @@
+# GitHub Actions Runner Scale Set for hitchai-app organization
+# This runner scale set serves the hitchai-app GitHub organization
+
+# GitHub Configuration
+githubConfigUrl: "https://github.com/hitchai-app"
+
+# GitHub App authentication (more secure than PAT)
+# The secret must contain:
+#   - github_app_id
+#   - github_app_installation_id
+#   - github_app_private_key
+githubConfigSecret: {}
+
+# Pre-existing secret name (managed by sealed-secrets)
+# Will be created by github-app-sealed.yaml
+existingSecret: "hitchai-app-github-app"
+
+# Runner scaling configuration
+minRunners: 0
+maxRunners: 5
+
+# Runner group (use "Default" for default group)
+runnerGroup: "Default"
+
+# Container mode - using Docker-in-Docker
+containerMode:
+  type: "dind"
+
+# Runner pod template
+template:
+  spec:
+    containers:
+    - name: runner
+      image: ghcr.io/actions/actions-runner:latest
+      imagePullPolicy: Always
+      env:
+      - name: DOCKER_HOST
+        value: unix:///var/run/docker.sock
+      - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+        value: "120"
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "2000m"
+          memory: "4Gi"
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+      - name: dind-sock
+        mountPath: /var/run
+
+    # Docker-in-Docker container
+    - name: dind
+      image: docker:dind
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+      - name: dind-sock
+        mountPath: /var/run
+      - name: dind-externals
+        mountPath: /home/runner/externals
+      env:
+      - name: DOCKER_GROUP_GID
+        value: "123"
+
+    initContainers:
+    - name: init-dind-externals
+      image: ghcr.io/actions/actions-runner:latest
+      command:
+      - cp
+      - "-r"
+      - /home/runner/externals/.
+      - /home/runner/tmpDir/
+      volumeMounts:
+      - name: dind-externals
+        mountPath: /home/runner/tmpDir
+
+    volumes:
+    - name: work
+      emptyDir: {}
+    - name: dind-sock
+      emptyDir: {}
+    - name: dind-externals
+      emptyDir: {}
+
+# Listener configuration
+listenerTemplate:
+  spec:
+    containers:
+    - name: listener
+      image: ghcr.io/actions/gha-runner-scale-set-controller:0.12.1
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "512Mi"
+
+# Controller service account
+controllerServiceAccount:
+  name: arc-gha-rs-controller
+  namespace: arc-systems

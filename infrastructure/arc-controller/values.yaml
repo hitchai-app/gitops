@@ -1,0 +1,47 @@
+# ARC Controller Helm Values
+# GitHub Actions Runner Scale Set Controller
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/actions/gha-runner-scale-set-controller
+  pullPolicy: IfNotPresent
+  tag: "0.12.1"
+
+# Logging configuration
+flags:
+  logLevel: "debug"
+  logFormat: "text"
+  updateStrategy: "immediate"
+  runnerMaxConcurrentReconciles: 2
+
+# Metrics configuration
+metrics:
+  controllerManagerAddr: ":8080"
+  listenerMetricsAddr: "0"
+  listenerMetricsEndpoint: ""
+
+# Service account
+serviceAccount:
+  create: true
+  annotations: {}
+
+# Resource limits
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+
+# Node selection
+nodeSelector: {}
+tolerations: []
+affinity: {}

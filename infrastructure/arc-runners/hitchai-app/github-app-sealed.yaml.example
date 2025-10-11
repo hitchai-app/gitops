@@ -1,0 +1,53 @@
+# Example SealedSecret for GitHub App Authentication
+# This file shows the structure needed for the GitHub App credentials
+#
+# To create the actual sealed secret from existing secret:
+#
+# 1. Fetch sealed-secrets public cert:
+#    kubeseal --fetch-cert > sealed-secrets-pub.pem
+#
+# 2. Extract and rename your existing secret:
+#    kubectl get secret pre-defined-secret -n arc-runners -o yaml | \
+#      sed 's/name: pre-defined-secret/name: hitchai-app-github-app/' | \
+#      sed '/uid:/d' | sed '/resourceVersion:/d' | sed '/creationTimestamp:/d' \
+#      > /tmp/github-app-secret.yaml
+#
+# 3. Seal it:
+#    kubeseal --format=yaml --cert=sealed-secrets-pub.pem \
+#      < /tmp/github-app-secret.yaml \
+#      > infrastructure/arc-runners/hitchai-app/github-app-sealed.yaml
+#
+# 4. Clean up:
+#    rm /tmp/github-app-secret.yaml
+#
+# 5. Commit:
+#    git add infrastructure/arc-runners/hitchai-app/github-app-sealed.yaml
+#
+# GitHub App Requirements (already configured):
+# - GitHub App installed on hitchai-app organization
+# - App permissions: Actions (read/write), Metadata (read)
+# - App has access to repositories where runners will be used
+#
+# Why GitHub App is better than PAT:
+# - Fine-grained permissions (not tied to user account)
+# - Can be scoped to specific repositories
+# - Automatic key rotation support
+# - Better audit trail
+# - Doesn't expire when user leaves org
+
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: hitchai-app-github-app
+  namespace: arc-runners
+spec:
+  encryptedData:
+    github_app_id: SEALED_SECRET_DATA_HERE
+    github_app_installation_id: SEALED_SECRET_DATA_HERE
+    github_app_private_key: SEALED_SECRET_DATA_HERE
+  template:
+    metadata:
+      name: hitchai-app-github-app
+      namespace: arc-runners
+    type: Opaque

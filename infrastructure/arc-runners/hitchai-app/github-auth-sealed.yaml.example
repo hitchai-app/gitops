@@ -1,0 +1,53 @@
+# Example SealedSecret for GitHub App Authentication
+# This file shows the structure needed for the GitHub App secret
+#
+# RECOMMENDED: Seal your existing secret directly:
+#
+# 1. Fetch sealed-secrets cert:
+#    kubeseal --fetch-cert > sealed-secrets-pub.pem
+#
+# 2. Export your existing secret:
+#    kubectl get secret pre-defined-secret -n arc-runners -o yaml > /tmp/secret.yaml
+#
+# 3. Clean metadata:
+#    sed -i '/uid:/d' /tmp/secret.yaml
+#    sed -i '/resourceVersion:/d' /tmp/secret.yaml
+#    sed -i '/creationTimestamp:/d' /tmp/secret.yaml
+#
+# 4. Optional - Rename for clarity (recommended):
+#    sed -i 's/name: pre-defined-secret/name: hitchai-app-github-auth/' /tmp/secret.yaml
+#    # Then update values.yaml: existingSecret: "hitchai-app-github-auth"
+#
+# 5. Seal it:
+#    kubeseal --format=yaml --cert=sealed-secrets-pub.pem \
+#      < /tmp/secret.yaml > github-auth-sealed.yaml
+#
+# 6. Clean up:
+#    rm /tmp/secret.yaml
+#
+# 7. Commit github-auth-sealed.yaml to Git
+#
+# GitHub App Setup (if creating new):
+# 1. Create GitHub App: Settings → Developer settings → GitHub Apps → New
+# 2. Permissions: Actions (Read/Write), Administration (Read/Write)
+# 3. Install app on organization
+# 4. Generate private key, note App ID and Installation ID
+#
+# See: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/authenticating-to-the-github-api#authenticating-arc-with-a-github-app
+
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: hitchai-app-github-auth
+  namespace: arc-runners
+spec:
+  encryptedData:
+    github_app_id: SEALED_SECRET_DATA_HERE
+    github_app_installation_id: SEALED_SECRET_DATA_HERE
+    github_app_private_key: SEALED_SECRET_DATA_HERE
+  template:
+    metadata:
+      name: hitchai-app-github-auth
+      namespace: arc-runners
+    type: Opaque
