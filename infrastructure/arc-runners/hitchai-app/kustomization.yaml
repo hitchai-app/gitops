@@ -6,10 +6,4 @@ namespace: arc-runners
 resources:
 - github-app-sealed.yaml
 
-helmCharts:
-- name: gha-runner-scale-set
-  repo: oci://ghcr.io/actions/actions-runner-controller-charts
-  version: 0.12.1
-  releaseName: hitchai-app-runners
-  namespace: arc-runners
-  valuesFile: values.yaml
+# Helm chart is now managed by ArgoCD Application (multi-source)

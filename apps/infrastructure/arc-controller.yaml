@@ -5,12 +5,19 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/hitchai-app/gitops.git
-    targetRevision: HEAD
-    path: infrastructure/arc-controller
-    kustomize:
-      buildOptions: "--enable-helm"
+  sources:
+    # Helm chart from GitHub OCI registry
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts
+      chart: gha-runner-scale-set-controller
+      targetRevision: 0.12.1
+      helm:
+        releaseName: arc
+        valueFiles:
+          - $values/infrastructure/arc-controller/values.yaml
+    # Git repository containing values file
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: arc-systems
