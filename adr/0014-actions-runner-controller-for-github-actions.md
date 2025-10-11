@@ -6,244 +6,191 @@
 
 ## Context
 
-We need self-hosted GitHub Actions runners for our CI/CD pipelines. Requirements include:
-- Automatic scaling based on workflow demand
-- Ephemeral runners (fresh environment per job)
-- Docker-in-Docker support for containerized builds
-- GitOps-compatible management
-- Cost efficiency (scale to zero when idle)
+We need self-hosted GitHub Actions runners for CI/CD pipelines with automatic scaling, ephemeral environments, Docker build support, and GitOps management.
 
-Current constraint: Single Hetzner node cluster (will scale to multi-node)
+Current constraint: Single Hetzner node (128GB RAM) scaling to multi-node.
 
 ## Decision
 
-We will use **GitHub Actions Runner Controller (ARC)** with the `gha-runner-scale-set-controller` architecture.
+Use **GitHub Actions Runner Controller (ARC)** with ephemeral Docker-in-Docker runners managed via ArgoCD.
 
-Configuration:
-- ARC controller in `arc-systems` namespace
-- Runner scale sets per GitHub organization
-- Ephemeral Docker-in-Docker runners
-- Scale range: 0-5 runners (auto-scale based on queue)
-- Helm-based deployment via ArgoCD
+Initial deployment: Single heavy runner scale set (0-5 runners, Docker-in-Docker enabled)
 
 ## Alternatives Considered
 
-### 1. Persistent Self-Hosted Runners (Traditional)
-- **Pros**: Simple setup, no Kubernetes required
-- **Cons**:
-  - Manual scaling
-  - State persists between jobs (security risk)
-  - Manual maintenance and updates
-  - No automatic cleanup
-  - Resource waste when idle
-- **Why not chosen**: No auto-scaling, security concerns with persistent state
+### 1. GitHub-Hosted Runners
+- **Why not**: $0.008/min expensive at scale, cannot access internal cluster services
 
-### 2. GitHub-Hosted Runners
-- **Pros**: Zero maintenance, unlimited scaling, always updated
-- **Cons**:
-  - Cost: $0.008/minute (expensive at scale)
-  - Cannot access private cluster resources
-  - Limited customization
-  - Bandwidth costs for large artifacts
-- **Why not chosen**: Cost prohibitive for frequent builds, cannot access internal services
+### 2. Persistent Self-Hosted Runners
+- **Why not**: No auto-scaling, state persists between jobs (security risk), manual maintenance
 
 ### 3. Jenkins Kubernetes Plugin
-- **Pros**: Mature, ephemeral agents, wide ecosystem
-- **Cons**:
-  - Separate CI system to maintain
-  - Not native GitHub Actions
-  - Different workflow syntax
-  - Additional infrastructure overhead
-- **Why not chosen**: Prefer GitHub-native solution, avoid maintaining separate CI system
+- **Why not**: Separate CI system to maintain, not GitHub Actions native
 
-### 4. Self-Hosted Runner Scale Set (Legacy ARC)
-- **Pros**: Auto-scaling, Kubernetes-native
-- **Cons**:
-  - Old architecture (`actions.summerwind.dev` CRDs)
-  - Less actively maintained
-  - Complex setup
-  - Migration path unclear
-- **Why not chosen**: New ARC architecture is the official path forward
+### 4. Legacy ARC (actions.summerwind.dev)
+- **Why not**: Deprecated architecture, new `gha-runner-scale-set-controller` is official path
 
 ## Consequences
 
 ### Positive
-- ✅ **Auto-scaling**: 0-5 runners based on queue depth (cost efficient)
-- ✅ **Ephemeral**: Fresh runner per job (security benefit)
-- ✅ **GitOps-native**: Declarative Helm charts via ArgoCD
-- ✅ **Official GitHub solution**: Actively maintained by GitHub
-- ✅ **Private network access**: Runners can access internal cluster services
-- ✅ **Docker-in-Docker**: Full container build support
-- ✅ **Multi-organization support**: Easy to add more runner scale sets
+- ✅ Auto-scaling (0-N based on queue, scale to zero when idle)
+- ✅ Ephemeral runners (fresh pod per job, destroyed after)
+- ✅ GitOps-managed via ArgoCD
+- ✅ Private network access (can reach internal cluster services)
 
 ### Negative
-- ❌ **Privileged containers**: Docker-in-Docker requires `securityContext.privileged: true`
-- ❌ **Resource overhead**: Each runner uses 1-4Gi memory + 500m-2 CPU
-- ❌ **Complexity**: More moving parts than simple runners
-- ⚠️ **Single point of failure**: Controller restart delays new runner creation
-- ⚠️ **GitHub token management**: Must secure and rotate PAT/GitHub App credentials
+- ❌ Privileged containers required for Docker-in-Docker (security risk)
+- ❌ Resource overhead: 1-4Gi memory + 500m-2 CPU per runner
+- ❌ Cold start: ~30-60s to spin up new runner
 
 ### Neutral
-- **Cold start delay**: ~30-60s to spin up new runner (acceptable)
-- **Node capacity**: 5 runners × 4Gi = 20Gi max (acceptable on 128GB node)
-- **Maintenance**: Helm chart updates via ArgoCD (consistent with other infrastructure)
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│ arc-systems namespace                                   │
-│                                                         │
-│  ┌──────────────────────┐                              │
-│  │ arc-gha-rs-controller│  ← Watches GitHub queue      │
-│  │  (Deployment)        │                              │
-│  └──────────────────────┘                              │
-│                                                         │
-│  ┌────────────────────────────────────────┐            │
-│  │ hitchai-app-runners-listener (Pod)     │            │
-│  │  - Polls GitHub for workflow jobs      │            │
-│  │  - Creates EphemeralRunner CRDs        │            │
-│  └────────────────────────────────────────┘            │
-└─────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────┐
-│ arc-runners namespace                                   │
-│                                                         │
-│  ┌─────────────────────┐  ┌─────────────────────┐     │
-│  │ runner-xxx (Pod)    │  │ runner-yyy (Pod)    │     │
-│  │  - runner container │  │  - runner container │     │
-│  │  - dind container   │  │  - dind container   │     │
-│  └─────────────────────┘  └─────────────────────┘     │
-│                                                         │
-│  (Scales 0-5 based on GitHub Actions queue)            │
-└─────────────────────────────────────────────────────────┘
-```
+- Node capacity: 5 heavy runners × 4Gi = 20Gi (acceptable on 128GB node)
+- Controller restart delays new runner creation (acceptable downtime)
 
 ## Implementation Notes
 
-### Two-Component Architecture
+**Architecture**: Controller in `arc-systems` watches GitHub queue → Listener polls for jobs → Runner pods spawn in `arc-runners`
 
-**1. Controller** (`gha-runner-scale-set-controller`):
-- Watches AutoscalingRunnerSet CRDs
-- Manages lifecycle of runner scale sets
-- Single instance in `arc-systems`
+**Authentication**: GitHub App (sealed secret) - more secure than PAT, fine-grained permissions
 
-**2. Runner Scale Sets** (`gha-runner-scale-set`):
-- One per GitHub organization or repository
-- Creates listener pod (polls GitHub) in `arc-systems`
-- Creates runner pods (execute jobs) in `arc-runners`
+**Security**: Docker-in-Docker requires privileged containers. Mitigated by ephemeral pods (destroyed after job). Alternative: Kaniko (no privileged mode, requires workflow changes)
 
-### GitHub Authentication
+## Future Enhancements
 
-Use Sealed Secrets for GitHub PAT:
-```bash
-# Create sealed secret with GitHub PAT
-kubectl create secret generic hitchai-app-github-token \
-  --namespace=arc-runners \
-  --from-literal=github_token=YOUR_PAT \
-  --dry-run=client -o yaml | \
-kubeseal --format=yaml > github-token-sealed.yaml
-```
+### 1. Light + Heavy Runner Architecture (High Priority)
 
-**PAT requirements**:
-- Organization: `repo` + `admin:org` (or `read:org`)
-- Repository: `repo` scope only
+**Problem**: Most CI jobs don't need Docker (linting, tests, npm scripts), but current setup wastes resources with Docker-in-Docker for everything.
 
-**Alternative**: GitHub App (more secure, fine-grained permissions)
+**Solution**: Two-tier runner architecture
 
-### Resource Planning
+#### Light Runners (New)
+- **Use case**: Linting, tests, scripts, non-Docker jobs (~80% of workflows)
+- **Container mode**: Kubernetes (no Docker, no privileged)
+- **Resources**: 250m-1 CPU, 512Mi-2Gi memory
+- **Scaling**: 0-12 runners (more since they're lighter)
+- **Workflow**: `runs-on: hitchai-app-light`
 
-Single node capacity (128GB RAM):
-- Max 5 concurrent runners × 4Gi = 20Gi
-- Buffer for system pods: ~8-12Gi
-- Remaining: ~96-100Gi for workloads
+#### Heavy Runners (Current, Rename)
+- **Use case**: Docker builds, complex containerized workflows (~20% of workflows)
+- **Container mode**: Docker-in-Docker (privileged)
+- **Resources**: 500m-2 CPU, 1-4Gi memory
+- **Scaling**: 0-4 runners
+- **Workflow**: `runs-on: hitchai-app-heavy`
 
-Multi-node: Spread runners across nodes via affinity/anti-affinity
+**Recommended ratio**: 1:3 (heavy:light)
+- Single node (128GB): 4 heavy (16Gi) + 12 light (24Gi) = 40Gi for runners
+- Multi-node: Adjust based on actual usage patterns
 
-### Workflow Usage
+**Benefits**:
+- ✅ 4x resource reduction for non-Docker jobs
+- ✅ No privileged containers for 80% of jobs
+- ✅ Faster startup (~15-20s vs ~30-60s)
+- ✅ 2x more concurrent jobs on same hardware
 
-Reference runner scale set by its installation name:
+**Implementation**: Copy existing runner scale set, change 5 lines in values.yaml
 
+---
+
+### 2. Docker Registry Cache (High Priority)
+
+**Problem**: Pulling same base images repeatedly wastes bandwidth, hits Docker Hub rate limits (100-200 pulls/6h), slows builds.
+
+**Solution**: In-cluster registry cache
+
+#### Option A: Simple Docker Registry (Pull-Through Cache)
+
+**Best for**: Quick start, minimal maintenance, simple use case
+
+**Pros**:
+- ✅ Extremely simple (single StatefulSet, ~100-200Mi memory)
+- ✅ Transparent (change image URLs or configure Docker daemon)
+- ✅ Works with Docker Hub, ghcr.io, gcr.io
+- ✅ Zero-config caching
+
+**Cons**:
+- ❌ No UI (debugging cache misses harder)
+- ❌ No garbage collection (manual disk cleanup)
+- ❌ No authentication/RBAC (anyone in cluster can pull)
+- ❌ No vulnerability scanning
+
+**Setup**:
 ```yaml
-name: CI
-on: push
-
-jobs:
-  build:
-    runs-on: hitchai-app-runners  # ← Runner scale set name
-    steps:
-      - uses: actions/checkout@v4
-      - run: docker build -t myapp .
+env:
+- name: REGISTRY_PROXY_REMOTEURL
+  value: https://registry-1.docker.io
+- name: REGISTRY_PROXY_USERNAME
+  valueFrom:
+    secretKeyRef:
+      name: dockerhub-creds
+      key: username
 ```
 
-### Monitoring
+**Usage**: `FROM registry-cache.arc-runners.svc:5000/node:20` (proxies to `docker.io/node:20`)
 
-**Key metrics**:
-- Runner pod count (current/min/max)
-- Queue depth (pending workflows)
-- Runner startup time
-- Docker-in-Docker failures
+**When to use**: Start here. Run for 2-4 weeks, measure cache hit rates. If simple registry becomes painful (debugging, cleanup), upgrade to Harbor.
 
-**Alerts**:
-- Controller down > 5 minutes
-- Runners failing to start
-- Persistent runner scaling lag
-- GitHub authentication failures
+---
 
-### Security Considerations
+#### Option B: Harbor (Full-Featured Registry)
 
-**Privileged containers**: Docker-in-Docker requires `privileged: true`
-- Risk: Container breakout could compromise node
-- Mitigation: Runners use ephemeral pods (destroyed after job)
-- Alternative: Use Kaniko for Docker builds (no privileged mode)
+**Best for**: Long-term, if simple registry proves insufficient
 
-**GitHub token**: PAT has broad access
-- Risk: Compromised token = org access
-- Mitigation: Use GitHub App with fine-grained permissions
-- Rotation: Rotate token quarterly
+**Pros**:
+- ✅ Built-in pull-through cache (proxy projects)
+- ✅ Web UI for cache monitoring, hit rates
+- ✅ Vulnerability scanning (Trivy integration)
+- ✅ Image signing (Cosign/Notary)
+- ✅ RBAC and authentication
+- ✅ Garbage collection (automated cleanup)
+- ✅ Replication to S3 backups
+- ✅ CNCF graduated (production-proven)
 
-**Network isolation**: Runners can access cluster services
-- Risk: Malicious workflow could probe internal services
-- Mitigation: NetworkPolicies to restrict runner egress
+**Cons**:
+- ❌ Heavier footprint (~2-3Gi memory for all components)
+- ❌ More complex setup (PostgreSQL, Redis dependencies)
+- ❌ Longer initial setup time (~2-4 hours)
 
-## Migration from Manual Setup
+**Why Harbor fits your stack**:
+- You already have CloudNativePG (Harbor uses PostgreSQL)
+- You already have Valkey (Harbor can use Redis-compatible)
+- Aligns with operator-first approach (ADR 0003)
 
-Current manual setup:
-- Controller installed via `helm install`
-- Runner scale set installed via `helm install`
+**When to use**: If simple registry cache becomes painful (no UI for debugging, manual cleanup needed, want vulnerability scanning).
 
-Migration to GitOps:
-1. Create sealed secret for GitHub token
-2. Apply ArgoCD Applications (will adopt existing resources)
-3. Verify no disruption to running jobs
-4. Delete manual Helm releases (ArgoCD owns them now)
+---
 
-**Note**: Helm label changes may cause recreation. Plan maintenance window.
+### Caching Strategy Decision Tree
 
-## Future Considerations
+```
+Start with simple Docker registry cache
+    ↓
+Run for 2-4 weeks
+    ↓
+Measure: Cache hit rate, disk usage, bandwidth savings
+    ↓
+Pain points?
+    ├─ No → Keep simple registry
+    └─ Yes → Evaluate pain
+        ├─ Debugging cache misses → Harbor (UI)
+        ├─ Disk cleanup painful → Harbor (GC)
+        ├─ Need vuln scanning → Harbor (Trivy)
+        └─ Working fine → Keep simple registry
+```
 
-**When to add more runner scale sets**:
-- Per repository (finer-grained control)
-- Different runner sizes (small/medium/large)
-- Specialized runners (GPU, ARM)
+**Don't over-engineer**: Start simple, upgrade only if needed.
 
-**When to reconsider**:
-- Scale beyond 20 concurrent runners (evaluate GitHub-hosted)
-- Security audit flags privileged containers (consider Kaniko)
-- Maintenance burden > 4 hours/month (consider managed solutions)
+---
+
+### 3. Other Considerations
 
 **Kaniko for privileged-free builds**:
-```yaml
-# Alternative to Docker-in-Docker (no privileged mode)
-containerMode:
-  type: "kubernetes"
-  kubernetesModeWorkVolumeClaim:
-    accessModes: ["ReadWriteOnce"]
-    storageClassName: "longhorn-single-replica"
-    resources:
-      requests:
-        storage: 10Gi
-```
+- Alternative to Docker-in-Docker (no privileged mode)
+- Requires workflow changes (`kaniko` instead of `docker build`)
+- Consider if security audit flags privileged containers
+
+**When to reconsider ARC**:
+- Scale beyond 20 concurrent runners (evaluate GitHub-hosted)
+- Maintenance burden > 4 hours/month (consider managed solutions)
 
 ## References
 
