@@ -102,6 +102,41 @@ See individual ADRs for infrastructure and workload details.
 
 ## Best Practices
 
+### ArgoCD Applications with Helm Charts
+
+**Choose the right approach:**
+
+1. **ArgoCD Native Helm** (preferred for standalone charts):
+   ```yaml
+   spec:
+     sources:
+     - repoURL: https://prometheus-community.github.io/helm-charts
+       chart: kube-prometheus-stack
+       targetRevision: 58.4.0
+       helm:
+         releaseName: kube-prometheus-stack
+         valueFiles:
+           - $values/path/to/values.yaml
+   ```
+   - ✅ No `--enable-helm` flag needed
+   - ✅ Cleaner, more straightforward
+   - ✅ ArgoCD handles Helm natively
+   - Use when: Deploying just a Helm chart
+
+2. **Kustomize helmCharts** (when combining with other resources):
+   ```yaml
+   spec:
+     source:
+       path: infrastructure/my-app
+       kustomize:
+         buildOptions: "--enable-helm"  # REQUIRED!
+   ```
+   - ⚠️ **CRITICAL**: Always add `kustomize.buildOptions: "--enable-helm"`
+   - Use when: Combining Helm chart + other resources (sealed secrets, configmaps, etc.)
+   - Why the flag: Helm execution during build is opt-in for security (executes external binaries, downloads charts)
+
+**Common mistake:** Forgetting `--enable-helm` flag → ComparisonError: "must specify --enable-helm"
+
 ### Kubernetes Manifests
 
 **Labels**: Do NOT add labels manually to Kubernetes resources. ArgoCD automatically adds tracking labels to all resources it manages. Manual labels are redundant and create maintenance overhead.
