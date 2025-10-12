@@ -76,6 +76,7 @@ template:
 
     containers:
     - name: runner
+      image: ghcr.io/actions/actions-runner:latest
       resources:
         requests:
           cpu: "500m"
