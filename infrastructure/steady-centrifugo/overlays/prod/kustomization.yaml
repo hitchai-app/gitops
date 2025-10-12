@@ -6,3 +6,4 @@ namespace: steady-prod
 resources:
 - ../../base
 - centrifugo-secrets-sealed.yaml
+- ingress.yaml

@@ -51,15 +51,16 @@ spec:
             secretKeyRef:
               name: centrifugo-secrets
               key: api-key
-        volumeMounts:
-        - name: config
-          mountPath: /centrifugo
         command:
-        - sh
-        - -c
-        - |
-          envsubst < /centrifugo/config.json > /tmp/config.json
-          centrifugo --config=/tmp/config.json
+        - centrifugo
+        - --health
+        - --admin
+        - --admin_insecure
+        args:
+        - --admin_password=$(ADMIN_PASSWORD)
+        - --admin_secret=$(ADMIN_SECRET)
+        - --api_key=$(API_KEY)
+        - --log_level=info
         resources:
           requests:
             memory: "128Mi"
@@ -79,7 +80,3 @@ spec:
             port: 8000
           initialDelaySeconds: 5
           periodSeconds: 5
-      volumes:
-      - name: config
-        configMap:
-          name: centrifugo-config
