@@ -8,6 +8,7 @@ spec:
   sources:
     # Helm chart from OCI registry (ghcr.io)
     - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller
+      path: .
       targetRevision: 0.12.1
       helm:
         releaseName: arc
