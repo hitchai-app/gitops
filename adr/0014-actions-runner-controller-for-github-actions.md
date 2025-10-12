@@ -46,11 +46,11 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
     - Potential for container escape
   - **Mitigation**: Ephemeral pods (destroyed after each job) limit exposure window
   - **Alternative**: Kaniko for privileged-free builds (requires workflow changes)
-- ❌ Resource overhead: 1-4Gi memory + 500m-2 CPU per runner
-- ❌ Cold start: ~30-60s to spin up new runner
+- ❌ Resource overhead per runner (memory + CPU allocation)
+- ❌ Cold start time required to spin up new runner pods
 
 ### Neutral
-- Node capacity: 5 heavy runners × 4Gi = 20Gi (acceptable on 128GB node)
+- Node capacity planning required based on runner resource requests
 - Controller restart delays new runner creation (acceptable downtime)
 
 ## Implementation Notes
@@ -76,26 +76,24 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 #### Light Runners (New)
 - **Use case**: Linting, tests, scripts, non-Docker jobs (~80% of workflows)
 - **Container mode**: Kubernetes (no Docker, no privileged)
-- **Resources**: 250m-1 CPU, 512Mi-2Gi memory
-- **Scaling**: 0-12 runners (more since they're lighter)
+- **Resources**: Lower memory/CPU footprint than heavy runners
+- **Scaling**: Higher max count (more concurrent jobs possible)
 - **Workflow**: `runs-on: hitchai-app-light`
 
 #### Heavy Runners (Current, Rename)
 - **Use case**: Docker builds, complex containerized workflows (~20% of workflows)
 - **Container mode**: Docker-in-Docker (privileged)
-- **Resources**: 500m-2 CPU, 1-4Gi memory
-- **Scaling**: 0-4 runners
+- **Resources**: Higher memory/CPU allocation for Docker daemon
+- **Scaling**: Lower max count (resource-intensive)
 - **Workflow**: `runs-on: hitchai-app-heavy`
 
-**Recommended ratio**: 1:3 (heavy:light)
-- Single node (128GB): 4 heavy (16Gi) + 12 light (24Gi) = 40Gi for runners
-- Multi-node: Adjust based on actual usage patterns
+**Capacity planning**: Allocate based on actual workflow mix and resource availability. Light runners can handle higher concurrency due to lower per-pod resource requirements.
 
 **Benefits**:
-- ✅ 4x resource reduction for non-Docker jobs
-- ✅ No privileged containers for 80% of jobs
-- ✅ Faster startup (~15-20s vs ~30-60s)
-- ✅ 2x more concurrent jobs on same hardware
+- ✅ Significant resource reduction for non-Docker jobs
+- ✅ No privileged containers for majority of jobs
+- ✅ Faster startup for Kubernetes-mode runners
+- ✅ Higher concurrent job capacity on same hardware
 
 **Implementation**: Copy existing runner scale set, change 5 lines in values.yaml
 
@@ -112,7 +110,7 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 **Best for**: Quick start, minimal maintenance, simple use case
 
 **Pros**:
-- ✅ Extremely simple (single StatefulSet, ~100-200Mi memory)
+- ✅ Extremely simple (single StatefulSet, minimal memory footprint)
 - ✅ Transparent (change image URLs or configure Docker daemon)
 - ✅ Works with Docker Hub, ghcr.io, gcr.io
 - ✅ Zero-config caching
@@ -156,9 +154,9 @@ env:
 - ✅ CNCF graduated (production-proven)
 
 **Cons**:
-- ❌ Heavier footprint (~2-3Gi memory for all components)
+- ❌ Heavier footprint (multiple components with higher memory requirements)
 - ❌ More complex setup (PostgreSQL, Redis dependencies)
-- ❌ Longer initial setup time (~2-4 hours)
+- ❌ Longer initial setup time
 
 **Why Harbor fits your stack**:
 - You already have CloudNativePG (Harbor uses PostgreSQL)
@@ -199,8 +197,8 @@ Pain points?
 - Consider if security audit flags privileged containers
 
 **When to reconsider ARC**:
-- Scale beyond 20 concurrent runners (evaluate GitHub-hosted)
-- Maintenance burden > 4 hours/month (consider managed solutions)
+- Scale significantly beyond current capacity (evaluate GitHub-hosted or multi-cluster)
+- Maintenance burden becomes unsustainable (consider managed solutions)
 
 ## References
 
