@@ -19,13 +19,17 @@ template:
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
+      command: ["/home/runner/run.sh"]
+      # Overcommit strategy: Low requests for scheduling, high limits for bursting
+      # Per-pod: 256Mi requests → 12 pods = 3Gi (fits in 10Gi quota)
+      # Per-pod: 4Gi limits → quota caps total at 50Gi
       resources:
         requests:
           cpu: "250m"
-          memory: "512Mi"
+          memory: "256Mi"
         limits:
-          cpu: "1000m"
-          memory: "2Gi"
+          cpu: "2000m"
+          memory: "4Gi"
 
 # Explicitly link this scale set to the controller
 controllerServiceAccount:
