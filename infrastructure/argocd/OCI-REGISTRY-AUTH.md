@@ -2,6 +2,8 @@
 
 This document explains how ArgoCD matches credentials to OCI Helm repositories to prevent configuration mistakes.
 
+Default posture (October 2025) is **anonymous access**: we no longer publish a `ghcr-helm-repo` Sealed Secret because the public `actions` organisation charts sync fine without credentials, while injecting an unrelated PAT breaks reconciliation.
+
 ## How ArgoCD Matches OCI Credentials
 
 ArgoCD uses **PREFIX matching** to find credentials for OCI Helm charts:
@@ -11,29 +13,9 @@ ArgoCD uses **PREFIX matching** to find credentials for OCI Helm charts:
 3. Searches for repository secrets where `url` is a **prefix** of the stripped URL
 4. Uses the matching credentials
 
-## Correct Configuration
+## When You Need Credentials
 
-### ✅ Repository Secret (Base Domain)
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ghcr-helm-repo
-  namespace: argocd
-  labels:
-    argocd.argoproj.io/secret-type: repository
-type: Opaque
-stringData:
-  name: github-container-registry
-  url: ghcr.io                    # ✅ BASE DOMAIN ONLY
-  type: helm
-  enableOCI: "true"
-  username: <github-username>
-  password: <github-pat>
-```
-
-### ✅ Application (Full Path)
+Most public charts (including ARC) can be pulled without authentication. Only add a repository secret when you actually need private access. The Application source always uses the full chart path:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -47,14 +29,14 @@ spec:
 
 ## Common Mistakes
 
-### ❌ WRONG: Full Path in Secret
+### ❌ WRONG: Secret that Matches Too Much
 
 ```yaml
-stringData:
-  url: ghcr.io/actions/actions-runner-controller-charts  # ❌ TOO SPECIFIC
+stringData:  # Secret exists at base domain
+  url: ghcr.io
 ```
 
-**Why it fails:** The secret URL is NOT a prefix of itself during matching - ArgoCD's prefix logic expects base domains.
+**Why it fails for public charts:** A PAT tied to another organisation (for example `hitchai-app`) becomes the default credential for **every** `ghcr.io/*` request. GHCR rejects that token when ArgoCD reaches into the `actions` org, so syncs fail with `response status code 403`.
 
 ### ❌ WRONG: Base Domain in Application
 
@@ -68,24 +50,20 @@ spec:
 
 ## Why This Matters
 
-Using base domain (`ghcr.io`) in the secret allows **one credential to authenticate ALL charts** from that registry:
+Credential scope is determined purely by prefix matching. If you need private charts for `ghcr.io/hitchai-app/*` **and** public charts for `ghcr.io/actions/*`, create narrowly scoped secrets:
 
-- ✅ `oci://ghcr.io/actions/actions-runner-controller-charts/...`
-- ✅ `oci://ghcr.io/other-org/other-chart`
-- ✅ Any chart from `ghcr.io`
+```yaml
+stringData:
+  url: ghcr.io/hitchai-app         # applies only to our org
+  username: hitchai-app
+  password: <pat-with-read:packages>
+```
 
-Using full path in the secret would require **separate credentials for each chart** - defeating the purpose of registry credentials.
+No secret that matches `ghcr.io/actions/...` ⇒ ArgoCD talks anonymously to the public repo.
 
 ## Historical Context
 
-**October 2025 Incident:**
-
-1. ✅ Original secret correctly used `url: ghcr.io`
-2. ❌ PR #54 "fixed" it to `url: ghcr.io/actions/actions-runner-controller-charts` (WRONG)
-3. ❌ PR #55 propagated the wrong format to the correct location
-4. 🔄 This PR reverts to the correct base domain format
-
-**Root cause of confusion:** Misinterpreted "full path" examples that applied to Application manifests, not secret configuration.
+**October 2025 Incident:** A base-domain secret (`url: ghcr.io`) bundled a PAT from the `hitchai-app` org. GHCR treated the token as unapproved for `actions/*` and returned 403, so ArgoCD couldn’t render ARC charts. The fix was to drop the secret entirely and rely on anonymous pulls; future private access must use tighter prefixes.
 
 ## References
 
@@ -93,25 +71,8 @@ Using full path in the secret would require **separate credentials for each char
 - [ArgoCD Private Repositories](https://argo-cd.readthedocs.io/en/stable/user-guide/private-repositories/) (Official)
 - [How to configure ArgoCD to connect to a Private OCI Repository](https://blog.devops.dev/how-to-configure-argocd-to-connect-to-a-private-oci-repository-ft-dockerhub-b92fc0ead60d) (January 2025)
 
-## Testing Credentials
+## Key Takeaways
 
-To verify credentials work:
-
-```bash
-# 1. Check secret exists with correct label
-kubectl get secret ghcr-helm-repo -n argocd -o jsonpath='{.metadata.labels}'
-
-# 2. Test with helm CLI (validates credentials are correct)
-helm registry login ghcr.io -u <username> --password-stdin <<< "<password>"
-helm pull oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set-controller --version 0.12.1
-
-# 3. Refresh ArgoCD Application
-kubectl patch application arc-controller -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"admin"},"sync":{"revision":"HEAD"}}}'
-```
-
-## Key Takeaway
-
-**Repository secret `url` = Registry base domain (e.g., `ghcr.io`)**
-**Application `repoURL` = Full OCI chart path (e.g., `oci://ghcr.io/org/chart`)**
-
-This is the official ArgoCD pattern for OCI registry authentication.
+- Add an OCI repository secret only when private access is required.
+- Choose the narrowest `url` prefix that still covers the private charts you need.
+- Public charts (such as ARC from the `actions` org) should sync without credentials, so deleting the secret is the safest default.
