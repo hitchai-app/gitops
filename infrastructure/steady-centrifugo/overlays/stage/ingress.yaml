@@ -4,6 +4,7 @@ metadata:
   name: centrifugo
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.middlewares: steady-stage-websocket@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:

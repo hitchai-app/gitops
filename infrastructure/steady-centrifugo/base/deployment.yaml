@@ -54,8 +54,6 @@ spec:
         command:
         - centrifugo
         - --health
-        - --admin
-        - --admin_insecure
         args:
         - --admin_password=$(ADMIN_PASSWORD)
         - --admin_secret=$(ADMIN_SECRET)
