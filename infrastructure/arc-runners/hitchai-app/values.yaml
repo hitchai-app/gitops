@@ -32,3 +32,8 @@ template:
       emptyDir:
         medium: Memory
         sizeLimit: 2Gi
+
+# Explicitly link this scale set to the controller the chart failed to discover automatically.
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-gha-rs-controller
