@@ -2,7 +2,7 @@
 
 # Required: GitHub configuration
 githubConfigUrl: "https://github.com/hitchai-app"
-existingSecret: "hitchai-app-github-app"
+githubConfigSecret: "hitchai-app-github-app"
 
 # Scaling (default: minRunners=0, maxRunners=unlimited)
 maxRunners: 4
