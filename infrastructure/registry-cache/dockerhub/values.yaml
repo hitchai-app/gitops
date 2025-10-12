@@ -20,6 +20,10 @@ image:
 persistence:
   enabled: true
   storageClass: "ephemeral"
+  # 10Gi size (space-constrained environment)
+  # Trade-off: Common base images (node:18, python:3.11) are 500MB-1GB each
+  # Cache may fill quickly with multiple images, triggering evictions
+  # Consider increasing to 20Gi if disk space allows
   size: 10Gi
   accessMode: "ReadWriteOnce"
 
@@ -28,14 +32,16 @@ proxy:
   enabled: true
   remoteurl: "https://registry-1.docker.io"
 
-# Resource limits (minimal)
+# Resource limits
+# Registry under load (cache misses, concurrent pulls) can exceed conservative limits
+# 1Gi memory limit prevents OOM during concurrent upstream pulls
 resources:
   limits:
-    cpu: 500m
-    memory: 512Mi
+    cpu: 1000m
+    memory: 1Gi
   requests:
     cpu: 100m
-    memory: 256Mi
+    memory: 512Mi
 
 # Service configuration (ClusterIP for internal use only)
 service:
@@ -45,3 +51,38 @@ service:
 # No external access needed
 ingress:
   enabled: false
+
+# Prometheus metrics and monitoring
+# Documentation: https://docs.docker.com/registry/configuration/#prometheus
+metrics:
+  enabled: true
+  port: 5001
+  serviceMonitor:
+    enabled: true
+    labels:
+      # Label for prometheus-operator to discover this ServiceMonitor
+      release: kube-prometheus-stack
+  prometheusRule:
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+    rules:
+      # Alert when registry storage exceeds 80%
+      - alert: RegistryCacheStorageHigh
+        expr: (kubelet_volume_stats_used_bytes{persistentvolumeclaim="dockerhub-registry-cache"} / kubelet_volume_stats_capacity_bytes{persistentvolumeclaim="dockerhub-registry-cache"}) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Docker Hub registry cache storage usage > 80%"
+          description: "Registry cache PVC is {{ $value | humanizePercentage }} full. Consider increasing size or clearing old images."
+
+      # Alert on registry pod restarts
+      - alert: RegistryCachePodRestarting
+        expr: rate(kube_pod_container_status_restarts_total{namespace="registry-cache",pod=~"dockerhub-cache.*"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Docker Hub registry cache pod restarting"
+          description: "Registry cache pod has restarted {{ $value }} times in the last 15 minutes."
