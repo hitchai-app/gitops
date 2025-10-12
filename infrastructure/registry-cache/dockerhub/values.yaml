@@ -1,0 +1,47 @@
+# Docker Hub Pull-Through Cache
+# Uses official Docker Registry v2 in proxy mode
+#
+# Node configuration required (manual step):
+# Edit /etc/rancher/k3s/registries.yaml:
+#   mirrors:
+#     docker.io:
+#       endpoint:
+#         - "http://dockerhub-cache-docker-registry.registry-cache.svc.cluster.local:5000"
+# Then: sudo systemctl restart k3s
+
+replicaCount: 1
+
+image:
+  repository: registry
+  tag: "2.8.3"
+  pullPolicy: IfNotPresent
+
+# Persistence configuration - Helm chart creates PVC
+persistence:
+  enabled: true
+  storageClass: "ephemeral"
+  size: 10Gi
+  accessMode: "ReadWriteOnce"
+
+# Enable pull-through cache mode for Docker Hub
+proxy:
+  enabled: true
+  remoteurl: "https://registry-1.docker.io"
+
+# Resource limits (minimal)
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Service configuration (ClusterIP for internal use only)
+service:
+  type: ClusterIP
+  port: 5000
+
+# No external access needed
+ingress:
+  enabled: false

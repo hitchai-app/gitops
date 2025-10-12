@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: registry-cache-dockerhub
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    # Helm chart from twuni repository
+    - repoURL: https://helm.twun.io
+      chart: docker-registry
+      targetRevision: 2.2.3
+      helm:
+        releaseName: dockerhub-cache
+        valueFiles:
+          - $values/infrastructure/registry-cache/dockerhub/values.yaml
+    # Git repository containing values file
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: registry-cache
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
