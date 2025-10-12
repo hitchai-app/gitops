@@ -18,6 +18,10 @@ spec:
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       ref: values
+    # Additional resources (sealed secret)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: infrastructure/arc-runners/hitchai-app
   destination:
     server: https://kubernetes.default.svc
     namespace: arc-runners
