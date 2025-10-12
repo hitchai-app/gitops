@@ -4,7 +4,11 @@
 githubConfigUrl: "https://github.com/hitchai-app"
 githubConfigSecret: "hitchai-app-github-app"
 
-# Scaling (default: minRunners=0, maxRunners=unlimited)
+# CRITICAL: This name must match the runs-on label in workflows
+# Defaults to Helm release name (hitchai-app-runners)
+runnerScaleSetName: "hitchai-app-runners"
+
+# Scaling
 maxRunners: 4
 
 # Runner pod template
