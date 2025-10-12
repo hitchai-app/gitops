@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: arc-runners-quota
+  namespace: arc-runners
+spec:
+  hard:
+    # CPU quotas based on maximum scale:
+    # - DinD runners: 4 × 2000m = 8 cores
+    # - K8s runners: 12 × 1000m = 12 cores
+    # - Total: 20 cores (exact maximum)
+    requests.cpu: "20"
+    limits.cpu: "28"  # 8 (DinD) + 12 (K8s) + 8 buffer
+
+    # Memory quotas based on maximum scale:
+    # - DinD runners: 4 × 4Gi = 16Gi
+    # - K8s runners: 12 × 2Gi = 24Gi
+    # - Total: 40Gi (exact maximum)
+    requests.memory: "45Gi"  # 40Gi + 5Gi buffer
+    limits.memory: "50Gi"    # 40Gi + 10Gi buffer
+
+    # Pod count limits (prevents runaway scaling)
+    # Each runner = 1 pod
+    # Maximum: 4 (DinD) + 12 (K8s) = 16 runners
+    count/pods: "20"  # 16 + 4 buffer for rolling updates
+
+# Why ResourceQuota:
+# - Prevents runaway resource consumption from malicious workflows
+# - Protects cluster from accidental DDoS (unlimited runner spawning)
+# - Enforces architectural limits (4 DinD + 12 K8s = known budget)
+# - Provides early warning if ARC scale limits misconfigured
+#
+# Single-node cluster context:
+# - Total capacity: 12 CPU / 128GB RAM
+# - This quota: 20 CPU / 45Gi = 35% memory utilization
+# - Remaining: ~83Gi for workloads, infrastructure, system
