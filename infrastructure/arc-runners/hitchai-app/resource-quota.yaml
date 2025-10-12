@@ -18,14 +18,14 @@ spec:
     limits.cpu: "50"
 
     # Memory quotas with overcommit:
-    # - DinD pods: 4 × (256Mi dind + 512Mi runner) = 3Gi requests
-    #             4 × (4Gi dind + 8Gi runner) = 48Gi limits potential
+    # - DinD pods: 4 × (256Mi dind + 512Mi runner) = 4 × 768Mi = 3.072Gi requests
+    #             4 × (4Gi dind + 8Gi runner) = 4 × 12Gi = 48Gi limits potential
     # - K8s pods: 12 × 256Mi = 3Gi requests (when PR #78 merges)
     #             12 × 4Gi = 48Gi limits potential
-    # Total: 6Gi requests → 16 runners ALWAYS fit
-    #        96Gi limits potential → quota caps at 50Gi ✅
-    requests.memory: "10Gi"  # Guarantees 16 pods schedulable (with headroom)
-    limits.memory: "50Gi"    # HARD CAP - prevents cluster exhaustion
+    # Total requests: 3.072Gi (DinD) + 3Gi (K8s) = 6.072Gi → 16 runners ALWAYS fit
+    # Total limits: 48Gi (DinD) + 48Gi (K8s) = 96Gi potential → quota caps at 50Gi ✅
+    requests.memory: "10Gi"  # 6.072Gi used, 3.928Gi headroom for overhead
+    limits.memory: "50Gi"    # HARD CAP - 39% of 128GB cluster (allows 78GB for apps)
 
     # Pod count limit (safety valve for runaway scaling)
     count/pods: "20"  # 16 max runners (4 DinD + 12 K8s) + 4 rolling update buffer
