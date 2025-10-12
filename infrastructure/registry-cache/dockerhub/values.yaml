@@ -52,6 +52,24 @@ service:
 ingress:
   enabled: false
 
+# Garbage collection configuration
+# Documentation: https://distribution.github.io/distribution/about/garbage-collection/
+# Prevents cache from filling to 100% and blocking CI workflows
+garbageCollect:
+  enabled: true
+  # Delete untagged manifests (orphaned layers from overwritten images)
+  deleteUntagged: true
+  # Run hourly - limits max CI blockage to 1 hour if cache unexpectedly fills
+  # Format: minute hour day month weekday (cron syntax)
+  schedule: "0 * * * *"
+
+# Registry configuration
+# Enable deletion for garbage collection to work
+configData:
+  storage:
+    delete:
+      enabled: true
+
 # Prometheus metrics and monitoring
 # Documentation: https://docs.docker.com/registry/configuration/#prometheus
 metrics:
