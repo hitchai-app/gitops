@@ -10,9 +10,7 @@ spec:
   source:
     repoURL: https://github.com/hitchai-app/gitops
     targetRevision: master
-    path: apps/infrastructure/steady
-    directory:
-      include: '*-stage.yaml'
+    path: apps/infrastructure/steady/stage
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
