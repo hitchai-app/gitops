@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: arc-runners-quota
+  namespace: arc-runners
+spec:
+  hard:
+    # Overcommit Strategy: Low requests guarantee scheduling, quota caps bursting
+    # Key insight: requests.memory allows 16 runners to ALWAYS fit
+    #              limits.memory caps total burst to 50Gi
+
+    # CPU quotas with overcommit:
+    # - DinD pods: 4 × (100m dind + 250m runner) = 1.4 cores requests
+    # - K8s pods: 12 × 250m = 3 cores requests (when PR #78 merges)
+    # - Total: ~5 cores requests → 16 runners guaranteed schedulable
+    requests.cpu: "8"
+    # Limits allow massive bursting: 4×4 (DinD) + 12×2 (K8s future) = ~40 cores
+    limits.cpu: "50"
+
+    # Memory quotas with overcommit:
+    # - DinD pods: 4 × (256Mi dind + 512Mi runner) = 3Gi requests
+    #             4 × (4Gi dind + 8Gi runner) = 48Gi limits potential
+    # - K8s pods: 12 × 256Mi = 3Gi requests (when PR #78 merges)
+    #             12 × 4Gi = 48Gi limits potential
+    # Total: 6Gi requests → 16 runners ALWAYS fit
+    #        96Gi limits potential → quota caps at 50Gi ✅
+    requests.memory: "10Gi"  # Guarantees 16 pods schedulable (with headroom)
+    limits.memory: "50Gi"    # HARD CAP - prevents cluster exhaustion
+
+    # Pod count limit (safety valve for runaway scaling)
+    count/pods: "20"  # 16 max runners (4 DinD + 12 K8s) + 4 rolling update buffer
+
+# How overcommit works:
+#
+# Example scenario 1 (DinD heavy):
+#   2 DinD pods × 12Gi limits = 24Gi
+#   10 K8s pods × 4Gi limits = 40Gi
+#   Total: 64Gi potential → quota blocks 11th K8s pod at 48Gi ✅
+#
+# Example scenario 2 (K8s heavy):
+#   1 DinD pod × 12Gi limits = 12Gi
+#   9 K8s pods × 4Gi limits = 36Gi
+#   Total: 48Gi ✅ fits in quota
+#   10th K8s would exceed → blocked
+#
+# Benefits:
+# - Active pods can burst to full limits when memory available
+# - Quota prevents cluster OOM even if all pods burst simultaneously
+# - Statistical multiplexing: not all jobs peak at same time
+# - Single-node cluster: 50Gi / 128Gi = 39% memory budget for runners

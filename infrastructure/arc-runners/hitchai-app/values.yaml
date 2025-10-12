@@ -61,6 +61,16 @@ template:
       # Without this, init container would exit after completion
       # Requires Kubernetes v1.29+ for native sidecar support
       restartPolicy: Always
+      # Resource limits for Docker daemon
+      # Docker daemon: 200-500MB base + layer caching (up to 4GB during builds)
+      # Low requests ensure scheduling, high limits allow bursting
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "1000m"
+          memory: "4Gi"
       # Startup probe ensures Docker daemon is ready before runner starts
       startupProbe:
         exec:
@@ -82,13 +92,16 @@ template:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
       command: ["/home/runner/run.sh"]
+      # Overcommit strategy: Low requests for scheduling, high limits for bursting
+      # Per-pod: 512Mi requests → 16 pods fit in quota
+      # Per-pod: 12Gi limits → quota caps total at 50Gi (bursting controlled)
       resources:
         requests:
-          cpu: "500m"
-          memory: "1Gi"
+          cpu: "250m"
+          memory: "512Mi"
         limits:
-          cpu: "2000m"
-          memory: "4Gi"
+          cpu: "3000m"
+          memory: "8Gi"
       env:
         # DOCKER_HOST tells the runner where to find the Docker daemon
         # Points to the Unix socket shared with the dind sidecar
