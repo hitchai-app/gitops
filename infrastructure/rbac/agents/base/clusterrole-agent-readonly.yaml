@@ -106,6 +106,9 @@ rules:
       - backups
       - scheduledbackups
       - poolers
+      - databases
+      - publications
+      - subscriptions
     verbs: ["get", "list", "watch"]
   # Sealed Secrets - Encrypted secrets (safe to read, already encrypted)
   - apiGroups:
