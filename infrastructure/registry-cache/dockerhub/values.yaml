@@ -1,0 +1,88 @@
+# Docker Hub Pull-Through Cache
+# Documentation: https://docs.docker.com/docker-hub/mirror/
+#
+# Purpose: Mitigates Docker Hub rate limits (100 pulls/6h anonymous, 200/6h free account)
+# How it works: First pull fetches from docker.io and caches, subsequent pulls served from cache
+#
+# Used by:
+# - DinD runners: Configured via --registry-mirror flag in runner pod template
+#   See: infrastructure/arc-runners/hitchai-app/values.yaml
+# - Future Kubernetes-mode runners: Would use node containerd configuration (not yet implemented)
+
+replicaCount: 1
+
+image:
+  repository: registry
+  tag: "2.8.3"
+  pullPolicy: IfNotPresent
+
+# Persistence configuration - Helm chart creates PVC
+persistence:
+  enabled: true
+  storageClass: "ephemeral"
+  # 10Gi size (space-constrained environment)
+  # Trade-off: Common base images (node:18, python:3.11) are 500MB-1GB each
+  # Cache may fill quickly with multiple images, triggering evictions
+  # Consider increasing to 20Gi if disk space allows
+  size: 10Gi
+  accessMode: "ReadWriteOnce"
+
+# Enable pull-through cache mode for Docker Hub
+proxy:
+  enabled: true
+  remoteurl: "https://registry-1.docker.io"
+
+# Resource limits
+# Registry under load (cache misses, concurrent pulls) can exceed conservative limits
+# 1Gi memory limit prevents OOM during concurrent upstream pulls
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
+# Service configuration (ClusterIP for internal use only)
+service:
+  type: ClusterIP
+  port: 5000
+
+# No external access needed
+ingress:
+  enabled: false
+
+# Prometheus metrics and monitoring
+# Documentation: https://docs.docker.com/registry/configuration/#prometheus
+metrics:
+  enabled: true
+  port: 5001
+  serviceMonitor:
+    enabled: true
+    labels:
+      # Label for prometheus-operator to discover this ServiceMonitor
+      release: kube-prometheus-stack
+  prometheusRule:
+    enabled: true
+    labels:
+      release: kube-prometheus-stack
+    rules:
+      # Alert when registry storage exceeds 80%
+      - alert: RegistryCacheStorageHigh
+        expr: (kubelet_volume_stats_used_bytes{persistentvolumeclaim="dockerhub-cache-docker-registry"} / kubelet_volume_stats_capacity_bytes{persistentvolumeclaim="dockerhub-cache-docker-registry"}) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Docker Hub registry cache storage usage > 80%"
+          description: "Registry cache PVC is {{ $value | humanizePercentage }} full. Consider increasing size or clearing old images."
+
+      # Alert on registry pod restarts
+      - alert: RegistryCachePodRestarting
+        expr: rate(kube_pod_container_status_restarts_total{namespace="registry-cache",pod=~"dockerhub-cache.*"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Docker Hub registry cache pod restarting"
+          description: "Registry cache pod has restarted {{ $value }} times in the last 15 minutes."

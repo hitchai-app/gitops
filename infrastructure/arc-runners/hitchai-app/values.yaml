@@ -12,8 +12,70 @@ containerMode:
   type: "dind"
 
 # Runner pod template
+# Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
 template:
   spec:
+    # In DinD mode (Kubernetes v1.29+), the dind container runs as an init container with restartPolicy: Always
+    # This makes it a native Kubernetes sidecar that starts before and runs alongside the runner container
+    # Reference: https://github.blog/changelog/2025-06-13-actions-runner-controller-0-12-0-release/
+    initContainers:
+    # First init container: copies runner externals (binaries/tools) to shared volume
+    # This is required for the DinD container to access runner tools
+    - name: init-dind-externals
+      image: ghcr.io/actions/actions-runner:latest
+      command: ["cp", "-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+      volumeMounts:
+        - name: dind-externals
+          mountPath: /home/runner/tmpDir
+
+    # Second init container (sidecar): Docker daemon for workflow steps
+    - name: dind
+      image: docker:dind
+      # Configure Docker daemon arguments
+      # Documentation: https://docs.docker.com/reference/cli/dockerd/
+      args:
+        - dockerd
+        # --host: Unix socket where Docker daemon listens
+        # Required for runner container to communicate with Docker daemon via DOCKER_HOST env var
+        - --host=unix:///var/run/docker.sock
+        # --group: Sets GID for docker.sock to allow runner container access
+        # The runner container runs with this GID to access the socket
+        - --group=$(DOCKER_GROUP_GID)
+        # --registry-mirror: Pull-through cache for Docker Hub images
+        # First pull fetches from docker.io and caches locally, subsequent pulls served from cache
+        # Mitigates Docker Hub rate limits (100 pulls/6h anonymous)
+        # Documentation: https://docs.docker.com/docker-hub/mirror/
+        - --registry-mirror=http://dockerhub-cache-docker-registry.registry-cache.svc.cluster.local:5000
+      env:
+        # GID 123 matches the docker group in the runner container
+        # This allows the runner to access /var/run/docker.sock without being root
+        - name: DOCKER_GROUP_GID
+          value: "123"
+      securityContext:
+        # privileged: true required for DinD to function
+        # Allows nested containerization (Docker daemon running in a container)
+        privileged: true
+      # restartPolicy: Always makes this init container a sidecar (runs throughout pod lifetime)
+      # Without this, init container would exit after completion
+      # Requires Kubernetes v1.29+ for native sidecar support
+      restartPolicy: Always
+      # Startup probe ensures Docker daemon is ready before runner starts
+      startupProbe:
+        exec:
+          command:
+            - docker
+            - info
+        initialDelaySeconds: 0
+        failureThreshold: 24
+        periodSeconds: 5
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+      - name: dind-sock
+        mountPath: /var/run
+      - name: dind-externals
+        mountPath: /home/runner/externals
+
     containers:
     - name: runner
       resources:
@@ -23,15 +85,31 @@ template:
         limits:
           cpu: "2000m"
           memory: "4Gi"
+      env:
+        # DOCKER_HOST tells the runner where to find the Docker daemon
+        # Points to the Unix socket shared with the dind sidecar
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker.sock
+        # Maximum time runner waits for Docker daemon to be ready
+        - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+          value: "120"
       volumeMounts:
       - name: work
         mountPath: /home/runner/_work
+      - name: dind-sock
+        mountPath: /var/run
 
     volumes:
     - name: work
       emptyDir:
         medium: Memory
         sizeLimit: 2Gi
+    # Shared Unix socket volume for Docker daemon communication
+    - name: dind-sock
+      emptyDir: {}
+    # Volume for Docker externals (required by DinD init process)
+    - name: dind-externals
+      emptyDir: {}
 
 # Explicitly link this scale set to the controller the chart failed to discover automatically.
 controllerServiceAccount:
