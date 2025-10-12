@@ -40,17 +40,15 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 
 ### Negative
 - ❌ **Privileged containers required for Docker-in-Docker** (security risk)
-  - ⚠️ **WARNING**: Docker-in-Docker mode (`containerMode: dind`) requires privileged containers, which have elevated security risks:
-    - Can access host resources
-    - Bypass container isolation
-    - Potential for container escape
+  - ⚠️ **WARNING**: Docker-in-Docker mode requires privileged containers with elevated security risks
+  - Can access host resources, bypass container isolation, potential container escape
   - **Mitigation**: Ephemeral pods (destroyed after each job) limit exposure window
   - **Alternative**: Kaniko for privileged-free builds (requires workflow changes)
 - ❌ Resource overhead per runner (memory + CPU allocation)
 - ❌ Cold start time required to spin up new runner pods
 
 ### Neutral
-- Node capacity planning required based on runner resource requests
+- Node capacity planning required based on runner count and resource requests
 - Controller restart delays new runner creation (acceptable downtime)
 
 ## Implementation Notes
@@ -67,35 +65,24 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 
 ## Future Enhancements
 
-### 1. Light + Heavy Runner Architecture (High Priority)
+### 1. Increase Runner Capacity with Overcommit Strategy
 
-**Problem**: Most CI jobs don't need Docker (linting, tests, npm scripts), but current setup wastes resources with Docker-in-Docker for everything.
+**Current approach: Single DinD runner scale set with overcommit**
 
-**Solution**: Two-tier runner architecture
+We use a single DinD runner type for all jobs (light and heavy) with an overcommit strategy:
+- **Low resource requests**: Ensures many pods can schedule
+- **High resource limits**: Allows bursting for heavy jobs (Docker builds)
+- **ResourceQuota cap**: Prevents total namespace exhaustion
 
-#### Light Runners (New)
-- **Use case**: Linting, tests, scripts, non-Docker jobs (~80% of workflows)
-- **Container mode**: Kubernetes (no Docker, no privileged)
-- **Resources**: Lower memory/CPU footprint than heavy runners
-- **Scaling**: Higher max count (more concurrent jobs possible)
-- **Workflow**: `runs-on: hitchai-app-light`
+**Why not split into K8s-only and DinD runners:**
+- GitHub Actions `services:` block is very common and requires Docker
+- Operational simplicity: one scale set to maintain
+- Overcommit handles both light jobs (use ~512Mi) and heavy jobs (burst to 4Gi)
 
-#### Heavy Runners (Current, Rename)
-- **Use case**: Docker builds, complex containerized workflows (~20% of workflows)
-- **Container mode**: Docker-in-Docker (privileged)
-- **Resources**: Higher memory/CPU allocation for Docker daemon
-- **Scaling**: Lower max count (resource-intensive)
-- **Workflow**: `runs-on: hitchai-app-heavy`
-
-**Capacity planning**: Allocate based on actual workflow mix and resource availability. Light runners can handle higher concurrency due to lower per-pod resource requirements.
-
-**Benefits**:
-- ✅ Significant resource reduction for non-Docker jobs
-- ✅ No privileged containers for majority of jobs
-- ✅ Faster startup for Kubernetes-mode runners
-- ✅ Higher concurrent job capacity on same hardware
-
-**Implementation**: Copy existing runner scale set, change 5 lines in values.yaml
+**Scaling strategy:**
+- Increase `maxRunners` as needed (currently 4, can go to 8-12)
+- Monitor actual resource usage and adjust
+- ResourceQuota prevents overcommit from causing node exhaustion
 
 ---
 
@@ -189,15 +176,15 @@ Pain points?
 
 ---
 
-### 3. Other Considerations
+### 3. Kaniko for Privileged-Free Builds
 
-**Kaniko for privileged-free builds**:
-- Alternative to Docker-in-Docker (no privileged mode)
+**Alternative to Docker-in-Docker** (no privileged mode):
 - Requires workflow changes (`kaniko` instead of `docker build`)
 - Consider if security audit flags privileged containers
+- Would allow splitting runners (K8s-only for builds, DinD only for integration tests)
 
 **When to reconsider ARC**:
-- Scale significantly beyond current capacity (evaluate GitHub-hosted or multi-cluster)
+- Scale beyond 20 concurrent runners (evaluate GitHub-hosted)
 - Maintenance burden becomes unsustainable (consider managed solutions)
 
 ## References
