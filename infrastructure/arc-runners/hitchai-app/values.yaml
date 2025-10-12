@@ -39,11 +39,9 @@ template:
         # --group: Sets GID for docker.sock to allow runner container access
         # The runner container runs with this GID to access the socket
         - --group=$(DOCKER_GROUP_GID)
-        # --registry-mirror: Pull-through cache for Docker Hub images
-        # First pull fetches from docker.io and caches locally, subsequent pulls served from cache
-        # Mitigates Docker Hub rate limits (100 pulls/6h anonymous)
-        # Documentation: https://docs.docker.com/docker-hub/mirror/
-        - --registry-mirror=http://dockerhub-cache-docker-registry.registry-cache.svc.cluster.local:5000
+        # TEMPORARILY DISABLED: Registry mirror causing runner startup issues
+        # TODO: Re-enable after investigating Docker daemon startup delays
+        # - --registry-mirror=http://dockerhub-cache-docker-registry.registry-cache.svc.cluster.local:5000
       env:
         # GID 123 matches the docker group in the runner container
         # This allows the runner to access /var/run/docker.sock without being root
