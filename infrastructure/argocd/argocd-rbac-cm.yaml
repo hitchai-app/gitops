@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-rbac-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  # Agent debugging role (Option B: Read + Emergency Fix)
+  # Uses composable policy keys - ArgoCD auto-concatenates policy.*.csv
+  policy.agent-debug.csv: |
+    # Read permissions
+    p, role:agent-debug, applications, get, */*, allow
+    p, role:agent-debug, applications, list, */*, allow
+    p, role:agent-debug, applications, sync-status, */*, allow
+
+    # Debug operations
+    p, role:agent-debug, applications, diff, */*, allow
+    p, role:agent-debug, applications, resources, */*, allow
+    p, role:agent-debug, applications, logs, */*, allow
+
+    # Emergency fix operations
+    p, role:agent-debug, applications, refresh, */*, allow
+    p, role:agent-debug, applications, sync, */*, allow
+    p, role:agent-debug, applications, terminate-op, */*, allow
+
+    # Project visibility
+    p, role:agent-debug, projects, get, *, allow
+
+    # User to role mapping
+    g, agent-flawless, role:agent-debug
+
+    # Explicit denials
+    p, role:agent-debug, applications, delete, */*, deny
+    p, role:agent-debug, applications, create, */*, deny
+    p, role:agent-debug, applications, update, */*, deny
+    p, role:agent-debug, applications, override, */*, deny
+    p, role:agent-debug, applications, action, */*, deny
+    p, role:agent-debug, projects, create, *, deny
+    p, role:agent-debug, projects, update, *, deny
+    p, role:agent-debug, projects, delete, *, deny
