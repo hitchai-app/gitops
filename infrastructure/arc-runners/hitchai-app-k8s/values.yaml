@@ -1,0 +1,33 @@
+# GitHub Actions Runner Scale Set - hitchai-app-k8s
+# Simple Kubernetes runners WITHOUT Docker-in-Docker
+# For jobs that don't require Docker (tests, linting, deployments, etc.)
+
+# Required: GitHub configuration
+githubConfigUrl: "https://github.com/hitchai-app"
+# Reuse the same GitHub App secret as the DinD runners
+githubConfigSecret: "hitchai-app-github-app"
+
+# CRITICAL: This name must match the runs-on label in workflows
+runnerScaleSetName: "hitchai-app-k8s-runners"
+
+# Scaling - more runners since they're lighter weight
+maxRunners: 12
+
+# Runner pod template (simple - no DinD sidecar)
+template:
+  spec:
+    containers:
+    - name: runner
+      image: ghcr.io/actions/actions-runner:latest
+      resources:
+        requests:
+          cpu: "250m"
+          memory: "512Mi"
+        limits:
+          cpu: "1000m"
+          memory: "2Gi"
+
+# Explicitly link this scale set to the controller
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-gha-rs-controller

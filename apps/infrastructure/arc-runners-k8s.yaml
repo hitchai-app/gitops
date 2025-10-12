@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-runners-k8s
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    # Helm chart from OCI registry (ghcr.io)
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+      path: .
+      targetRevision: 0.12.1
+      helm:
+        releaseName: hitchai-app-k8s-runners
+        valueFiles:
+          - $values/infrastructure/arc-runners/hitchai-app-k8s/values.yaml
+    # Git repository containing values file
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
