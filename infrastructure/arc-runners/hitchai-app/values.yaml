@@ -7,12 +7,10 @@ githubConfigSecret: "hitchai-app-github-app"
 # Scaling (default: minRunners=0, maxRunners=unlimited)
 maxRunners: 4
 
-# Container mode (required for Docker-in-Docker)
-containerMode:
-  type: "dind"
-
 # Runner pod template
 # Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
+# NOTE: The ARC chart auto-populates DinD containers when containerMode.type=dind
+# (see chart values comments); we manage the sidecar explicitly here instead.
 template:
   spec:
     # In DinD mode (Kubernetes v1.29+), the dind container runs as an init container with restartPolicy: Always
