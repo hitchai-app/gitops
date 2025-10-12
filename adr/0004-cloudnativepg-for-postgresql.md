@@ -155,6 +155,7 @@ Configuration guardrails:
 - **Runbooks**: maintain procedures for storage exhaustion cleanup, manual failover recovery, operator restart, and full restore; exercise them on a recurring schedule.
 - **Monitoring**: alert on disk thresholds (≥70 %), operator health, replication lag, and failover events so issues surface before they become outages.
 - **Upgrades**: pin operator/image versions, subscribe to release notes, and rehearse upgrades in a non-production environment before touching production manifests.
+- **Managed roles and credentials**: CloudNativePG supports declarative role management through the Cluster spec's `managed.roles` section. When using `passwordSecret` references, the operator reads pre-existing Kubernetes secrets to set PostgreSQL passwords—it does NOT auto-generate these secrets. Each secret must be manually created with type `Opaque` containing three base64-encoded fields: `username`, `password`, and optionally `uri` (PostgreSQL connection string format: `postgresql://user:pass@host:port/database`). Add the label `cnpg.io/reload: "true"` to enable automatic password rotation when the secret changes. Use Sealed Secrets (ADR 0009) to store these credentials in Git. This approach allows applications to consume database connection strings directly from secrets while maintaining GitOps workflow and avoiding hardcoded superuser credentials in application configurations.
 
 ## When to Reconsider
 
