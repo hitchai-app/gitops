@@ -102,46 +102,6 @@ See individual ADRs for infrastructure and workload details.
 
 ## Best Practices
 
-### ArgoCD Applications with Helm Charts
-
-**We use ArgoCD's native multi-source Helm** (not kustomize helmCharts):
-
-```yaml
-spec:
-  project: default
-  sources:
-    # 1. Helm chart from OCI/HTTP registry
-    - repoURL: oci://ghcr.io/org/charts
-      chart: my-chart
-      targetRevision: 1.0.0
-      helm:
-        releaseName: my-release
-        valueFiles:
-          - $values/infrastructure/my-app/values.yaml
-    # 2. Git repo with values file
-    - repoURL: https://github.com/org/gitops.git
-      targetRevision: HEAD
-      ref: values
-    # 3. (Optional) Git repo with additional manifests (sealed secrets, etc.)
-    - repoURL: https://github.com/org/gitops.git
-      targetRevision: HEAD
-      path: infrastructure/my-app
-```
-
-**Why this approach:**
-- ✅ Works perfectly with app-of-apps pattern (no field stripping)
-- ✅ Simpler - no kustomization files needed
-- ✅ ArgoCD handles Helm natively
-- ✅ Can combine Helm charts with plain manifests (sealed secrets, configmaps)
-- ✅ No `--enable-helm` flags or middleware complexity
-
-**Why NOT kustomize helmCharts:**
-- ❌ In app-of-apps pattern, `kustomize.buildOptions` field gets stripped during Server-Side Apply
-- ❌ Requires kustomization.yaml files that add unnecessary complexity
-- ❌ Needs `--enable-helm` flag that may not survive parent→child Application sync
-
-**Examples:** `apps/infrastructure/arc-controller.yaml`, `apps/infrastructure/arc-runners.yaml`, `apps/infrastructure/observability.yaml`
-
 ### Kubernetes Manifests
 
 **Labels**: Do NOT add labels manually to Kubernetes resources. ArgoCD automatically adds tracking labels to all resources it manages. Manual labels are redundant and create maintenance overhead.
