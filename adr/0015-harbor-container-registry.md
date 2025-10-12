@@ -4,26 +4,7 @@
 
 **Date**: 2025-10-12
 
-**⚠️ RELATIONSHIP TO ADR 0016 (GitLab):**
-
-Harbor and GitLab can **coexist and complement each other**:
-
-**GitHub + Harbor:**
-- Harbor provides registry for GitHub Actions builds
-- Harbor proxies external registries (Docker Hub, GHCR, gcr.io)
-
-**GitLab + Harbor (both):**
-- GitLab CI builds → Push to Harbor (not GitLab registry)
-- Harbor proxies external registries (GitLab registry doesn't do this)
-- Harbor provides better scanning/RBAC than GitLab's built-in registry
-- Centralized registry management beyond GitLab CI
-
-**GitLab alone (no Harbor):**
-- Use GitLab's built-in registry for CI builds
-- Accept no pull-through cache for external registries
-- Accept basic scanning/RBAC (less features than Harbor)
-
-Harbor makes sense **regardless of GitHub vs GitLab choice** if you want multi-registry caching and advanced features.
+**Note:** Harbor can coexist with GitLab if/when migrating (ADR 0016). Harbor provides multi-registry proxy caching that GitLab's built-in registry doesn't offer.
 
 ## Context
 
@@ -201,29 +182,23 @@ Configuration:
 ### Negative
 
 **Resource Overhead:**
-- ❌ Harbor core: ~300-500MB RAM
-- ❌ Harbor jobservice: ~100-200MB RAM
-- ❌ Harbor portal (UI): ~50-100MB RAM
-- ❌ Trivy scanner: ~200-300MB RAM (spikes during scans)
-- ❌ Total: ~650MB-1.1GB RAM additional (acceptable on 128GB node)
+- ❌ Additional memory footprint for Harbor components (core, jobservice, portal, Trivy)
+- ❌ Acceptable on 128GB node, but significant increase vs simple registry
 
 **Operational Complexity:**
-- ❌ Multi-component upgrades (core, jobservice, registry, portal)
-- ❌ PostgreSQL schema migrations during upgrades
-- ❌ More components to monitor (core, jobservice, registry, Trivy)
-- ❌ More attack surface (web UI, API)
+- ❌ Multi-component upgrades with schema migrations
+- ❌ More components to monitor and maintain
+- ❌ Larger attack surface (web UI, API)
 
 **Migration Effort:**
-- ❌ Migrate cached images from old registry to Harbor
-- ❌ Update runner configurations to use Harbor endpoint
-- ❌ Update workflows that push images
-- ❌ Set up projects and RBAC policies
-- ⚠️ Estimated: 1 day migration + testing
+- ❌ Migrate cached images from old registry
+- ❌ Update runner configurations and workflows
+- ❌ Configure projects and RBAC policies
 
 **Limitations:**
-- ⚠️ Trivy scanning adds latency to image pushes (~30s-2min depending on image size)
-- ⚠️ Proxy cache has eventual consistency (first pull from upstream may be slower)
-- ⚠️ PostgreSQL dependency (if DB down, registry unavailable)
+- ⚠️ Trivy scanning adds latency to image pushes
+- ⚠️ Proxy cache eventual consistency (first pull slower)
+- ⚠️ PostgreSQL dependency for availability
 
 ### Neutral
 
@@ -233,88 +208,11 @@ Configuration:
 
 ## Implementation Notes
 
-### Harbor Chart Configuration
-
-```yaml
-# Use existing infrastructure
-database:
-  type: external
-  external:
-    host: postgres-shared-rw.postgres-shared.svc.cluster.local
-    port: 5432
-    username: harbor
-    database: harbor
-
-redis:
-  type: external
-  external:
-    addr: redis-shared.redis-shared.svc.cluster.local:6379
-
-# Resource limits
-core:
-  resources:
-    requests: { cpu: 100m, memory: 256Mi }
-    limits: { cpu: 500m, memory: 512Mi }
-
-jobservice:
-  resources:
-    requests: { cpu: 50m, memory: 128Mi }
-    limits: { cpu: 200m, memory: 256Mi }
-
-# Enable Trivy scanning
-trivy:
-  enabled: true
-  resources:
-    requests: { cpu: 100m, memory: 256Mi }
-    limits: { cpu: 500m, memory: 512Mi }
-
-# Storage
-persistence:
-  persistentVolumeClaim:
-    registry:
-      storageClass: longhorn-single-replica
-      size: 100Gi
-```
-
-### Project Structure
-
-```
-harbor.ops.last-try.org/
-├── public/              # Proxy cache (anonymous read)
-│   ├── docker.io/       # Docker Hub mirror
-│   ├── ghcr.io/         # GitHub Container Registry mirror
-│   ├── gcr.io/          # Google Container Registry mirror
-│   └── quay.io/         # Red Hat Quay mirror
-└── apps/                # Internal builds (authenticated push)
-    ├── inference-backend/
-    ├── dev-ui/
-    ├── landing/
-    └── platform-backend/
-```
-
-### Migration Plan
-
-1. Deploy Harbor in parallel with existing registry
-2. Configure Harbor as proxy cache for external registries
-3. Test pulling cached images through Harbor
-4. Update one runner scale set to use Harbor
-5. Verify builds work correctly
-6. Migrate remaining runners
-7. Decommission old registry after 7 days
-
-### Monitoring
-
-**Alerts:**
-- Harbor core unhealthy for > 5 minutes
-- Registry disk usage > 80%
-- Trivy scan failures > 10% of pushes
-- PostgreSQL connection pool exhaustion
-
-**Metrics to track:**
-- Image pull throughput (requests/sec)
-- Cache hit rate (proxy cache effectiveness)
-- Scan duration (Trivy performance)
-- Storage growth rate (capacity planning)
+- Use shared PostgreSQL (CloudNativePG) and Redis (Valkey) infrastructure
+- Enable Trivy for vulnerability scanning
+- Organize projects: `public/` for proxy caching, `apps/` for internal builds
+- Migrate incrementally: deploy parallel, test one runner, migrate remaining
+- Monitor Harbor health, disk usage, scan failures, and cache effectiveness
 
 ## When to Reconsider
 
