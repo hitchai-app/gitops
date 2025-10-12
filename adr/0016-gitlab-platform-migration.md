@@ -10,10 +10,11 @@ We are considering migrating from GitHub to self-hosted GitLab as our primary de
 - **GitHub** (source control)
 - **GitHub Actions** (CI/CD)
 - **Actions Runner Controller** (self-hosted runners, ADR 0014)
-- **Potential Harbor deployment** (container registry, ADR 0015)
 
-With a single unified platform:
+With a unified platform:
 - **GitLab** (SCM + CI/CD + Container Registry + Security Scanning)
+
+**Note:** Harbor (ADR 0015) can coexist with GitLab for multi-registry caching - see "Relationship to ADR 0015" section below.
 
 Current infrastructure:
 - Small team (developers handle ops)
@@ -31,7 +32,7 @@ If accepted, we will:
 - Migrate all repositories from GitHub
 - Rewrite all CI/CD workflows (GitHub Actions → GitLab CI)
 - Decommission Actions Runner Controller
-- Use GitLab's built-in container registry (Harbor becomes unnecessary)
+- Use GitLab's built-in container registry (can optionally add Harbor for multi-registry proxy)
 
 ## Motivation: Why Consider GitLab?
 
@@ -400,16 +401,44 @@ resources:
 
 ## Relationship to ADR 0015 (Harbor)
 
-**If GitLab is accepted:**
-- ❌ **Harbor ADR 0015 should be rejected** - GitLab's built-in registry is sufficient
-- ❌ **No need for separate container registry** - GitLab includes Trivy scanning, retention policies, RBAC
-- ✅ **Simpler architecture** - One less system to manage
+**Harbor and GitLab can coexist.** These ADRs are **NOT mutually exclusive**.
 
-**If GitLab is rejected:**
-- ✅ **Harbor ADR 0015 remains relevant** - Provides registry improvements without platform migration
-- ✅ **Incremental approach** - Solve registry problem without rewriting everything
+### Option A: GitLab + Harbor (Both)
 
-**These ADRs are mutually exclusive.**
+**Architecture:**
+```
+GitLab CI builds → Push to Harbor (not GitLab registry)
+Workflows pull base images → Harbor proxies Docker Hub/GHCR/gcr.io
+All images → Centralized in Harbor with scanning/RBAC
+```
+
+**Why both:**
+- ✅ Harbor provides multi-registry proxy (GitLab registry doesn't cache external registries)
+- ✅ Harbor has better Trivy integration, more advanced RBAC
+- ✅ Centralized registry management beyond just GitLab CI builds
+- ✅ Can store images from multiple sources (GitLab CI, manual pushes, other tools)
+
+**Trade-off:** Managing two systems (GitLab + Harbor) instead of one (GitLab only)
+
+### Option B: GitLab Only (No Harbor)
+
+**Use GitLab's built-in registry:**
+- ✅ Simpler architecture (one less system)
+- ✅ Tighter integration with GitLab CI
+- ❌ No pull-through cache for external registries (still pull from Docker Hub/GHCR directly)
+- ❌ Basic scanning/RBAC (less features than Harbor)
+- ❌ Only stores GitLab CI builds (not a general-purpose registry)
+
+**When this makes sense:** If multi-registry proxy caching is not important, GitLab's registry is sufficient.
+
+### Recommendation
+
+**If migrating to GitLab:**
+1. Start with GitLab registry only (simpler)
+2. Evaluate if external registry caching is painful (slow pulls, rate limits)
+3. Add Harbor later if needed (incremental approach)
+
+Harbor adds value **regardless of GitHub vs GitLab** if you need multi-registry caching and advanced features.
 
 ## When to Reconsider
 
@@ -457,7 +486,7 @@ resources:
 ## Related ADRs
 
 - ADR 0014: Actions Runner Controller (will be decommissioned if GitLab chosen)
-- ADR 0015: Harbor Container Registry (will be rejected if GitLab chosen)
+- ADR 0015: Harbor Container Registry (can coexist with GitLab for multi-registry proxy, or use GitLab registry alone)
 - ADR 0004: CloudNativePG (provides GitLab's database)
 - ADR 0005: Valkey StatefulSet (provides GitLab's Redis)
 - ADR 0008: cert-manager for TLS (provides GitLab's certificates)

@@ -1,16 +1,29 @@
 # 0015. Harbor Container Registry
 
-**Status**: Proposed (Conditional on ADR 0016)
+**Status**: Proposed
 
 **Date**: 2025-10-12
 
-**⚠️ IMPORTANT: This ADR is conditional on rejecting ADR 0016 (GitLab Platform Migration).**
+**⚠️ RELATIONSHIP TO ADR 0016 (GitLab):**
 
-If GitLab is chosen (ADR 0016 accepted), this ADR becomes irrelevant - GitLab's built-in container registry provides equivalent functionality. Harbor is only needed if staying with GitHub.
+Harbor and GitLab can **coexist and complement each other**:
 
-**Decision path:**
-- ADR 0016 Accepted → ADR 0015 Rejected (use GitLab registry)
-- ADR 0016 Rejected → ADR 0015 remains relevant (evaluate Harbor for GitHub)
+**GitHub + Harbor:**
+- Harbor provides registry for GitHub Actions builds
+- Harbor proxies external registries (Docker Hub, GHCR, gcr.io)
+
+**GitLab + Harbor (both):**
+- GitLab CI builds → Push to Harbor (not GitLab registry)
+- Harbor proxies external registries (GitLab registry doesn't do this)
+- Harbor provides better scanning/RBAC than GitLab's built-in registry
+- Centralized registry management beyond GitLab CI
+
+**GitLab alone (no Harbor):**
+- Use GitLab's built-in registry for CI builds
+- Accept no pull-through cache for external registries
+- Accept basic scanning/RBAC (less features than Harbor)
+
+Harbor makes sense **regardless of GitHub vs GitLab choice** if you want multi-registry caching and advanced features.
 
 ## Context
 
