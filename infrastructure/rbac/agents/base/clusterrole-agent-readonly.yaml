@@ -138,3 +138,12 @@ rules:
       - clusterroles
       - clusterrolebindings
     verbs: ["get", "list", "watch"]
+  # Actions Runner Controller - GitHub Actions self-hosted runners
+  - apiGroups:
+      - actions.github.com
+    resources:
+      - autoscalingrunnersets
+      - autoscalinglisteners
+      - ephemeralrunnersets
+      - ephemeralrunners
+    verbs: ["get", "list", "watch"]
