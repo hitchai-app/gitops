@@ -1,8 +1,16 @@
 # 0015. Harbor Container Registry
 
-**Status**: Proposed
+**Status**: Proposed (Conditional on ADR 0016)
 
 **Date**: 2025-10-12
+
+**⚠️ IMPORTANT: This ADR is conditional on rejecting ADR 0016 (GitLab Platform Migration).**
+
+If GitLab is chosen (ADR 0016 accepted), this ADR becomes irrelevant - GitLab's built-in container registry provides equivalent functionality. Harbor is only needed if staying with GitHub.
+
+**Decision path:**
+- ADR 0016 Accepted → ADR 0015 Rejected (use GitLab registry)
+- ADR 0016 Rejected → ADR 0015 remains relevant (evaluate Harbor for GitHub)
 
 ## Context
 
