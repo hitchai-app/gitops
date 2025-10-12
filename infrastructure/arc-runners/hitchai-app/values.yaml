@@ -26,13 +26,6 @@ template:
     - name: init-dind-externals
       image: ghcr.io/actions/actions-runner:latest
       command: ["cp", "-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
-      resources:
-        requests:
-          cpu: "10m"
-          memory: "64Mi"
-        limits:
-          cpu: "100m"
-          memory: "128Mi"
       volumeMounts:
         - name: dind-externals
           mountPath: /home/runner/tmpDir
@@ -60,13 +53,6 @@ template:
         # This allows the runner to access /var/run/docker.sock without being root
         - name: DOCKER_GROUP_GID
           value: "123"
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "256Mi"
-        limits:
-          cpu: "1000m"
-          memory: "4Gi"
       securityContext:
         # privileged: true required for DinD to function
         # Allows nested containerization (Docker daemon running in a container)
