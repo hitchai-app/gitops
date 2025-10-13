@@ -40,17 +40,17 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 
 ### Negative
 - ❌ **Privileged containers required for Docker-in-Docker** (security risk)
-  - ⚠️ **WARNING**: Docker-in-Docker mode (`containerMode: dind`) requires privileged containers, which have elevated security risks:
-    - Can access host resources
-    - Bypass container isolation
-    - Potential for container escape
-  - **Mitigation**: Ephemeral pods (destroyed after each job) limit exposure window
-  - **Alternative**: Kaniko for privileged-free builds (requires workflow changes)
+  - ⚠️ **CRITICAL**: `privileged: true` grants access to **Kubernetes node resources** (not just pod)
+  - Can mount node disk partitions (`/dev/sda1`), access other pods' data, escape to node
+  - **Real risk**: ARC Issue #1288 demonstrates mounting node filesystem from DinD container
+  - **Mitigation**: Ephemeral pods (destroyed after each job) + trusted users (GitHub org only)
+  - **Risk accepted**: No viable alternative without breaking `services:` block or major infrastructure changes
+  - **Alternatives evaluated**: Kata Containers (requires special nodes), Sysbox (requires CRI-O), Kaniko (breaks `services:`), Rootless DinD (high friction)
 - ❌ Resource overhead per runner (memory + CPU allocation)
 - ❌ Cold start time required to spin up new runner pods
 
 ### Neutral
-- Node capacity planning required based on runner resource requests
+- Node capacity planning required based on runner count and resource requests
 - Controller restart delays new runner creation (acceptable downtime)
 
 ## Implementation Notes
@@ -60,42 +60,40 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 **Authentication**: GitHub App (sealed secret) - more secure than PAT, fine-grained permissions
 
 **Security**:
-- ⚠️ **CRITICAL**: Docker-in-Docker mode requires privileged containers with elevated security risks
-- Privileged containers can access host resources and bypass container isolation
-- **Mitigation**: Ephemeral pods are destroyed after each job, limiting exposure window
-- **Alternative**: Kaniko for privileged-free builds (requires workflow changes, see Future Enhancements)
+- ⚠️ **CRITICAL**: `privileged: true` on DinD container grants access to Kubernetes node
+  - **What's accessible**: Node disk devices, other pods' storage, kernel capabilities
+  - **Proof**: Docker docs state "can get a root shell on the host and take control"
+  - **Example attack**: `mount /dev/sda1 /mnt` from DinD mounts node root filesystem
+- **Why this risk is accepted**:
+  - GitHub Actions `services:` block requires Docker daemon (very common in workflows)
+  - Alternatives break functionality or require massive infrastructure changes
+  - Ephemeral pods destroyed after each job (attacker must re-exploit every run)
+  - Trusted users only (GitHub org members, not public runners)
+- **When to revisit**:
+  - Security incident involving runner compromise
+  - Compliance requires VM-level isolation → Kata Containers
+  - Team scales beyond trusted org members
 
 ## Future Enhancements
 
-### 1. Light + Heavy Runner Architecture (High Priority)
+### 1. Increase Runner Capacity with Overcommit Strategy
 
-**Problem**: Most CI jobs don't need Docker (linting, tests, npm scripts), but current setup wastes resources with Docker-in-Docker for everything.
+**Current approach: Single DinD runner scale set with overcommit**
 
-**Solution**: Two-tier runner architecture
+We use a single DinD runner type for all jobs (light and heavy) with an overcommit strategy:
+- **Low resource requests**: Ensures many pods can schedule
+- **High resource limits**: Allows bursting for heavy jobs (Docker builds)
+- **ResourceQuota cap**: Prevents total namespace exhaustion
 
-#### Light Runners (New)
-- **Use case**: Linting, tests, scripts, non-Docker jobs (~80% of workflows)
-- **Container mode**: Kubernetes (no Docker, no privileged)
-- **Resources**: Lower memory/CPU footprint than heavy runners
-- **Scaling**: Higher max count (more concurrent jobs possible)
-- **Workflow**: `runs-on: hitchai-app-light`
+**Why not split into K8s-only and DinD runners:**
+- GitHub Actions `services:` block is very common and requires Docker
+- Operational simplicity: one scale set to maintain
+- Overcommit handles both light jobs (use ~512Mi) and heavy jobs (burst to 4Gi)
 
-#### Heavy Runners (Current, Rename)
-- **Use case**: Docker builds, complex containerized workflows (~20% of workflows)
-- **Container mode**: Docker-in-Docker (privileged)
-- **Resources**: Higher memory/CPU allocation for Docker daemon
-- **Scaling**: Lower max count (resource-intensive)
-- **Workflow**: `runs-on: hitchai-app-heavy`
-
-**Capacity planning**: Allocate based on actual workflow mix and resource availability. Light runners can handle higher concurrency due to lower per-pod resource requirements.
-
-**Benefits**:
-- ✅ Significant resource reduction for non-Docker jobs
-- ✅ No privileged containers for majority of jobs
-- ✅ Faster startup for Kubernetes-mode runners
-- ✅ Higher concurrent job capacity on same hardware
-
-**Implementation**: Copy existing runner scale set, change 5 lines in values.yaml
+**Scaling strategy:**
+- Increase `maxRunners` as needed (currently 4, can go to 8-12)
+- Monitor actual resource usage and adjust
+- ResourceQuota prevents overcommit from causing node exhaustion
 
 ---
 
@@ -189,15 +187,37 @@ Pain points?
 
 ---
 
-### 3. Other Considerations
+### 3. Alternative Container Runtimes (If Security Requirements Change)
 
-**Kaniko for privileged-free builds**:
-- Alternative to Docker-in-Docker (no privileged mode)
-- Requires workflow changes (`kaniko` instead of `docker build`)
-- Consider if security audit flags privileged containers
+**If privileged containers become unacceptable**, evaluated alternatives:
+
+#### Kata Containers (Recommended if must eliminate privileged)
+- Runs pods in lightweight VMs (microVMs)
+- Privileged escape contained within VM boundary
+- **Requires**: Dedicated nodes with nested virtualization
+- **Works with `services:` block**: Yes ✅
+- **Trade-off**: Higher cost, slower startup, more complexity
+
+#### Sysbox Runtime
+- Rootless nested containerization without privileged mode
+- **Blocker**: Requires cluster-wide CRI-O runtime (incompatible with containerd)
+- **Works with `services:` block**: Yes ✅
+
+#### Kaniko (Build-only)
+- **DOES NOT solve the problem**: Only handles `docker build`, not `services:` block
+- GitHub Discussion #46300: `services:` do not work in Kubernetes mode
+- **Archived**: No longer maintained
+- **Would break**: All workflows using `services: redis/postgres/etc`
+
+#### Rootless DinD
+- Docker daemon runs as non-root user
+- **High friction**: No sudo access, must pre-bake all tools in runner image
+- **Works with `services:` block**: Yes ✅
+
+**Decision**: Privileged DinD risk accepted as lower cost than alternatives for current threat model.
 
 **When to reconsider ARC**:
-- Scale significantly beyond current capacity (evaluate GitHub-hosted or multi-cluster)
+- Scale beyond 20 concurrent runners (evaluate GitHub-hosted)
 - Maintenance burden becomes unsustainable (consider managed solutions)
 
 ## References
@@ -205,6 +225,11 @@ Pain points?
 - [ARC Documentation](https://github.com/actions/actions-runner-controller)
 - [GitHub Actions Runner Controller Quickstart](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/quickstart-for-actions-runner-controller)
 - [Authenticating to GitHub API](https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/authenticating-to-the-github-api)
-- [Kaniko - Daemonless Docker Builds](https://github.com/GoogleContainerTools/kaniko)
+- [ARC Security Issue #1288](https://github.com/actions/actions-runner-controller/issues/1288) - Privileged container node access
+- [Docker Privileged Mode](https://docs.docker.com/reference/cli/docker/container/run/#privileged) - Official security warning
+- [CNCF: Privileged Pods](https://www.cncf.io/blog/2020/10/16/hack-my-mis-configured-kubernetes-privileged-pods/) - Attack demonstration
+- [GitHub Discussion #46300](https://github.com/orgs/community/discussions/46300) - Services block limitation in Kubernetes mode
+- [Sysbox Runtime](https://github.com/nestybox/sysbox) - Rootless nested containers
+- [Kata Containers](https://katacontainers.io/) - VM-level isolation
 - ADR 0001: GitOps with ArgoCD
 - ADR 0009: Secrets Management Strategy

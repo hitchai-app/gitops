@@ -9,7 +9,9 @@ githubConfigSecret: "hitchai-app-github-app"
 runnerScaleSetName: "hitchai-app-runners"
 
 # Scaling
-maxRunners: 4
+# Overcommit strategy: Low requests (512Mi) allow many pods to schedule
+# ResourceQuota (50Gi) caps total namespace usage to prevent node exhaustion
+maxRunners: 12
 
 # Runner pod template
 # Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
