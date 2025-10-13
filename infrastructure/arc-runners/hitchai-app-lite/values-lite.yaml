@@ -1,0 +1,167 @@
+# GitHub Actions Runner Scale Set - hitchai-app-lite
+#
+# Lightweight Runner Strategy:
+# - Reduced limits (4Gi runner, 2Gi DinD) for higher parallelism
+# - All volumes use tmpfs (medium: Memory) for maximum I/O performance
+# - tmpfs is THIN-PROVISIONED: sizeLimit = upper bound, only actual writes consume RAM
+# - No ResourceQuota - pod limits provide sufficient protection
+# - Typical usage: 1-2Gi per pod, can burst to 6Gi for heavier builds
+
+# Required: GitHub configuration
+githubConfigUrl: "https://github.com/hitchai-app"
+githubConfigSecret: "hitchai-app-github-app"
+
+# CRITICAL: This name must match the runs-on label in workflows
+# Use this in workflows with: runs-on: hitchai-app-runners-lite
+runnerScaleSetName: "hitchai-app-runners-lite"
+
+# Scaling
+# Lightweight runner strategy: 12 concurrent runners with reduced limits
+# Per-pod: ~6Gi limits (128Mi init + 2Gi DinD + 4Gi runner)
+# 12 runners × 6Gi = 72Gi (56% of 128GB cluster)
+maxRunners: 12
+
+# Runner pod template
+# Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
+# NOTE: The ARC chart auto-populates DinD containers when containerMode.type=dind
+# (see chart values comments); we manage the sidecar explicitly here instead.
+template:
+  spec:
+    # In DinD mode (Kubernetes v1.29+), the dind container runs as an init container with restartPolicy: Always
+    # This makes it a native Kubernetes sidecar that starts before and runs alongside the runner container
+    # Reference: https://github.blog/changelog/2025-06-13-actions-runner-controller-0-12-0-release/
+    initContainers:
+    # First init container: copies runner externals (binaries/tools) to shared volume
+    # This is required for the DinD container to access runner tools
+    - name: init-dind-externals
+      image: ghcr.io/actions/actions-runner:latest
+      command: ["cp", "-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
+      resources:
+        requests:
+          cpu: "10m"
+          memory: "64Mi"
+        limits:
+          cpu: "100m"
+          memory: "128Mi"
+      volumeMounts:
+        - name: dind-externals
+          mountPath: /home/runner/tmpDir
+
+    # Second init container (sidecar): Docker daemon for workflow steps
+    - name: dind
+      image: docker:dind
+      # Configure Docker daemon arguments
+      # Documentation: https://docs.docker.com/reference/cli/dockerd/
+      args:
+        - dockerd
+        # --host: Unix socket where Docker daemon listens
+        # Required for runner container to communicate with Docker daemon via DOCKER_HOST env var
+        - --host=unix:///var/run/docker.sock
+        # --group: Sets GID for docker.sock to allow runner container access
+        # The runner container runs with this GID to access the socket
+        - --group=$(DOCKER_GROUP_GID)
+        # --registry-mirror: Pull-through cache for Docker Hub images
+        # First pull fetches from docker.io and caches locally, subsequent pulls served from cache
+        # Mitigates Docker Hub rate limits (100 pulls/6h anonymous)
+        # Documentation: https://docs.docker.com/docker-hub/mirror/
+        - --registry-mirror=http://dockerhub-cache-docker-registry.registry-cache.svc.cluster.local:5000
+      env:
+        # GID 123 matches the docker group in the runner container
+        # This allows the runner to access /var/run/docker.sock without being root
+        - name: DOCKER_GROUP_GID
+          value: "123"
+      securityContext:
+        # privileged: true required for DinD to function
+        # Allows nested containerization (Docker daemon running in a container)
+        privileged: true
+      # restartPolicy: Always makes this init container a sidecar (runs throughout pod lifetime)
+      # Without this, init container would exit after completion
+      # Requires Kubernetes v1.29+ for native sidecar support
+      restartPolicy: Always
+      # Resource limits for Docker daemon (lightweight)
+      # Reduced for higher parallelism (12 runners)
+      # Docker daemon: 200-500MB base + reduced layer caching
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "128Mi"
+        limits:
+          cpu: "500m"
+          memory: "2Gi"  # Lightweight builds
+      # Startup probe ensures Docker daemon is ready before runner starts
+      startupProbe:
+        exec:
+          command:
+            - docker
+            - info
+        initialDelaySeconds: 0
+        failureThreshold: 24
+        periodSeconds: 5
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+      - name: dind-sock
+        mountPath: /var/run
+      - name: dind-externals
+        mountPath: /home/runner/externals
+      - name: docker-lib
+        mountPath: /var/lib/docker  # Docker storage (layers, images, cache) in RAM
+
+    containers:
+    - name: runner
+      image: ghcr.io/actions/actions-runner:latest
+      command: ["/home/runner/run.sh"]
+      # Lightweight runner strategy: Reduced limits for higher parallelism
+      # RAM-optimized: All volumes use tmpfs (thin-provisioned, only actual usage consumes RAM)
+      # Per-pod: 256Mi requests, 4Gi limits sufficient for most workflows
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "1000m"
+          memory: "4Gi"  # Lightweight builds
+      env:
+        # DOCKER_HOST tells the runner where to find the Docker daemon
+        # Points to the Unix socket shared with the dind sidecar
+        - name: DOCKER_HOST
+          value: unix:///var/run/docker.sock
+        # Maximum time runner waits for Docker daemon to be ready
+        - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
+          value: "120"
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+      - name: dind-sock
+        mountPath: /var/run
+
+    volumes:
+    # RAM-optimized volumes: All use tmpfs (medium: Memory) for performance
+    # tmpfs is THIN-PROVISIONED: sizeLimit is upper bound, only actual writes consume RAM
+    # Volume sizeLimits must be ≤ container memory limit (tmpfs counts toward container usage)
+    # Lightweight configuration: Reduced sizes for 12 concurrent runners
+
+    - name: work
+      emptyDir:
+        medium: Memory
+        sizeLimit: 1Gi  # Workflow workspace (reduced)
+
+    - name: docker-lib
+      emptyDir:
+        medium: Memory
+        sizeLimit: 1500Mi  # Docker images, layers, build cache (registry cache helps)
+
+    - name: dind-sock
+      emptyDir:
+        medium: Memory
+        sizeLimit: 50Mi  # Unix socket
+
+    - name: dind-externals
+      emptyDir:
+        medium: Memory
+        sizeLimit: 200Mi  # Runner binaries
+
+# Explicitly link this scale set to the controller the chart failed to discover automatically.
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-gha-rs-controller
