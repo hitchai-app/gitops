@@ -1,10 +1,10 @@
 # 0015. Harbor Container Registry
 
-**Status**: Proposed
+**Status**: Deferred
 
 **Date**: 2025-10-12
 
-**Note:** Harbor can coexist with GitLab if/when migrating (ADR 0016). Harbor provides multi-registry proxy caching that GitLab's built-in registry doesn't offer.
+**Note:** Deferred until we hit GHCR rate limits or significant operational pain with current simple registry setup. Harbor can coexist with GitLab if/when migrating (ADR 0016).
 
 ## Context
 
@@ -32,15 +32,17 @@ We currently use a simple Docker Registry v2 as a pull-through cache for Docker 
 
 ## Decision
 
-We will deploy **Harbor** as our container registry, replacing the simple Docker Registry.
+**Deferred** - Not deploying Harbor at this time.
 
-Key characteristics:
-- Leverages shared PostgreSQL (CloudNativePG) and Redis (Valkey) infrastructure
-- Trivy vulnerability scanning (advisory-only, non-blocking)
-- Multi-registry proxy for Docker Hub, GHCR, gcr.io, quay.io
-- Anonymous pull access for internal cluster use
-- LRU-based retention for proxy cache, match existing GHCR cleanup for internal builds
-- Web UI for visibility and management
+**Primary reason:** Current simple Docker Registry + GHCR setup is working adequately. Will reconsider when we hit concrete operational pain.
+
+**Trigger conditions for reconsidering:**
+- GHCR rate limits causing CI/CD failures
+- Docker Hub rate limits impacting pulls
+- Need for centralized vulnerability scanning becomes critical
+- Manual registry management becomes too burdensome
+
+**Current approach:** Continue with simple Docker Registry for Docker Hub caching, use GHCR for internal builds with existing cleanup jobs.
 
 ## Alternatives Considered
 
@@ -235,34 +237,25 @@ Key characteristics:
 5. **Team grows and needs advanced features Harbor lacks**
    - Action: Evaluate Nexus (if need multi-format), GitLab Registry (if adopting GitLab)
 
-## Configuration Decisions
+## When to Reconsider (Updated)
 
-### Vulnerability Scanning Strategy
-**Decision:** Advisory-only scanning (warnings, non-blocking).
+**Deploy Harbor when ANY of these conditions are met:**
 
-**Rationale:**
-- Current priority: Platform consolidation and vendor lock-in avoidance over security hardening
-- Blocking scans could interfere with deployment velocity
-- Security improvements can be incrementally added after consolidation complete
-- Accept upstream base image CVEs (focus on application code vulnerabilities)
+1. **GHCR rate limits hit** - Primary concern, would force immediate action
+2. **Docker Hub rate limits causing failures** - Current simple registry may not be sufficient
+3. **Security scanning becomes required** - Compliance or security policy mandates
+4. **Multi-registry caching needed** - Pulling from gcr.io, quay.io causes pain
+5. **Manual cleanup becomes burdensome** - GHCR cleanup jobs failing frequently or requiring too much maintenance
 
-### Retention Policy
-**For internal builds (apps/):**
-- Match current GHCR cleanup patterns from existing repos
-- Remove corresponding GHCR cleanup GitHub Actions after Harbor migration
+**Until then:** Simple Docker Registry + GHCR + cleanup jobs is adequate.
 
-**For external proxy cache (public/):**
-- LRU (Least Recently Used) with size constraints (preferred if supported)
-- Fallback: Combination of last N tags + last N days (both constraints)
-- Automatically remove least-used images when storage threshold reached
+## Configuration Notes (For Future Implementation)
 
-### Access Control
-**Decision:** Anonymous pull access for internal URLs.
-
-**Rationale:**
-- Required for Actions Runner Controller to pull images without credential management
-- Simplifies runner configuration (no registry auth needed)
-- Internal cluster network already provides boundary (not publicly exposed)
+If/when Harbor is deployed, key decisions already made:
+- **Scanning:** Advisory-only (non-blocking warnings)
+- **Retention:** LRU for proxy cache, match GHCR cleanup patterns for internal builds
+- **Access:** Anonymous pulls for internal cluster
+- **Infrastructure:** Use shared PostgreSQL (CloudNativePG) and Redis (Valkey)
 
 ## Related ADRs
 
