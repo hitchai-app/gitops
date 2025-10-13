@@ -85,6 +85,22 @@ ArgoCD will:
 - Will use ArgoCD ApplicationSets for environment-specific deployments
 - Webhooks will be configured for faster sync (vs polling)
 
+### Notifications
+
+ArgoCD Notifications sends deployment events to Discord:
+
+**Events tracked:**
+- Successful deployments (sync succeeded + healthy)
+- Sync failures (error/failed)
+- Health degraded
+
+**Configuration:**
+- Discord webhook service in `argocd-notifications-cm` ConfigMap
+- Default subscriptions for all applications
+- Rich embed format with app name, environment, revision, status, ArgoCD UI link
+
+**Location:** `infrastructure/argocd-notifications/`
+
 ## References
 
 - [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
