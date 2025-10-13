@@ -3,9 +3,9 @@
 # RAM Optimization Strategy:
 # - All volumes use tmpfs (medium: Memory) for maximum I/O performance
 # - tmpfs is THIN-PROVISIONED: sizeLimit = upper bound, only actual writes consume RAM
-# - High size limits (e.g., 16Gi for docker-lib) allow headroom without wasting RAM
+# - Volume sizeLimits set below container memory limits (e.g., 10Gi docker-lib vs 12Gi container)
 # - ResourceQuota (50Gi total) prevents runaway usage across all pods
-# - Typical usage: 2-4Gi per pod, limits allow bursting to 12Gi+ for heavy builds
+# - Typical usage: 2-4Gi per pod, limits allow bursting to 12Gi for heavy builds
 
 # Required: GitHub configuration
 githubConfigUrl: "https://github.com/hitchai-app"
@@ -142,7 +142,8 @@ template:
     volumes:
     # RAM-optimized volumes: All use tmpfs (medium: Memory) for performance
     # tmpfs is THIN-PROVISIONED: sizeLimit is upper bound, only actual writes consume RAM
-    # Example: 16Gi limit with 2Gi actual usage = only 2Gi RAM consumed
+    # Volume sizeLimits must be ≤ container memory limit (tmpfs counts toward container usage)
+    # DinD container: 12Gi limit, so docker-lib + overhead ≤ 12Gi
     # ResourceQuota (50Gi total) prevents runaway usage across all pods
 
     - name: work
@@ -153,7 +154,7 @@ template:
     - name: docker-lib
       emptyDir:
         medium: Memory
-        sizeLimit: 16Gi  # Docker images, layers, build cache (thin-provisioned!)
+        sizeLimit: 10Gi  # Docker images, layers, build cache (leaves 2Gi headroom for daemon)
 
     - name: dind-sock
       emptyDir:
