@@ -159,7 +159,7 @@ template:
     - name: dind-externals
       emptyDir:
         medium: Memory
-        sizeLimit: 500Mi  # Runner binaries and tools
+        sizeLimit: 1Gi  # Runner binaries and tools (increased from 500Mi - actual size varies)
 
 # Explicitly link this scale set to the controller the chart failed to discover automatically.
 controllerServiceAccount:
