@@ -4,9 +4,9 @@ metadata:
   name: argocd-notifications-cm
   namespace: argocd
 data:
-  # Discord webhook service
+  # Discord webhook service (URL from sealed secret)
   service.webhook.discord: |
-    url: https://discord.com/api/webhooks/1427117922576371723/to66HzUIUxptR_uz3RVAQ3jOxsbxmQrCQ7esXRs5ATFfTK1RH-RaUKbkYE4IywVBdBpS
+    url: $discord-webhook-url
     headers:
     - name: Content-Type
       value: application/json

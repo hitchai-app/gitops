@@ -95,11 +95,14 @@ ArgoCD Notifications sends deployment events to Discord:
 - Health degraded
 
 **Configuration:**
-- Discord webhook service in `argocd-notifications-cm` ConfigMap
+- Discord webhook URL stored in sealed secret (`argocd-notifications-secret`)
+- Service definition in `argocd-notifications-cm` ConfigMap references secret
 - Default subscriptions for all applications
 - Rich embed format with app name, environment, revision, status, ArgoCD UI link
 
 **Location:** `infrastructure/argocd-notifications/`
+
+**Security:** Webhook URL is encrypted using Sealed Secrets and stored in Git.
 
 ## References
 
