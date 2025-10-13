@@ -1,0 +1,43 @@
+---
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: minio-internal
+  namespace: minio-internal
+spec:
+  # Single-Node Single-Drive (SNSD) configuration per ADR 0006
+  # Minimal footprint for internal use (GitHub Actions cache)
+  pools:
+    - servers: 1
+      name: pool-0
+      volumesPerServer: 1
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: single-replica  # Longhorn single-replica class
+          resources:
+            requests:
+              storage: 50Gi  # Starting size for actions cache
+
+  # Root credentials from sealed secret
+  configuration:
+    name: minio-root-credentials
+
+  # TLS disabled for now (internal cluster access only)
+  # Will enable with cert-manager when adding ingress
+  requestAutoCert: false
+
+  # Resource limits for MinIO server pod
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+
+  # Single replica for SNSD (no HA yet)
+  # Will scale when adding nodes
