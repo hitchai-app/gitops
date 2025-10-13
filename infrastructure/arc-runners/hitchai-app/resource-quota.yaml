@@ -5,46 +5,63 @@ metadata:
   namespace: arc-runners
 spec:
   hard:
-    # Overcommit Strategy: Low requests guarantee scheduling, quota caps bursting
-    # Key insight: requests.memory allows 4 DinD runners to ALWAYS fit
-    #              limits.memory caps total burst to 75Gi (59% of 128GB cluster)
+    # Lightweight Runner Strategy: 12 concurrent runners with reduced limits
+    # Key insight: Reduced per-runner limits (4Gi vs 12Gi) enable higher parallelism
+    #              limits.memory caps total burst to 50Gi (39% of 128GB cluster)
 
     # CPU quotas with overcommit:
-    # - DinD pods: 4 × (10m init + 100m dind + 250m runner) = 4 × 360m = 1.44 cores requests
-    # - Total: ~2 cores requests → 4 runners guaranteed schedulable
-    requests.cpu: "2"
-    # Limits allow bursting: 4 × (100m init + 1 core dind + 3 cores runner) = 4 × 4.1 cores = 16.4 cores potential
+    # - DinD pods: 12 × (10m init + 100m dind + 100m runner) = 12 × 210m = 2.52 cores requests
+    # - Total: ~3 cores requests → 12 runners guaranteed schedulable
+    requests.cpu: "3"
+    # Limits allow bursting: 12 × (100m init + 500m dind + 1 core runner) = 12 × 1.6 cores = 19.2 cores potential
     limits.cpu: "20"
 
-    # Memory quotas with overcommit:
-    # - DinD pods: 4 × (64Mi init + 256Mi dind + 512Mi runner) = 4 × 832Mi = 3.25Gi requests
-    #             4 × (128Mi init + 6Gi dind + 12Gi runner) = 4 × 18.128Gi = 72.5Gi limits potential
-    # Total requests: 3.25Gi → 4 runners ALWAYS fit
-    # Total limits: 72.5Gi needed → quota set to 75Gi for headroom ✅
-    requests.memory: "4Gi"   # 3.25Gi used, 0.75Gi headroom
-    limits.memory: "75Gi"    # HARD CAP - 59% of 128GB cluster (allows 53GB for apps)
+    # Memory quotas with overcommit (LIGHTWEIGHT CONFIGURATION):
+    # - DinD pods: 12 × (64Mi init + 128Mi dind + 256Mi runner) = 12 × 448Mi = 5.25Gi requests
+    #             12 × (128Mi init + 2Gi dind + 4Gi runner) = 12 × 6.128Gi = 73.5Gi limits potential
+    # Total requests: 5.25Gi → 12 runners ALWAYS fit
+    # Total limits: 73.5Gi potential → quota caps at 50Gi ✅
+    # Actual enforcement: Only ~8 runners can burst simultaneously to full limits
+    requests.memory: "6Gi"   # 5.25Gi used, 0.75Gi headroom
+    limits.memory: "50Gi"    # HARD CAP - 39% of 128GB cluster (allows 78GB for apps)
 
     # Pod count limit (safety valve for runaway scaling)
-    count/pods: "10"  # 4 max DinD runners + 6 buffer for rolling updates/cleanup
+    count/pods: "20"  # 12 max DinD runners + 8 buffer for rolling updates/cleanup
 
-# How overcommit works:
+# How lightweight runners work:
 #
-# Example scenario 1 (Light jobs):
-#   4 DinD pods × 832Mi requests = 3.25Gi
-#   Actual usage: ~2Gi per job = 8Gi total
-#   All 4 runners active, plenty of headroom
+# Per-pod resources:
+#   Init:   128Mi limit
+#   DinD:   2Gi limit (reduced from 6Gi)
+#   Runner: 4Gi limit (reduced from 12Gi)
+#   Total:  ~6.128Gi per pod
 #
-# Example scenario 2 (Heavy workload):
-#   4 DinD pods bursting to 18Gi each = 72Gi
-#   Quota allows all 4 jobs at full burst (within 75Gi cap)
+# Math:
+#   50Gi quota ÷ 6.128Gi = 8.16 pods can burst to full limits simultaneously
+#   Remaining 4 pods will use actual RAM (typically 1-2Gi each)
 #
-# Example scenario 3 (Typical):
-#   2 light jobs × 2Gi = 4Gi
-#   2 heavy jobs × 12Gi = 24Gi
-#   Total: 28Gi (well under 75Gi cap)
+# Example scenario 1 (12 light jobs):
+#   12 pods × 1.5Gi actual = 18Gi total
+#   All 12 runners active, plenty of headroom
+#
+# Example scenario 2 (Mixed workload):
+#   8 light jobs × 1.5Gi = 12Gi
+#   4 heavier jobs × 4Gi = 16Gi
+#   Total: 28Gi (well under 50Gi cap)
+#
+# Example scenario 3 (Heavy burst):
+#   8 pods burst to 6Gi each = 48Gi
+#   Quota blocks 9th pod from bursting
+#   Actual: 8 heavy + 4 light = typical realistic load
 #
 # Benefits:
-# - Active pods can burst to full limits when memory available
-# - Quota prevents cluster OOM even if all pods burst simultaneously
-# - Statistical multiplexing: not all jobs peak at same time
-# - Single-node cluster: 75Gi / 128Gi = 59% memory budget for runners (49GB for apps)
+# - 12 concurrent jobs vs 4 (3× parallelism increase)
+# - Lower per-job limits sufficient for most builds
+# - Registry cache reduces Docker layer downloads
+# - Statistical multiplexing: not all jobs peak simultaneously
+# - Single-node cluster: 50Gi / 128Gi = 39% memory budget for runners (78GB for apps)
+#
+# Trade-offs:
+# - Cannot run 12 memory-intensive builds simultaneously (only ~8 can max out)
+# - Very heavy builds (>4Gi) may OOM, but these are rare
+# - Most CI/CD workflows fit comfortably in 2-3Gi actual usage

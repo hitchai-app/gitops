@@ -1,11 +1,12 @@
 # GitHub Actions Runner Scale Set - hitchai-app
 #
-# RAM Optimization Strategy:
+# Lightweight Runner Strategy (12 concurrent runners):
+# - Reduced per-runner limits (4Gi vs 12Gi) for higher parallelism
 # - All volumes use tmpfs (medium: Memory) for maximum I/O performance
 # - tmpfs is THIN-PROVISIONED: sizeLimit = upper bound, only actual writes consume RAM
-# - Volume sizeLimits set below container memory limits (e.g., 10Gi docker-lib vs 12Gi container)
 # - ResourceQuota (50Gi total) prevents runaway usage across all pods
-# - Typical usage: 2-4Gi per pod, limits allow bursting to 12Gi for heavy builds
+# - Per-pod actual usage: 1-2Gi typical, can burst to 4Gi
+# - Trade-off: More concurrent jobs vs per-job memory
 
 # Required: GitHub configuration
 githubConfigUrl: "https://github.com/hitchai-app"
@@ -16,12 +17,12 @@ githubConfigSecret: "hitchai-app-github-app"
 runnerScaleSetName: "hitchai-app-runners"
 
 # Scaling
-# Overcommit strategy: Low requests (512Mi) allow many pods to schedule
+# Lightweight runner strategy: Reduced limits allow 12 concurrent runners
 # ResourceQuota (50Gi limits.memory) caps total namespace usage to prevent node exhaustion
 # CRITICAL: ResourceQuota enforces at limits level, not actual usage
-# Current: 12Gi container limit × 4 runners = 48Gi (fits in 50Gi quota)
-# To increase runners: Must increase ResourceQuota first
-maxRunners: 4
+# Current: 4Gi container limit × 12 runners = 48Gi (fits in 50Gi quota)
+# Trade-off: Lower per-runner limits for higher parallelism
+maxRunners: 12
 
 # Runner pod template
 # Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
@@ -80,17 +81,17 @@ template:
       # Without this, init container would exit after completion
       # Requires Kubernetes v1.29+ for native sidecar support
       restartPolicy: Always
-      # Resource limits for Docker daemon
-      # Docker daemon: 200-500MB base + layer caching (up to 4GB during builds)
+      # Resource limits for Docker daemon (lightweight configuration)
+      # Reduced limits for higher parallelism (12 runners vs 4)
+      # Docker daemon: 200-500MB base + reduced layer caching
       # RAM-optimized: All Docker storage (layers, cache) lives in RAM via docker-lib volume
-      # Low requests ensure scheduling, high limits allow bursting
       resources:
         requests:
           cpu: "100m"
-          memory: "256Mi"
+          memory: "128Mi"
         limits:
-          cpu: "1000m"
-          memory: "6Gi"  # Increased to accommodate RAM-based Docker storage
+          cpu: "500m"
+          memory: "2Gi"  # Reduced for lightweight builds
       # Startup probe ensures Docker daemon is ready before runner starts
       startupProbe:
         exec:
@@ -114,17 +115,17 @@ template:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
       command: ["/home/runner/run.sh"]
-      # Overcommit strategy: Low requests for scheduling, high limits allow bursting
+      # Lightweight runner strategy: Reduced limits for higher parallelism
       # RAM-optimized: All volumes use tmpfs (thin-provisioned, only actual usage consumes RAM)
-      # Per-pod: 512Mi requests → 16 pods fit in quota
-      # Per-pod: 12Gi limits → Allows heavy builds, ResourceQuota caps total at 50Gi
+      # Per-pod: 256Mi requests → 12 pods easily fit
+      # Per-pod: 4Gi limits → 12 runners × 4Gi = 48Gi (within 50Gi quota)
       resources:
         requests:
-          cpu: "250m"
-          memory: "512Mi"
+          cpu: "100m"
+          memory: "256Mi"
         limits:
-          cpu: "3000m"
-          memory: "12Gi"  # Increased to accommodate RAM-based work + Docker storage
+          cpu: "1000m"
+          memory: "4Gi"  # Reduced for lightweight builds, sufficient for most workflows
       env:
         # DOCKER_HOST tells the runner where to find the Docker daemon
         # Points to the Unix socket shared with the dind sidecar
@@ -143,28 +144,28 @@ template:
     # RAM-optimized volumes: All use tmpfs (medium: Memory) for performance
     # tmpfs is THIN-PROVISIONED: sizeLimit is upper bound, only actual writes consume RAM
     # Volume sizeLimits must be ≤ container memory limit (tmpfs counts toward container usage)
-    # DinD container: 12Gi limit, so docker-lib + overhead ≤ 12Gi
+    # Lightweight configuration: Reduced sizes for 12 concurrent runners
     # ResourceQuota (50Gi total) prevents runaway usage across all pods
 
     - name: work
       emptyDir:
         medium: Memory
-        sizeLimit: 2Gi  # Workflow workspace
+        sizeLimit: 1Gi  # Workflow workspace (reduced for lightweight builds)
 
     - name: docker-lib
       emptyDir:
         medium: Memory
-        sizeLimit: 10Gi  # Docker images, layers, build cache (leaves 2Gi headroom for daemon)
+        sizeLimit: 3Gi  # Docker images, layers, build cache (reduced, registry cache helps)
 
     - name: dind-sock
       emptyDir:
         medium: Memory
-        sizeLimit: 100Mi  # Unix socket for Docker communication
+        sizeLimit: 50Mi  # Unix socket for Docker communication
 
     - name: dind-externals
       emptyDir:
         medium: Memory
-        sizeLimit: 500Mi  # Runner binaries and tools
+        sizeLimit: 200Mi  # Runner binaries and tools
 
 # Explicitly link this scale set to the controller the chart failed to discover automatically.
 controllerServiceAccount:
