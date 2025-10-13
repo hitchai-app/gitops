@@ -6,46 +6,45 @@ metadata:
 spec:
   hard:
     # Overcommit Strategy: Low requests guarantee scheduling, quota caps bursting
-    # Key insight: requests.memory allows 12 DinD runners to ALWAYS fit
-    #              limits.memory caps total burst to 50Gi
+    # Key insight: requests.memory allows 4 DinD runners to ALWAYS fit
+    #              limits.memory caps total burst to 75Gi (59% of 128GB cluster)
 
     # CPU quotas with overcommit:
-    # - DinD pods: 12 × (100m init + 100m dind + 250m runner) = 12 × 450m = 5.4 cores requests
-    # - Total: ~6 cores requests → 12 runners guaranteed schedulable
-    requests.cpu: "8"
-    # Limits allow bursting: 12 × (1 core dind + 3 cores runner) = 48 cores potential
-    limits.cpu: "50"
+    # - DinD pods: 4 × (10m init + 100m dind + 250m runner) = 4 × 360m = 1.44 cores requests
+    # - Total: ~2 cores requests → 4 runners guaranteed schedulable
+    requests.cpu: "2"
+    # Limits allow bursting: 4 × (100m init + 1 core dind + 3 cores runner) = 4 × 4.1 cores = 16.4 cores potential
+    limits.cpu: "20"
 
     # Memory quotas with overcommit:
-    # - DinD pods: 12 × (64Mi init + 256Mi dind + 512Mi runner) = 12 × 832Mi = 9.984Gi requests
-    #             12 × (128Mi init + 4Gi dind + 8Gi runner) = 12 × 12.125Gi = 145.5Gi limits potential
-    # Total requests: 9.984Gi → 12 runners ALWAYS fit
-    # Total limits: 145.5Gi potential → quota caps at 50Gi ✅
-    requests.memory: "10Gi"  # 9.984Gi used, 16Mi headroom for overhead
-    limits.memory: "50Gi"    # HARD CAP - 39% of 128GB cluster (allows 78GB for apps)
+    # - DinD pods: 4 × (64Mi init + 256Mi dind + 512Mi runner) = 4 × 832Mi = 3.25Gi requests
+    #             4 × (128Mi init + 6Gi dind + 12Gi runner) = 4 × 18.128Gi = 72.5Gi limits potential
+    # Total requests: 3.25Gi → 4 runners ALWAYS fit
+    # Total limits: 72.5Gi needed → quota set to 75Gi for headroom ✅
+    requests.memory: "4Gi"   # 3.25Gi used, 0.75Gi headroom
+    limits.memory: "75Gi"    # HARD CAP - 59% of 128GB cluster (allows 53GB for apps)
 
     # Pod count limit (safety valve for runaway scaling)
-    count/pods: "20"  # 12 max DinD runners + 8 rolling update buffer
+    count/pods: "10"  # 4 max DinD runners + 6 buffer for rolling updates/cleanup
 
 # How overcommit works:
 #
 # Example scenario 1 (Light jobs):
-#   12 DinD pods × 832Mi requests = 9.984Gi
-#   Actual usage: ~512Mi per job = 6Gi total
-#   All 12 runners active, plenty of headroom
+#   4 DinD pods × 832Mi requests = 3.25Gi
+#   Actual usage: ~2Gi per job = 8Gi total
+#   All 4 runners active, plenty of headroom
 #
-# Example scenario 2 (Mixed workload):
-#   4 DinD pods bursting to 12Gi each = 48Gi
-#   Quota allows 4 heavy jobs at full burst
-#   8 remaining runners blocked from starting (hit 50Gi cap)
+# Example scenario 2 (Heavy workload):
+#   4 DinD pods bursting to 18Gi each = 72Gi
+#   Quota allows all 4 jobs at full burst (within 75Gi cap)
 #
 # Example scenario 3 (Typical):
-#   8 light jobs × 1Gi = 8Gi
-#   2 heavy jobs × 8Gi = 16Gi
-#   Total: 24Gi (well under 50Gi cap)
+#   2 light jobs × 2Gi = 4Gi
+#   2 heavy jobs × 12Gi = 24Gi
+#   Total: 28Gi (well under 75Gi cap)
 #
 # Benefits:
 # - Active pods can burst to full limits when memory available
 # - Quota prevents cluster OOM even if all pods burst simultaneously
 # - Statistical multiplexing: not all jobs peak at same time
-# - Single-node cluster: 50Gi / 128Gi = 39% memory budget for runners
+# - Single-node cluster: 75Gi / 128Gi = 59% memory budget for runners (49GB for apps)
