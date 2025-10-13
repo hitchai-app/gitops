@@ -41,10 +41,10 @@ template:
       resources:
         requests:
           cpu: "10m"
-          memory: "64Mi"
+          memory: "128Mi"
         limits:
           cpu: "100m"
-          memory: "128Mi"
+          memory: "512Mi"  # Must be >= volume sizeLimit (500Mi) since tmpfs counts toward container memory
       volumeMounts:
         - name: dind-externals
           mountPath: /home/runner/tmpDir
