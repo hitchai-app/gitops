@@ -91,9 +91,36 @@ We use a single DinD runner type for all jobs (light and heavy) with an overcomm
 - Overcommit handles both light jobs (use ~512Mi) and heavy jobs (burst to 4Gi)
 
 **Scaling strategy:**
-- Increase `maxRunners` as needed (currently 4, can go to 8-12)
+- Increase `maxRunners` as needed (currently 4)
 - Monitor actual resource usage and adjust
 - ResourceQuota prevents overcommit from causing node exhaustion
+
+#### ResourceQuota Constraint Discovery (Oct 2025)
+
+**Critical learning: ResourceQuota enforces at `limits.memory` specification level, NOT actual usage.**
+
+**What we discovered:**
+- Deployed 12 runners with 12Gi memory limits each
+- Expected: Thin provisioning means only actual usage counts
+- Reality: All 9 runners failed with quota exceeded errors
+- Root cause: ResourceQuota admission control checks sum of limits, not actual memory consumption
+
+**Current constraint:**
+- Namespace quota: `50Gi limits.memory`
+- Per-runner limit: `12Gi` (runner container) + overhead
+- Math: `50Gi ÷ 12Gi = 4 runners maximum`
+- Attempting 5+ runners triggers: `exceeded quota: arc-runners-quota, requested: limits.memory=12Gi, used: limits.memory=48Gi, limited: limits.memory=50Gi`
+
+**Why thin provisioning doesn't help:**
+- tmpfs volumes ARE thin-provisioned (sizeLimit is upper bound, only writes consume RAM)
+- This helps with actual node memory pressure
+- BUT: Kubernetes ResourceQuota checks `spec.containers.resources.limits.memory` at admission time
+- Quota doesn't care if you only use 2Gi of your 12Gi limit—it blocks pod creation based on declared limits
+
+**Path forward:**
+- Short-term: Limited to 4 runners with current 50Gi quota
+- To increase runners: Must increase ResourceQuota first (e.g., 120Gi allows 10 runners)
+- Overcommit still valuable: 4 runners × 12Gi limits = 48Gi quota used, but actual RAM usage typically 8-16Gi total
 
 ---
 

@@ -10,8 +10,11 @@ runnerScaleSetName: "hitchai-app-runners"
 
 # Scaling
 # Overcommit strategy: Low requests (512Mi) allow many pods to schedule
-# ResourceQuota (50Gi) caps total namespace usage to prevent node exhaustion
-maxRunners: 12
+# ResourceQuota (50Gi limits.memory) caps total namespace usage to prevent node exhaustion
+# CRITICAL: ResourceQuota enforces at limits level, not actual usage
+# Current: 12Gi container limit × 4 runners = 48Gi (fits in 50Gi quota)
+# To increase runners: Must increase ResourceQuota first
+maxRunners: 4
 
 # Runner pod template
 # Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
