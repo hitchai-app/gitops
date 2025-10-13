@@ -92,6 +92,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0012](0012-metallb-load-balancer.md) | MetalLB for LoadBalancer | Accepted | 2025-10-06 |
 | [0013](0013-observability-foundation.md) | Observability Foundation | Accepted | 2025-10-08 |
 | [0014](0014-actions-runner-controller-for-github-actions.md) | Actions Runner Controller for GitHub Actions | Accepted | 2025-10-11 |
+| [0015](0015-nextjs-environment-variables-build-time.md) | Next.js Environment Variables: Build-Time Strategy | Accepted | 2025-10-13 |
 
 ## When to Create an ADR
 
