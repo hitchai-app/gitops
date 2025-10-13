@@ -1,0 +1,30 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: arc-runners-lite
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    # Helm chart from OCI registry
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+      chart: gha-runner-scale-set
+      targetRevision: 0.12.1
+      helm:
+        releaseName: hitchai-app-runners-lite
+        valueFiles:
+          - $values/infrastructure/arc-runners/hitchai-app-lite/values-lite.yaml
+    # Git repo with values file
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: arc-runners
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

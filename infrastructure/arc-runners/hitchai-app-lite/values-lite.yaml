@@ -1,0 +1,56 @@
+# GitHub Actions Runner Scale Set - hitchai-app-lite
+#
+# Lightweight Runner Strategy (NO Docker-in-Docker):
+# - Minimal resource footprint: 4Gi runner container only
+# - For workflows that don't need Docker (linting, unit tests, type checks)
+# - 12 concurrent runners for maximum parallelism
+# - Per-pod: ~4Gi limits (dramatically lighter than 18Gi heavy runners)
+# - Use heavy runners for workflows requiring Docker builds
+
+# Required: GitHub configuration
+githubConfigUrl: "https://github.com/hitchai-app"
+githubConfigSecret: "hitchai-app-github-app"
+
+# CRITICAL: This name must match the runs-on label in workflows
+# Use this in workflows with: runs-on: hitchai-app-runners-lite
+runnerScaleSetName: "hitchai-app-runners-lite"
+
+# Scaling
+# Lightweight runner strategy: 12 concurrent runners (no DinD overhead)
+# Per-pod: ~4Gi limit (runner only)
+# 12 runners × 4Gi = 48Gi (38% of 128GB cluster)
+maxRunners: 12
+
+# Runner pod template
+# Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
+# NOTE: No DinD - workflows requiring Docker must use heavy runners (hitchai-app-runners)
+template:
+  spec:
+    containers:
+    - name: runner
+      image: ghcr.io/actions/actions-runner:latest
+      command: ["/home/runner/run.sh"]
+      # Lightweight runner strategy: Minimal limits for maximum parallelism
+      # No Docker daemon overhead - suitable for linting, unit tests, type checking
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "1000m"
+          memory: "4Gi"
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+
+    volumes:
+    # Minimal volume configuration - just workflow workspace
+    - name: work
+      emptyDir:
+        medium: Memory
+        sizeLimit: 2Gi  # Workflow workspace
+
+# Explicitly link this scale set to the controller the chart failed to discover automatically.
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-gha-rs-controller
