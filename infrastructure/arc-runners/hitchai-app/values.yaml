@@ -1,4 +1,11 @@
 # GitHub Actions Runner Scale Set - hitchai-app
+#
+# RAM Optimization Strategy:
+# - All volumes use tmpfs (medium: Memory) for maximum I/O performance
+# - tmpfs is THIN-PROVISIONED: sizeLimit = upper bound, only actual writes consume RAM
+# - High size limits (e.g., 16Gi for docker-lib) allow headroom without wasting RAM
+# - ResourceQuota (50Gi total) prevents runaway usage across all pods
+# - Typical usage: 2-4Gi per pod, limits allow bursting to 12Gi+ for heavy builds
 
 # Required: GitHub configuration
 githubConfigUrl: "https://github.com/hitchai-app"
@@ -75,6 +82,7 @@ template:
       restartPolicy: Always
       # Resource limits for Docker daemon
       # Docker daemon: 200-500MB base + layer caching (up to 4GB during builds)
+      # RAM-optimized: All Docker storage (layers, cache) lives in RAM via docker-lib volume
       # Low requests ensure scheduling, high limits allow bursting
       resources:
         requests:
@@ -82,7 +90,7 @@ template:
           memory: "256Mi"
         limits:
           cpu: "1000m"
-          memory: "4Gi"
+          memory: "6Gi"  # Increased to accommodate RAM-based Docker storage
       # Startup probe ensures Docker daemon is ready before runner starts
       startupProbe:
         exec:
@@ -99,21 +107,24 @@ template:
         mountPath: /var/run
       - name: dind-externals
         mountPath: /home/runner/externals
+      - name: docker-lib
+        mountPath: /var/lib/docker  # Docker storage (layers, images, cache) in RAM
 
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
       command: ["/home/runner/run.sh"]
-      # Overcommit strategy: Low requests for scheduling, high limits for bursting
+      # Overcommit strategy: Low requests for scheduling, high limits allow bursting
+      # RAM-optimized: All volumes use tmpfs (thin-provisioned, only actual usage consumes RAM)
       # Per-pod: 512Mi requests → 16 pods fit in quota
-      # Per-pod: 12Gi limits → quota caps total at 50Gi (bursting controlled)
+      # Per-pod: 12Gi limits → Allows heavy builds, ResourceQuota caps total at 50Gi
       resources:
         requests:
           cpu: "250m"
           memory: "512Mi"
         limits:
           cpu: "3000m"
-          memory: "8Gi"
+          memory: "12Gi"  # Increased to accommodate RAM-based work + Docker storage
       env:
         # DOCKER_HOST tells the runner where to find the Docker daemon
         # Points to the Unix socket shared with the dind sidecar
@@ -129,16 +140,30 @@ template:
         mountPath: /var/run
 
     volumes:
+    # RAM-optimized volumes: All use tmpfs (medium: Memory) for performance
+    # tmpfs is THIN-PROVISIONED: sizeLimit is upper bound, only actual writes consume RAM
+    # Example: 16Gi limit with 2Gi actual usage = only 2Gi RAM consumed
+    # ResourceQuota (50Gi total) prevents runaway usage across all pods
+
     - name: work
       emptyDir:
         medium: Memory
-        sizeLimit: 2Gi
-    # Shared Unix socket volume for Docker daemon communication
+        sizeLimit: 2Gi  # Workflow workspace
+
+    - name: docker-lib
+      emptyDir:
+        medium: Memory
+        sizeLimit: 16Gi  # Docker images, layers, build cache (thin-provisioned!)
+
     - name: dind-sock
-      emptyDir: {}
-    # Volume for Docker externals (required by DinD init process)
+      emptyDir:
+        medium: Memory
+        sizeLimit: 100Mi  # Unix socket for Docker communication
+
     - name: dind-externals
-      emptyDir: {}
+      emptyDir:
+        medium: Memory
+        sizeLimit: 500Mi  # Runner binaries and tools
 
 # Explicitly link this scale set to the controller the chart failed to discover automatically.
 controllerServiceAccount:
