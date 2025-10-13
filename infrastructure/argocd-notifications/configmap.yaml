@@ -4,6 +4,10 @@ metadata:
   name: argocd-notifications-cm
   namespace: argocd
 data:
+  # ArgoCD context variables
+  context: |
+    argocdUrl: https://argocd.ops.last-try.org
+
   # Discord webhook service (URL from sealed secret)
   service.webhook.discord: |
     url: $discord-webhook-url
