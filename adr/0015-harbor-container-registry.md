@@ -34,13 +34,13 @@ We currently use a simple Docker Registry v2 as a pull-through cache for Docker 
 
 We will deploy **Harbor** as our container registry, replacing the simple Docker Registry.
 
-Configuration:
-- Shared PostgreSQL database (CloudNativePG)
-- Shared Redis for caching (Valkey)
-- Trivy for vulnerability scanning
-- Project structure: `public/` (cached external), `apps/` (internal builds)
-- Retention policy: keep last 10 tags per project, delete untagged after 7 days
-- RBAC: Read-only anonymous for cached images, authenticated push for internal builds
+Key characteristics:
+- Leverages shared PostgreSQL (CloudNativePG) and Redis (Valkey) infrastructure
+- Trivy vulnerability scanning (advisory-only, non-blocking)
+- Multi-registry proxy for Docker Hub, GHCR, gcr.io, quay.io
+- Anonymous pull access for internal cluster use
+- LRU-based retention for proxy cache, match existing GHCR cleanup for internal builds
+- Web UI for visibility and management
 
 ## Alternatives Considered
 
@@ -235,24 +235,34 @@ Configuration:
 5. **Team grows and needs advanced features Harbor lacks**
    - Action: Evaluate Nexus (if need multi-format), GitLab Registry (if adopting GitLab)
 
-## Open Questions
+## Configuration Decisions
 
-1. **Should we enforce scan-on-push blocking?** (Reject images with HIGH/CRITICAL CVEs)
-   - Pro: Forces security fixes before deployment
-   - Con: May block urgent hotfixes, requires CVE triage process
+### Vulnerability Scanning Strategy
+**Decision:** Advisory-only scanning (warnings, non-blocking).
 
-2. **How to handle base image vulnerabilities?** (CVEs in `node:24-alpine`, `redis:8-alpine`)
-   - Strategy: Accept upstream CVEs, focus on our code CVEs?
-   - Strategy: Pin base images to specific digests after scan approval?
+**Rationale:**
+- Current priority: Platform consolidation and vendor lock-in avoidance over security hardening
+- Blocking scans could interfere with deployment velocity
+- Security improvements can be incrementally added after consolidation complete
+- Accept upstream base image CVEs (focus on application code vulnerabilities)
 
-3. **Retention policy strictness?** (Keep last 10 tags vs keep last 30 days)
-   - Need to balance disk usage vs ability to rollback old versions
-   - Should `:prod` tags be immutable and exempt from cleanup?
+### Retention Policy
+**For internal builds (apps/):**
+- Match current GHCR cleanup patterns from existing repos
+- Remove corresponding GHCR cleanup GitHub Actions after Harbor migration
 
-4. **Anonymous pull access?** (Allow unauthenticated pulls from `public/` project)
-   - Pro: Simpler for runners, no credential management
-   - Con: Potential abuse, no pull accounting
-   - Compromise: Require auth for internal projects, anonymous for proxy cache?
+**For external proxy cache (public/):**
+- LRU (Least Recently Used) with size constraints (preferred if supported)
+- Fallback: Combination of last N tags + last N days (both constraints)
+- Automatically remove least-used images when storage threshold reached
+
+### Access Control
+**Decision:** Anonymous pull access for internal URLs.
+
+**Rationale:**
+- Required for Actions Runner Controller to pull images without credential management
+- Simplifies runner configuration (no registry auth needed)
+- Internal cluster network already provides boundary (not publicly exposed)
 
 ## Related ADRs
 
