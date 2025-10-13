@@ -11,23 +11,18 @@ spec:
     targetRevision: 5.0.18
     helm:
       valuesObject:
+        # Console disabled until tenant is deployed
         console:
-          enabled: true
-          resources:
-            requests:
-              cpu: 50m
-              memory: 128Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
+          enabled: false
 
+        # Conservative resource limits for operator-only phase
         resources:
           requests:
-            cpu: 100m
+            cpu: 50m
             memory: 128Mi
           limits:
-            cpu: 500m
-            memory: 512Mi
+            cpu: 200m
+            memory: 256Mi
 
   destination:
     server: https://kubernetes.default.svc
