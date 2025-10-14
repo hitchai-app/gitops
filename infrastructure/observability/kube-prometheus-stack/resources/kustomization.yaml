@@ -5,3 +5,4 @@ namespace: monitoring
 
 resources:
   - alertmanager-discord-webhook-sealed.yaml
+  - grafana-oauth-secret-sealed.yaml
