@@ -106,25 +106,26 @@ Current setup: kube-prometheus-stack provides infrastructure metrics via Prometh
 - **Phase 2 (if needed):** Additional 10-20GB for Grafana stack (Loki + Tempo)
 
 **Resource budget:**
-- **Phase 1:** SigNoz stack (~3.7 CPUs / ~5.5Gi RAM, ~31% of cluster capacity)
-  - ClickHouse: 1500m CPU / 3Gi RAM
-  - QueryService: 700m CPU / 768Mi RAM
-  - Frontend: 300m CPU / 256Mi RAM
-  - Alertmanager: 200m CPU / 256Mi RAM
-  - otelAgent: 700m CPU / 768Mi RAM
-  - otelCollector: 300m CPU / 256Mi RAM
+- **Phase 1:** SigNoz stack (~3.0 CPUs / ~4.5Gi RAM, ~25% of cluster capacity)
+  - SigNoz platform (ClickHouse, unified service): 2200m CPU / 3768Mi RAM
+  - k8s-infra collectors (separate chart): 800m CPU / 768Mi RAM
+    - otelAgent DaemonSet (per node): 500m CPU / 512Mi RAM
+    - otelCollector Deployment: 300m CPU / 256Mi RAM
 - **Phase 2 (if needed):** Additional ~1.5 CPUs / ~2Gi RAM for Grafana stack
   - Loki: 500m CPU / 1Gi RAM
   - Tempo: 500m CPU / 512Mi RAM
   - OTel Collector: 500m CPU / 512Mi RAM
-- **Combined (if Phase 2 executed):** ~5.2 CPUs / ~7.5Gi RAM (~43% of cluster capacity)
+- **Combined (if Phase 2 executed):** ~4.5 CPUs / ~6.5Gi RAM (~38% of cluster capacity)
 
 **Collection architecture:**
-- **Phase 1:** SigNoz k8s-infra collector
-  - otelAgent DaemonSet: node-level metrics, logs (1 CPU / 1Gi per node)
-  - otelCollector Deployment: cluster-level metrics, k8s events (500m CPU / 512Mi)
-  - Maintained by SigNoz team, optimized for their backend
-- **Phase 2 (if needed):** Separate OpenTelemetry Collector for Grafana stack
+- **Phase 1:** Two-chart deployment
+  - **Main SigNoz chart** (`signoz/signoz`): Platform backend (ClickHouse, query service, frontend)
+  - **k8s-infra chart** (`signoz/k8s-infra`): Separate chart for Kubernetes monitoring
+    - otelAgent DaemonSet: node-level metrics, container logs
+    - otelCollector Deployment: cluster-level metrics, k8s events
+    - Sends data to SigNoz OTel collector endpoint
+    - Maintained by SigNoz team, optimized for their backend
+- **Phase 2 (if needed):** Additional OpenTelemetry Collector for Grafana stack
   - Dual exporters (Loki + Tempo)
   - Deployed in separate namespace for clean separation
 - Manual instrumentation for application traces (both phases)

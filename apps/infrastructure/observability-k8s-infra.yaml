@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: observability-k8s-infra
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.signoz.io
+      chart: k8s-infra
+      targetRevision: 0.14.1
+      helm:
+        releaseName: k8s-infra
+        valueFiles:
+          - $values/infrastructure/observability-k8s-infra/values.yaml
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: observability-signoz
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
