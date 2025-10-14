@@ -1,0 +1,24 @@
+clusterName: "hetzner-ops"
+
+# Point to the SigNoz OTel collector in the same cluster
+otelCollectorEndpoint: "signoz-otel-collector.observability-signoz.svc.cluster.local:4317"
+otelInsecure: true
+
+# Reduced resource limits for evaluation
+otelAgent:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+otelCollector:
+  resources:
+    limits:
+      cpu: 300m
+      memory: 256Mi
+    requests:
+      cpu: 75m
+      memory: 128Mi
