@@ -1,6 +1,6 @@
 # 0017. Observability Stack Evaluation
 
-**Status**: Accepted
+**Status**: Proposed
 
 **Date**: 2025-10-14
 
@@ -104,6 +104,20 @@ Current setup: kube-prometheus-stack provides infrastructure metrics via Prometh
   - Monitor actual growth to inform long-term capacity planning
 - **Phase 2 (if needed):** Additional 10-20GB for Grafana stack (Loki + Tempo)
 
+**Resource budget:**
+- **Phase 1:** SigNoz stack (~3.7 CPUs / ~5.5Gi RAM, ~31% of cluster capacity)
+  - ClickHouse: 1500m CPU / 3Gi RAM
+  - QueryService: 700m CPU / 768Mi RAM
+  - Frontend: 300m CPU / 256Mi RAM
+  - Alertmanager: 200m CPU / 256Mi RAM
+  - otelAgent: 700m CPU / 768Mi RAM
+  - otelCollector: 300m CPU / 256Mi RAM
+- **Phase 2 (if needed):** Additional ~1.5 CPUs / ~2Gi RAM for Grafana stack
+  - Loki: 500m CPU / 1Gi RAM
+  - Tempo: 500m CPU / 512Mi RAM
+  - OTel Collector: 500m CPU / 512Mi RAM
+- **Combined (if Phase 2 executed):** ~5.2 CPUs / ~7.5Gi RAM (~43% of cluster capacity)
+
 **Collection architecture:**
 - **Phase 1:** SigNoz k8s-infra collector
   - otelAgent DaemonSet: node-level metrics, logs (1 CPU / 1Gi per node)
@@ -117,18 +131,21 @@ Current setup: kube-prometheus-stack provides infrastructure metrics via Prometh
 **Evaluation criteria:**
 
 *Phase 1 (SigNoz standalone):*
-- Log search speed and query effectiveness
-- Auto-dashboard quality vs manual Grafana dashboards
-- Operational overhead (deployment, updates, troubleshooting)
-- Actual storage usage vs projections
-- Query interface usability for team
-- API integration ease for automation and agents
+- **Log search speed:** Query response time (P50, P95, P99) for common search patterns
+- **Dashboard quality:** Auto-dashboard completeness vs manual Grafana dashboards
+- **Query performance:** Query execution time vs Prometheus/Grafana for equivalent queries
+- **Storage efficiency:** Actual storage growth rate (GB/day) vs projected
+- **Resource utilization:** CPU/memory usage under normal and peak load
+- **Query interface:** Time to construct queries for common troubleshooting tasks
+- **API usability:** Integration effort for automation scripts and agents
 
 *Phase 2 (comparative, if needed):*
-- Which system is accessed first during production incidents
-- Dashboard creation time investment (SigNoz auto vs Grafana manual)
-- Trace debugging effectiveness across both platforms
-- Query language preference (ClickHouse SQL vs PromQL/LogQL)
+- **Incident response:** Which system is accessed first during incidents (tracked)
+- **Dashboard creation:** Time investment (hours) to create equivalent dashboards in both systems
+- **Query speed comparison:** Side-by-side response time for identical queries
+- **Trace debugging:** Time to root-cause issues using traces in both platforms
+- **False positive rate:** Alert accuracy comparison between systems
+- **Query language preference:** Team survey on ClickHouse SQL vs PromQL/LogQL
 
 **Exit conditions:**
 

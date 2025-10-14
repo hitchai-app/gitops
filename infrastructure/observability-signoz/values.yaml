@@ -4,11 +4,11 @@ clickhouse:
     size: 30Gi
   resources:
     limits:
-      cpu: 2000m
-      memory: 4Gi
+      cpu: 1500m
+      memory: 3Gi
     requests:
-      cpu: 500m
-      memory: 2Gi
+      cpu: 300m
+      memory: 1536Mi
   initdb:
     scripts:
       retention.sql: |
@@ -19,20 +19,20 @@ clickhouse:
 queryService:
   resources:
     limits:
-      cpu: 1000m
-      memory: 1Gi
+      cpu: 700m
+      memory: 768Mi
     requests:
-      cpu: 200m
-      memory: 512Mi
+      cpu: 150m
+      memory: 384Mi
 
 frontend:
   resources:
     limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 100m
+      cpu: 300m
       memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
 
 alertmanager:
   resources:
@@ -48,16 +48,16 @@ k8s-infra:
   otelAgent:
     resources:
       limits:
-        cpu: 1000m
-        memory: 1Gi
+        cpu: 700m
+        memory: 768Mi
       requests:
-        cpu: 200m
-        memory: 512Mi
+        cpu: 150m
+        memory: 384Mi
   otelCollector:
     resources:
       limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 100m
+        cpu: 300m
         memory: 256Mi
+      requests:
+        cpu: 75m
+        memory: 128Mi
