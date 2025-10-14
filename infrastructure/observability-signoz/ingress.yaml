@@ -19,6 +19,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: signoz
+            name: oauth2-proxy-signoz
             port:
-              number: 8080
+              number: 4180
