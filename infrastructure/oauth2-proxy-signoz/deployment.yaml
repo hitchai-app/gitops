@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy-signoz
+  namespace: observability-signoz
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oauth2-proxy-signoz
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy-signoz
+    spec:
+      containers:
+      - name: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
+        args:
+          - --provider=oidc
+          - --oidc-issuer-url=https://auth.ops.last-try.org
+          - --client-id=oauth2-proxy-signoz
+          - --email-domain=*
+          - --upstream=http://signoz:8080
+          - --http-address=0.0.0.0:4180
+          - --redirect-url=https://signoz.ops.last-try.org/oauth2/callback
+          - --cookie-secure=true
+          - --cookie-domain=.ops.last-try.org
+          - --whitelist-domain=.ops.last-try.org
+          - --pass-access-token=true
+          - --pass-user-headers=true
+          - --set-xauthrequest=true
+        env:
+          - name: OAUTH2_PROXY_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-proxy-signoz-secrets
+                key: client-secret
+          - name: OAUTH2_PROXY_COOKIE_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: oauth2-proxy-signoz-secrets
+                key: cookie-secret
+        ports:
+          - containerPort: 4180
+            name: http
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
