@@ -1,0 +1,47 @@
+clickhouse:
+  persistence:
+    storageClass: single-replica
+    size: 10Gi
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+  initdb:
+    scripts:
+      retention.sql: |
+        ALTER TABLE signoz_metrics.distributed_samples_v2 MODIFY TTL toDateTime(timestamp) + INTERVAL 7 DAY;
+        ALTER TABLE signoz_logs.distributed_logs MODIFY TTL toDateTime(timestamp) + INTERVAL 7 DAY;
+        ALTER TABLE signoz_traces.distributed_spans MODIFY TTL toDateTime(timestamp) + INTERVAL 7 DAY;
+
+queryService:
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+frontend:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+alertmanager:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+k8s-infra:
+  enabled: false
