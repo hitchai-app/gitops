@@ -40,7 +40,7 @@ spec:
             secretKeyRef:
               name: dex-secrets
               key: dev-ui-stage-client-secret
-        - name: DEX_CLIENT_SECRET_DEX_UI_PROD
+        - name: DEX_CLIENT_SECRET_DEV_UI_PROD
           valueFrom:
             secretKeyRef:
               name: dex-secrets
