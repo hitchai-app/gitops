@@ -1,0 +1,17 @@
+# Sealed Secrets public certificate (cluster-generated, not committed)
+pub.pem
+
+# Temporary files
+.tmp/
+*.tmp
+*.swp
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
