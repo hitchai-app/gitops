@@ -63,9 +63,32 @@ config:
     format: json
 
 # Environment variables from sealed secret
-envFrom:
-  - secretRef:
-      name: dex-secrets
+env:
+  - name: GITHUB_CLIENT_ID
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: github-client-id
+  - name: GITHUB_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: github-client-secret
+  - name: DEX_CLIENT_SECRET_DEV_UI_STAGE
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: dev-ui-stage-client-secret
+  - name: DEX_CLIENT_SECRET_DEV_UI_PROD
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: dev-ui-prod-client-secret
+  - name: DEX_CLIENT_SECRET_GRAFANA
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: grafana-client-secret
 
 service:
   type: ClusterIP
