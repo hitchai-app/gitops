@@ -5,13 +5,30 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  source:
-    repoURL: https://github.com/hitchai-app/gitops
-    targetRevision: master
-    path: infrastructure/dex
+  sources:
+    # 1. Helm chart from official Dex repository
+    - repoURL: https://charts.dexidp.io
+      chart: dex
+      targetRevision: 0.19.1
+      helm:
+        releaseName: dex
+        valueFiles:
+          - $values/infrastructure/dex/values.yaml
+
+    # 2. Git repo with values file
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      ref: values
+
+    # 3. Git repo with additional manifests (namespace, ingress, sealed secrets)
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/dex
+
   destination:
     server: https://kubernetes.default.svc
     namespace: dex
+
   syncPolicy:
     automated:
       prune: true

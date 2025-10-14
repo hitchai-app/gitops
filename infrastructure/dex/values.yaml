@@ -1,0 +1,74 @@
+# Dex Helm Chart Values
+# Official chart: https://charts.dexidp.io
+
+image:
+  repository: ghcr.io/dexidp/dex
+  tag: v2.41.1
+
+replicaCount: 2
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+config:
+  issuer: https://auth.ops.last-try.org
+
+  storage:
+    type: memory
+
+  web:
+    http: 0.0.0.0:5556
+
+  connectors:
+    - type: github
+      id: github
+      name: GitHub
+      config:
+        clientID: $GITHUB_CLIENT_ID
+        clientSecret: $GITHUB_CLIENT_SECRET
+        orgs:
+          - name: hitchai-app
+
+  staticClients:
+    # OAuth2 Proxy for dev-ui (stage)
+    - id: oauth2-proxy-dev-ui-stage
+      redirectURIs:
+        - 'https://app-stage.steady.ops.last-try.org/oauth2/callback'
+      name: 'dev-ui Stage OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_DEV_UI_STAGE
+
+    # OAuth2 Proxy for dev-ui (prod)
+    - id: oauth2-proxy-dev-ui-prod
+      redirectURIs:
+        - 'https://app.steady.ops.last-try.org/oauth2/callback'
+      name: 'dev-ui Prod OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_DEV_UI_PROD
+
+    # Grafana (native OIDC)
+    - id: grafana
+      redirectURIs:
+        - 'https://grafana.ops.last-try.org/login/generic_oauth'
+      name: 'Grafana'
+      secretEnv: DEX_CLIENT_SECRET_GRAFANA
+
+  staticPasswords: []
+
+  logger:
+    level: info
+    format: json
+
+# Environment variables from sealed secret
+envFrom:
+  - secretRef:
+      name: dex-secrets
+
+service:
+  type: ClusterIP
+  ports:
+    http:
+      port: 5556
