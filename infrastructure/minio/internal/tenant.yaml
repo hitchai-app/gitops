@@ -20,7 +20,7 @@ spec:
           storageClassName: single-replica  # Longhorn single-replica class
           resources:
             requests:
-              storage: 10Gi  # Starting size for actions cache
+              storage: 25Gi  # Starting size for actions cache
 
   # Root credentials from sealed secret
   configuration:
