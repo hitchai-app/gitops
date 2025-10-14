@@ -100,6 +100,15 @@ See individual ADRs for infrastructure and workload details.
 3. Submit PR for review
 4. Merge to master → ArgoCD auto-syncs to cluster
 
+### Working with Automated Reviews
+
+This repository uses automated code review via GitHub Actions. See [`AGENTS.md`](AGENTS.md) for detailed guidance on:
+- Correcting reviewer errors with evidence-based comments
+- Reminding the reviewer it has **full `gh` CLI access** (it often assumes it lacks permissions)
+- Using `@claude` mentions to trigger re-evaluation
+
+**Key reminder:** The automated reviewer has kubectl and gh CLI access. If it claims it cannot verify something, remind it to use these tools.
+
 ## Best Practices
 
 ### ArgoCD Applications with Helm Charts
