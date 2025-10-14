@@ -95,6 +95,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0015](0015-harbor-container-registry.md) | Harbor Container Registry | Deferred | 2025-10-12 |
 | [0016](0016-gitlab-platform-migration.md) | GitLab Platform Migration | Deferred | 2025-10-12 |
 | [0017](0017-observability-stack-evaluation.md) | Observability Stack Evaluation | Proposed | 2025-10-14 |
+| [0018](0018-dex-authentication-provider.md) | Dex Authentication Provider | Proposed | 2025-10-14 |
 
 ## When to Create an ADR
 
