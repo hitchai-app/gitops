@@ -87,8 +87,8 @@ Current setup: kube-prometheus-stack provides infrastructure metrics via Prometh
 
 ### Neutral
 - Phased evaluation reduces upfront resource commitment and allows early exit if SigNoz satisfies requirements
-- 30GB storage matches SigNoz minimum recommendation; sufficient for evaluation with 7-day retention
-- Retention policies (7-day) set conservatively during evaluation, expandable later
+- 30GB storage matches SigNoz minimum recommendation; sufficient for evaluation with default retention (15d logs/traces, 30d metrics)
+- Retention policies use SigNoz defaults, adjustable via UI during evaluation
 - Either stack can be promoted to primary after evaluation
 - Evaluation period allows real-world usage patterns to emerge
 - Infrastructure and application observability may consolidate or remain separate
@@ -96,10 +96,11 @@ Current setup: kube-prometheus-stack provides infrastructure metrics via Prometh
 ## Implementation Considerations
 
 **Storage strategy:**
-- **Phase 1:** 30GB ClickHouse storage with 7-day retention
+- **Phase 1:** 30GB ClickHouse storage with default retention
   - Matches SigNoz's minimum recommendation
   - Single-node cluster has sufficient total storage (280GB SSD, ~11% allocation)
-  - 7-day retention for all signals (logs, metrics, traces) during evaluation
+  - SigNoz default retention: 15 days (logs/traces), 30 days (metrics)
+  - Adjustable via SigNoz Settings UI during evaluation if needed
   - No volume expansion enabled; manual intervention required if storage fills
   - Monitor actual growth to inform long-term capacity planning
 - **Phase 2 (if needed):** Additional 10-20GB for Grafana stack (Loki + Tempo)
@@ -173,7 +174,7 @@ Current setup: kube-prometheus-stack provides infrastructure metrics via Prometh
 - **Extend evaluation if:** Usage patterns remain unclear or capabilities evolve during trial
 
 **Revisit this ADR if:**
-- Storage constraints tighten (30GB proves insufficient even with 7-day retention)
+- Storage constraints tighten (30GB proves insufficient even with default retention)
 - Application instrumentation requirements change (heavier trace volume)
 - Cluster scales to multi-node (changes resource availability)
 - Team composition changes (different observability expertise)
