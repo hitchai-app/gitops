@@ -44,4 +44,20 @@ alertmanager:
       memory: 128Mi
 
 k8s-infra:
-  enabled: false
+  enabled: true
+  otelAgent:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+  otelCollector:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 256Mi
