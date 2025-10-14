@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy-dev-ui
+  namespace: steady-stage
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: oauth2-proxy-dev-ui
+  template:
+    metadata:
+      labels:
+        app: oauth2-proxy-dev-ui
+    spec:
+      containers:
+      - name: oauth2-proxy
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+        args:
+          - --provider=oidc
+          - --provider-display-name=Dex
+          - --oidc-issuer-url=https://auth.ops.last-try.org
+          - --client-id=oauth2-proxy-dev-ui-stage
+          - --client-secret-file=/secrets/client-secret
+          - --cookie-secret-file=/secrets/cookie-secret
+          - --email-domain=*
+          - --upstream=http://dev-ui.steady-stage.svc.cluster.local:3000
+          - --http-address=0.0.0.0:4180
+          - --redirect-url=https://app-stage.steady.ops.last-try.org/oauth2/callback
+          - --skip-provider-button=true
+          - --cookie-secure=true
+          - --cookie-httponly=true
+          - --cookie-samesite=lax
+        ports:
+        - containerPort: 4180
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - name: secrets
+          mountPath: /secrets
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 4180
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 4180
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      volumes:
+      - name: secrets
+        secret:
+          secretName: oauth2-proxy-dev-ui-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oauth2-proxy-dev-ui
+  namespace: steady-stage
+spec:
+  selector:
+    app: oauth2-proxy-dev-ui
+  ports:
+  - name: http
+    port: 4180
+    targetPort: 4180
+    protocol: TCP

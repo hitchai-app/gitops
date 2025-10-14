@@ -62,6 +62,33 @@ grafana:
       cpu: 500m
       memory: 512Mi
 
+  # Dex OIDC Authentication
+  grafana.ini:
+    server:
+      root_url: https://grafana.ops.last-try.org
+
+    auth.generic_oauth:
+      enabled: true
+      name: Dex
+      allow_sign_up: true
+      client_id: grafana
+      client_secret: $__file{/etc/secrets/oauth/client-secret}
+      scopes: openid profile email groups
+      auth_url: https://auth.ops.last-try.org/auth
+      token_url: https://auth.ops.last-try.org/token
+      api_url: https://auth.ops.last-try.org/userinfo
+      allowed_domains: ""
+      # Users in hitchai-app GitHub org get Admin, others get Viewer
+      role_attribute_path: contains(groups[*], 'hitchai-app') && 'Admin' || 'Viewer'
+
+  # Mount OAuth client secret from sealed secret
+  extraSecretMounts:
+    - name: oauth-secret
+      secretName: grafana-oauth-secret
+      defaultMode: 0440
+      mountPath: /etc/secrets/oauth
+      readOnly: true
+
 prometheus:
   prometheusSpec:
     retention: 7d
