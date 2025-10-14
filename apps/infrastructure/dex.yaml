@@ -9,7 +9,7 @@ spec:
     # 1. Helm chart from official Dex repository
     - repoURL: https://charts.dexidp.io
       chart: dex
-      targetRevision: 0.19.1
+      targetRevision: 0.24.0
       helm:
         releaseName: dex
         valueFiles:
