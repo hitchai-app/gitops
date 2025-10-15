@@ -36,6 +36,8 @@ config:
         redirectURI: https://auth.ops.last-try.org/callback
         orgs:
           - name: hitchai-app
+            # No teams specified = fetch all teams user is member of
+            # Groups will be returned as: hitchai-app:<team-slug>
 
   staticClients:
     # OAuth2 Proxy for dev-ui (stage)

@@ -28,7 +28,7 @@ spec:
           - --cookie-domain=.ops.last-try.org
           - --email-domain=*
           - --oidc-groups-claim=groups
-          - --allowed-group=hitchai-app
+          - --allowed-group=hitchai-app:ops
           - --upstream=http://longhorn-frontend.longhorn-system.svc.cluster.local:80
           - --http-address=0.0.0.0:4180
           - --redirect-url=https://longhorn.ops.last-try.org/oauth2/callback
