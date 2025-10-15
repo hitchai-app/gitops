@@ -78,8 +78,8 @@ grafana:
       token_url: https://auth.ops.last-try.org/token
       api_url: https://auth.ops.last-try.org/userinfo
       allowed_domains: ""
-      # Users in hitchai-app GitHub org get Admin, others get Viewer
-      role_attribute_path: contains(groups[*], 'hitchai-app') && 'Admin' || 'Viewer'
+      # Users in hitchai-app:ops team get Admin, others get Viewer
+      role_attribute_path: contains(groups[*], 'hitchai-app:ops') && 'Admin' || 'Viewer'
 
   # Mount OAuth client secret from sealed secret
   extraSecretMounts:
