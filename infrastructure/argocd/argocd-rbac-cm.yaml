@@ -7,6 +7,13 @@ metadata:
     app.kubernetes.io/name: argocd-rbac-cm
     app.kubernetes.io/part-of: argocd
 data:
+  # Default policy: deny all by default
+  policy.default: role:readonly
+
+  # OIDC SSO users from hitchai-app org get admin access
+  policy.oidc.csv: |
+    g, hitchai-app:*, role:admin
+
   # Agent debugging role (Option B: Read + Emergency Fix)
   # Uses composable policy keys - ArgoCD auto-concatenates policy.*.csv
   policy.agent-debug.csv: |

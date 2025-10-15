@@ -1,24 +1,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: signoz
-  namespace: observability-signoz
+  name: longhorn
+  namespace: longhorn-system
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
   tls:
   - hosts:
-    - signoz.ops.last-try.org
-    secretName: signoz-tls
+    - longhorn.ops.last-try.org
+    secretName: longhorn-tls
   rules:
-  - host: signoz.ops.last-try.org
+  - host: longhorn.ops.last-try.org
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: oauth2-proxy-signoz
+            name: oauth2-proxy-longhorn
             port:
               number: 4180

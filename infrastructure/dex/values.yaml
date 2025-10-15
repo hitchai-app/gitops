@@ -31,6 +31,7 @@ config:
       config:
         clientID: $GITHUB_CLIENT_ID
         clientSecret: $GITHUB_CLIENT_SECRET
+        redirectURI: https://auth.ops.last-try.org/callback
         orgs:
           - name: hitchai-app
 
@@ -55,6 +56,41 @@ config:
         - 'https://grafana.ops.last-try.org/login/generic_oauth'
       name: 'Grafana'
       secretEnv: DEX_CLIENT_SECRET_GRAFANA
+
+    # ArgoCD (native OIDC)
+    - id: argocd
+      redirectURIs:
+        - 'https://argocd.ops.last-try.org/auth/callback'
+      name: 'ArgoCD'
+      secretEnv: DEX_CLIENT_SECRET_ARGOCD
+
+    # OAuth2 Proxy for Longhorn
+    - id: oauth2-proxy-longhorn
+      redirectURIs:
+        - 'https://longhorn.ops.last-try.org/oauth2/callback'
+      name: 'Longhorn OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_LONGHORN
+
+    # OAuth2 Proxy for Alertmanager
+    - id: oauth2-proxy-alertmanager
+      redirectURIs:
+        - 'https://alertmanager.ops.last-try.org/oauth2/callback'
+      name: 'Alertmanager OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_ALERTMANAGER
+
+    # OAuth2 Proxy for Prometheus
+    - id: oauth2-proxy-prometheus
+      redirectURIs:
+        - 'https://prometheus.ops.last-try.org/oauth2/callback'
+      name: 'Prometheus OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_PROMETHEUS
+
+    # OAuth2 Proxy for SigNoz
+    - id: oauth2-proxy-signoz
+      redirectURIs:
+        - 'https://signoz.ops.last-try.org/oauth2/callback'
+      name: 'SigNoz OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_SIGNOZ
 
   staticPasswords: []
 
@@ -89,6 +125,31 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: grafana-client-secret
+  - name: DEX_CLIENT_SECRET_ARGOCD
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: argocd-client-secret
+  - name: DEX_CLIENT_SECRET_LONGHORN
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: longhorn-client-secret
+  - name: DEX_CLIENT_SECRET_ALERTMANAGER
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: alertmanager-client-secret
+  - name: DEX_CLIENT_SECRET_PROMETHEUS
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: prometheus-client-secret
+  - name: DEX_CLIENT_SECRET_SIGNOZ
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: signoz-client-secret
 
 service:
   type: ClusterIP
