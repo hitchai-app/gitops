@@ -37,6 +37,8 @@ spec:
           - --pass-access-token=true
           - --set-authorization-header=true
           - --set-xauthrequest=true
+          - --skip-auth-route=^/signup
+          - --skip-auth-route=^/api/v1/register
         env:
         - name: OAUTH2_PROXY_CLIENT_SECRET
           valueFrom:
