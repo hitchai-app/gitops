@@ -96,6 +96,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0016](0016-gitlab-platform-migration.md) | GitLab Platform Migration | Deferred | 2025-10-12 |
 | [0017](0017-observability-stack-evaluation.md) | Observability Stack Evaluation | Proposed | 2025-10-14 |
 | [0018](0018-dex-authentication-provider.md) | Dex Authentication Provider | Proposed | 2025-10-14 |
+| [0019](0019-resource-organization-and-application-granularity.md) | Resource Organization and Application Granularity | Accepted | 2025-10-15 |
 
 ## When to Create an ADR
 
