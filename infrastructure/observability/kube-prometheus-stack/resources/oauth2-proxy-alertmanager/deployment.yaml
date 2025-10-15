@@ -22,8 +22,8 @@ spec:
           - --provider=oidc
           - --oidc-issuer-url=https://auth.ops.last-try.org
           - --client-id=oauth2-proxy-alertmanager
-          - --client-secret-file=/etc/oauth2-proxy/client-secret
-          - --cookie-secret-file=/etc/oauth2-proxy/cookie-secret
+          - --client-secret=$(OAUTH2_PROXY_CLIENT_SECRET)
+          - --cookie-secret=$(OAUTH2_PROXY_COOKIE_SECRET)
           - --cookie-secure=true
           - --cookie-domain=.ops.last-try.org
           - --email-domain=*
@@ -37,14 +37,21 @@ spec:
           - --pass-access-token=true
           - --set-authorization-header=true
           - --set-xauthrequest=true
+        env:
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-alertmanager-secrets
+              key: client-secret
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-alertmanager-secrets
+              key: cookie-secret
         ports:
         - containerPort: 4180
           name: http
           protocol: TCP
-        volumeMounts:
-        - name: oauth2-proxy-secrets
-          mountPath: /etc/oauth2-proxy
-          readOnly: true
         resources:
           requests:
             cpu: 10m
@@ -64,7 +71,3 @@ spec:
             port: 4180
           initialDelaySeconds: 5
           periodSeconds: 5
-      volumes:
-      - name: oauth2-proxy-secrets
-        secret:
-          secretName: oauth2-proxy-alertmanager-secrets
