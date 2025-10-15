@@ -6,3 +6,11 @@ namespace: monitoring
 resources:
   - alertmanager-discord-webhook-sealed.yaml
   - grafana-oauth-secret-sealed.yaml
+  - oauth2-proxy-alertmanager/deployment.yaml
+  - oauth2-proxy-alertmanager/service.yaml
+  - oauth2-proxy-alertmanager/secrets-sealed.yaml
+  - oauth2-proxy-alertmanager/ingress.yaml
+  - oauth2-proxy-prometheus/deployment.yaml
+  - oauth2-proxy-prometheus/service.yaml
+  - oauth2-proxy-prometheus/secrets-sealed.yaml
+  - oauth2-proxy-prometheus/ingress.yaml

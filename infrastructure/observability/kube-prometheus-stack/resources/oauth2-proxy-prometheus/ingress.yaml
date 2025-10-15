@@ -1,24 +1,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: signoz
-  namespace: observability-signoz
+  name: prometheus
+  namespace: monitoring
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
   tls:
   - hosts:
-    - signoz.ops.last-try.org
-    secretName: signoz-tls
+    - prometheus.ops.last-try.org
+    secretName: prometheus-tls
   rules:
-  - host: signoz.ops.last-try.org
+  - host: prometheus.ops.last-try.org
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: oauth2-proxy-signoz
+            name: oauth2-proxy-prometheus
             port:
               number: 4180

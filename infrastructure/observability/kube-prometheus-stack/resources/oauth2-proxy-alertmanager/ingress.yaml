@@ -1,24 +1,24 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: signoz
-  namespace: observability-signoz
+  name: alertmanager
+  namespace: monitoring
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: traefik
   tls:
   - hosts:
-    - signoz.ops.last-try.org
-    secretName: signoz-tls
+    - alertmanager.ops.last-try.org
+    secretName: alertmanager-tls
   rules:
-  - host: signoz.ops.last-try.org
+  - host: alertmanager.ops.last-try.org
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: oauth2-proxy-signoz
+            name: oauth2-proxy-alertmanager
             port:
               number: 4180

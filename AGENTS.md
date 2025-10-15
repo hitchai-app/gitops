@@ -20,6 +20,28 @@ For architectural context and onboarding narrative, read [`CLAUDE.md`](CLAUDE.md
 - Prefer declarative patches (Kustomize `patchesStrategicMerge` or `patchesJson6902`) over imperative edits; document rationale in inline comments only when the manifest is non-obvious.
 - Secrets land in Sealed Secrets (`*-sealed.yaml`); never commit plaintext credentials.
 
+### Sealed Secrets Workflow
+
+**Public Certificate:** `.sealed-secrets-pub.pem` (repository root)
+
+**Create new sealed secret:**
+```bash
+kubeseal --cert .sealed-secrets-pub.pem --format yaml < plaintext-secret.yaml > sealed-secret.yaml
+```
+
+**Add keys to existing sealed secret:**
+```bash
+# Fetch current secret from cluster to preserve existing keys
+kubectl get secret my-secret -n my-namespace -o yaml > /tmp/secret.yaml
+# Edit to add new keys, then re-seal entire secret
+kubeseal --cert .sealed-secrets-pub.pem --format yaml < /tmp/secret.yaml > sealed-secret.yaml
+```
+
+**Key points:**
+- Always fetch existing secrets from cluster before adding keys (preserves current values)
+- Re-sealing entire secret when adding keys is normal behavior
+- Public cert is safe to commit; private key stays in secure storage
+
 ## Testing Guidelines
 - Treat every change as production-impacting: run the relevant `kubectl diff` and `--dry-run=server` commands locally.
 - When introducing new CRDs or operators, confirm CRD availability by referencing ADR updates or linking the upstream Helm/app source in the PR.

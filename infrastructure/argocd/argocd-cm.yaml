@@ -7,5 +7,20 @@ metadata:
     app.kubernetes.io/name: argocd-cm
     app.kubernetes.io/part-of: argocd
 data:
+  # ArgoCD URL (required for OIDC)
+  url: https://argocd.ops.last-try.org
+
+  # Dex OIDC configuration
+  oidc.config: |
+    name: Dex
+    issuer: https://auth.ops.last-try.org
+    clientID: argocd
+    clientSecret: $argocd-oidc:clientSecret
+    requestedScopes:
+      - openid
+      - profile
+      - email
+      - groups
+
   # Agent account
   accounts.agent-flawless: apiKey,login

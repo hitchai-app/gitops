@@ -173,6 +173,56 @@ ArgoCD automatically adds:
 
 These are sufficient for resource tracking and querying.
 
+### Working with Sealed Secrets
+
+**Public Certificate Location:** `.sealed-secrets-pub.pem` (repository root)
+
+**Creating New Sealed Secrets:**
+
+```bash
+# 1. Create plaintext secret YAML
+cat > /tmp/my-secret.yaml << 'EOF'
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+  namespace: my-namespace
+type: Opaque
+stringData:
+  key1: value1
+  key2: value2
+EOF
+
+# 2. Seal the secret using repository public cert
+kubeseal --cert .sealed-secrets-pub.pem --format yaml < /tmp/my-secret.yaml > infrastructure/my-app/my-secret-sealed.yaml
+
+# 3. Commit the sealed secret to Git
+git add infrastructure/my-app/my-secret-sealed.yaml
+```
+
+**Adding Keys to Existing Sealed Secret:**
+
+```bash
+# 1. Fetch current secret from cluster (preserves existing keys)
+kubectl get secret my-secret -n my-namespace -o yaml > /tmp/my-secret.yaml
+
+# 2. Edit to add new keys (keep existing data section)
+# Add your new keys to the 'data' or 'stringData' section
+
+# 3. Re-seal the entire secret
+kubeseal --cert .sealed-secrets-pub.pem --format yaml < /tmp/my-secret.yaml > infrastructure/my-app/my-secret-sealed.yaml
+
+# 4. Commit updated sealed secret
+git add infrastructure/my-app/my-secret-sealed.yaml
+```
+
+**Important Notes:**
+- **Never commit plaintext secrets** - always use sealed secrets
+- **The public cert is safe in Git** - it can only encrypt, not decrypt
+- **Re-sealing is normal** - when adding keys, entire secret is re-encrypted
+- **Existing keys preserved** - fetch from cluster to keep current values
+- **Private key backup** - stored securely outside Git (see @adr/0009-secrets-management-strategy.md)
+
 ## Disaster Recovery
 
 - **Storage**: Longhorn S3 backups (@adr/0002-longhorn-storage-from-day-one.md)
