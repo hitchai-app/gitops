@@ -37,14 +37,21 @@ spec:
           - --pass-access-token=true
           - --set-authorization-header=true
           - --set-xauthrequest=true
+        env:
+        - name: OAUTH2_PROXY_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-prometheus-secrets
+              key: client-secret
+        - name: OAUTH2_PROXY_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: oauth2-proxy-prometheus-secrets
+              key: cookie-secret
         ports:
         - containerPort: 4180
           name: http
           protocol: TCP
-        volumeMounts:
-        - name: oauth2-proxy-secrets
-          mountPath: /etc/oauth2-proxy
-          readOnly: true
         resources:
           requests:
             cpu: 10m
@@ -64,7 +71,3 @@ spec:
             port: 4180
           initialDelaySeconds: 5
           periodSeconds: 5
-      volumes:
-      - name: oauth2-proxy-secrets
-        secret:
-          secretName: oauth2-proxy-prometheus-secrets
