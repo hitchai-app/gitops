@@ -27,6 +27,8 @@ spec:
           - --cookie-secure=true
           - --cookie-domain=.ops.last-try.org
           - --email-domain=*
+          - --oidc-groups-claim=groups
+          - --allowed-group=hitchai-app
           - --upstream=http://signoz.observability-signoz.svc.cluster.local:8080
           - --http-address=0.0.0.0:4180
           - --redirect-url=https://signoz.ops.last-try.org/oauth2/callback
