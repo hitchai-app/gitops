@@ -29,6 +29,9 @@ maxRunners: 4
 # (see chart values comments); we manage the sidecar explicitly here instead.
 template:
   spec:
+    # ServiceAccount with read-only cluster access for kubectl operations
+    # Used by Claude Code in GitHub Actions to verify deployments, check pod status, etc.
+    serviceAccountName: github-actions-reviewer
     # In DinD mode (Kubernetes v1.29+), the dind container runs as an init container with restartPolicy: Always
     # This makes it a native Kubernetes sidecar that starts before and runs alongside the runner container
     # Reference: https://github.blog/changelog/2025-06-13-actions-runner-controller-0-12-0-release/

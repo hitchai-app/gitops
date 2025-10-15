@@ -26,6 +26,9 @@ maxRunners: 12
 # NOTE: No DinD - workflows requiring Docker must use heavy runners (hitchai-app-runners)
 template:
   spec:
+    # ServiceAccount with read-only cluster access for kubectl operations
+    # Used by Claude Code in GitHub Actions to verify deployments, check pod status, etc.
+    serviceAccountName: github-actions-reviewer
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest

@@ -18,7 +18,7 @@ jobs:
     #   github.event.pull_request.user.login == 'new-developer' ||
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
-    runs-on: ubuntu-latest
+    runs-on: hitchai-app-runners-lite  # Self-hosted runner with kubectl cluster access
     permissions:
       contents: read
       pull-requests: write # Allow creating reviews and comments
@@ -43,7 +43,8 @@ jobs:
           # Use sticky comments for consistent review updates
           use_sticky_comment: true
 
-          # Allow gh CLI for PR reviews and kubectl for cluster verification
+          # Allow gh CLI and kubectl for PR reviews
+          # kubectl: RBAC enforces read-only access at cluster level (ServiceAccount: github-actions-reviewer)
           allowed_tools: |
             Bash(gh pr:*)
             Bash(kubectl:*)
@@ -52,11 +53,19 @@ jobs:
           direct_prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
+            CLUSTER ACCESS:
+            You have read-only kubectl access to the cluster. Use it to verify:
+            - ArgoCD Application health: `kubectl get applications -n argocd`
+            - Pod status: `kubectl get pods -n <namespace>`
+            - Resource usage: `kubectl top pods -n <namespace>`
+            - Recent events: `kubectl get events -n <namespace> --sort-by='.lastTimestamp'`
+
             REVIEW PROCESS:
             1. **Provide detailed review feedback in THIS comment** (action creates this automatically)
             2. Get PR diff: `gh pr diff ${{ github.event.pull_request.number }}`
             3. Review CLAUDE.md and ADRs for architectural context
-            4. Analyze changes against review criteria
+            4. **Verify cluster state** using kubectl if reviewing infrastructure changes
+            5. Analyze changes against review criteria
             5. **Submit clean formal review WITHOUT duplicate content:**
                - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve` (no --body to avoid duplicates)
                - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes`
