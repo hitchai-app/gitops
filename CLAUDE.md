@@ -247,12 +247,40 @@ kubeseal --cert .sealed-secrets-pub.pem --format yaml < /tmp/my-secret.yaml > in
 git add infrastructure/my-app/my-secret-sealed.yaml
 ```
 
+**Alternative: Encrypt Individual Key Only (No Cluster Access Needed):**
+
+```bash
+# 1. Create temporary secret with ONLY the new key
+kubectl create secret generic temp-secret \
+  --namespace=my-namespace \
+  --from-literal=new-key=new-value \
+  --dry-run=client -o yaml | \
+  kubeseal --cert .sealed-secrets-pub.pem --format yaml > /tmp/new-key-sealed.yaml
+
+# 2. Extract the encrypted value from the sealed output
+grep "new-key:" /tmp/new-key-sealed.yaml
+# Copy the encrypted value: AgB...
+
+# 3. Manually add to existing sealed secret file
+# Edit infrastructure/my-app/my-secret-sealed.yaml
+# Add under spec.encryptedData:
+#   new-key: AgB...
+
+# 4. Commit updated sealed secret
+git add infrastructure/my-app/my-secret-sealed.yaml
+```
+
+**When to use each method:**
+- **Full re-seal** (Method 1): When you have cluster access, need to verify existing keys, or adding multiple keys
+- **Individual key encryption** (Method 2): When working offline, no cluster access, or adding a single key to a large secret
+
 **Important Notes:**
 - **Never commit plaintext secrets** - always use sealed secrets
 - **The public cert is safe in Git** - it can only encrypt, not decrypt
 - **Re-sealing is normal** - when adding keys, entire secret is re-encrypted
 - **Existing keys preserved** - fetch from cluster to keep current values
 - **Private key backup** - stored securely outside Git (see @adr/0009-secrets-management-strategy.md)
+- **Individual keys work independently** - each key in encryptedData is decrypted separately by the controller
 
 ## Disaster Recovery
 

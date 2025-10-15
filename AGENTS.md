@@ -29,7 +29,7 @@ For architectural context and onboarding narrative, read [`CLAUDE.md`](CLAUDE.md
 kubeseal --cert .sealed-secrets-pub.pem --format yaml < plaintext-secret.yaml > sealed-secret.yaml
 ```
 
-**Add keys to existing sealed secret:**
+**Add keys to existing sealed secret (Method 1: Full re-seal):**
 ```bash
 # Fetch current secret from cluster to preserve existing keys
 kubectl get secret my-secret -n my-namespace -o yaml > /tmp/secret.yaml
@@ -37,10 +37,23 @@ kubectl get secret my-secret -n my-namespace -o yaml > /tmp/secret.yaml
 kubeseal --cert .sealed-secrets-pub.pem --format yaml < /tmp/secret.yaml > sealed-secret.yaml
 ```
 
+**Add keys to existing sealed secret (Method 2: Encrypt individual key only):**
+```bash
+# Create temp secret with ONLY the new key, seal it
+kubectl create secret generic temp --namespace=my-ns --from-literal=new-key=value \
+  --dry-run=client -o yaml | kubeseal --cert .sealed-secrets-pub.pem --format yaml > /tmp/new-key.yaml
+# Extract encrypted value and manually add to existing sealed secret file under spec.encryptedData
+```
+
+**When to use each method:**
+- **Method 1**: Have cluster access, verifying existing keys, adding multiple keys
+- **Method 2**: Working offline, no cluster access, single key addition
+
 **Key points:**
 - Always fetch existing secrets from cluster before adding keys (preserves current values)
 - Re-sealing entire secret when adding keys is normal behavior
 - Public cert is safe to commit; private key stays in secure storage
+- Individual keys in encryptedData are decrypted independently
 
 ## Testing Guidelines
 - Treat every change as production-impacting: run the relevant `kubectl diff` and `--dry-run=server` commands locally.
