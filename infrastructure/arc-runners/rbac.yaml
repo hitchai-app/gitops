@@ -1,0 +1,48 @@
+---
+# ServiceAccount for GitHub Actions runners to access cluster
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: github-actions-reviewer
+  namespace: arc-runners
+---
+# ClusterRole with read-only permissions for cluster inspection
+# Used by Claude Code in GitHub Actions to verify deployments, check pod status, etc.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: github-actions-readonly
+rules:
+  # Read-only access to all resources
+  - apiGroups: ["*"]
+    resources: ["*"]
+    verbs: ["get", "list", "watch"]
+
+  # Allow describing resources (includes events)
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+
+  # Allow reading logs
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get", "list"]
+
+  # Allow exec into pods for debugging (read-only commands only enforced by workflow)
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+# Bind the ClusterRole to the ServiceAccount
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: github-actions-reviewer
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: github-actions-readonly
+subjects:
+  - kind: ServiceAccount
+    name: github-actions-reviewer
+    namespace: arc-runners

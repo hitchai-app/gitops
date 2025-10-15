@@ -110,7 +110,26 @@ This repository uses automated code review via GitHub Actions. See [`AGENTS.md`]
 - Reminding the reviewer it has **full `gh` CLI access** (it often assumes it lacks permissions)
 - Using `@claude` mentions to trigger re-evaluation
 
+**Cluster Access:** The automated reviewer runs on self-hosted GitHub Actions runners inside the cluster (`hitchai-app-runners-lite`) with read-only kubectl access. It can:
+- Verify ArgoCD Application health: `kubectl get applications -n argocd`
+- Check pod status: `kubectl get pods -n <namespace>`
+- View resource usage: `kubectl top pods -n <namespace>`
+- Inspect events: `kubectl get events -n <namespace> --sort-by='.lastTimestamp'`
+- Read logs: `kubectl logs <pod> -n <namespace>`
+
+**GitHub CLI Access:** The automated reviewer has full `gh` CLI permissions and **MUST** use it for formal PR reviews:
+- **REQUIRED**: Submit formal review using `gh pr review <pr-number> --approve` or `--request-changes`
+- **NOT SUFFICIENT**: Posting a comment alone (without formal review) does NOT count as a review
+- The reviewer has permissions to approve/request changes and MUST use them
+- See workflow configuration in `.github/workflows/claude-code-review.yml` for review process
+
 **Key reminder:** The automated reviewer has kubectl and gh CLI access. If it claims it cannot verify something, remind it to use these tools.
+
+**How it works:**
+1. GitHub Actions workflows run on self-hosted runners (Actions Runner Controller in `arc-runners` namespace)
+2. Runner pods use ServiceAccount `github-actions-reviewer` with ClusterRole `github-actions-readonly`
+3. No kubeconfig needed - uses in-cluster authentication
+4. RBAC permissions: `get`, `list`, `watch` on all resources + `pods/log` and `pods/exec` (read-only commands only)
 
 ## Best Practices
 

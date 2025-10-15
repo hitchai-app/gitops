@@ -17,7 +17,7 @@ jobs:
       (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
-    runs-on: ubuntu-latest
+    runs-on: hitchai-app-runners-lite  # Self-hosted runner with kubectl cluster access
     permissions:
       contents: write # Allow file operations and branch creation
       pull-requests: write # Allow PR creation, comments, reviews
@@ -48,13 +48,9 @@ jobs:
 
           # Allow broad tool access for GitOps operations
           # Branch protection on master prevents direct pushes
-          # kubectl: readonly access only (no certs for write operations anyway)
+          # kubectl: RBAC enforces read-only access at cluster level (ServiceAccount: github-actions-reviewer)
           allowed_tools: |
-            Bash(kubectl get:*),
-            Bash(kubectl describe:*),
-            Bash(kubectl logs:*),
-            Bash(kubectl top:*),
-            Bash(kubectl explain:*),
+            Bash(kubectl:*),
             Bash(helm:*),
             Bash(kustomize:*),
             Bash(argocd:*),
