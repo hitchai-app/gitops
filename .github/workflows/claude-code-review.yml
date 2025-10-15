@@ -43,9 +43,10 @@ jobs:
           # Use sticky comments for consistent review updates
           use_sticky_comment: true
 
-          # Allow gh CLI for PR reviews
+          # Allow gh CLI for PR reviews and kubectl for cluster verification
           allowed_tools: |
             Bash(gh pr:*)
+            Bash(kubectl:*)
 
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
@@ -65,6 +66,12 @@ jobs:
             ```suggestion
             fixed code here
             ```
+
+            **KUBECTL USAGE GUIDELINES:**
+            - Use kubectl's built-in filtering instead of shell pipes (grep, awk, etc.)
+            - Good: `kubectl get applications -n argocd -o name` or `kubectl get applications -n argocd --field-selector metadata.name=longhorn`
+            - Avoid: `kubectl get applications -n argocd | grep longhorn` (pipe operators require separate approval)
+            - You have access to kubectl for cluster verification - use it to validate infrastructure state
 
             Review criteria (GitOps infrastructure - changes affect production):
             - What will fail in production
