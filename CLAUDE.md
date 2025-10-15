@@ -173,6 +173,37 @@ ArgoCD automatically adds:
 
 These are sufficient for resource tracking and querying.
 
+### Version Management
+
+**CRITICAL: Always use latest stable versions unless explicitly specified otherwise.**
+
+Before adding or updating any infrastructure component:
+
+1. **Check official releases**: Always verify the latest stable version from the official source:
+   - GitHub releases page (e.g., `https://github.com/oauth2-proxy/oauth2-proxy/releases`)
+   - Official Helm chart repositories
+   - Container registry tags (verify what "latest" actually points to)
+
+2. **Never assume**: Don't use versions from examples, old documentation, or other repositories without verification.
+
+3. **Document version choice**: In PR description, include:
+   - Version selected and why (latest stable, or specific version with reason)
+   - Link to official releases page
+   - Any relevant changelog entries
+
+4. **Feature availability**: When using specific CLI flags or features:
+   - Verify the feature exists in your chosen version
+   - Check when the feature was introduced
+   - Ensure version supports all required functionality
+
+**Example:**
+```markdown
+## Version Selection
+- **oauth2-proxy**: v7.12.0 (latest stable as of 2025-10-15)
+- **Source**: https://github.com/oauth2-proxy/oauth2-proxy/releases/tag/v7.12.0
+- **Rationale**: Requires --cookie-secret-file flag (added in v7.8.0)
+```
+
 ### Working with Sealed Secrets
 
 **Public Certificate Location:** `.sealed-secrets-pub.pem` (repository root)
