@@ -92,6 +92,7 @@ Before adding or updating any infrastructure component:
 ```
 
 ## Commit & Pull Request Guidelines
+- **🚨 CRITICAL: ALWAYS BRANCH FROM LATEST MASTER 🚨** - Before creating any new branch, ALWAYS ensure you're on the latest master: `git checkout master && git pull origin master`. Then create your feature branch. This prevents creating branches from stale state and avoids merge conflicts.
 - Follow Conventional Commits observed in history (`feat:`, `fix:`, `docs:`, `refactor:`). Scope optional but helpful (`feat(longhorn): ...`).
 - Open PRs from feature branches off `master`, describe the change, affected services, and rollback plan. Link related ADRs or issues explicitly.
 - Attach validation evidence: command outputs (`kubectl diff`, screenshots of ArgoCD health) as PR comments when relevant.
