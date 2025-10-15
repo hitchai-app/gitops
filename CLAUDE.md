@@ -95,10 +95,13 @@ See individual ADRs for infrastructure and workload details.
 
 **IMPORTANT: All changes MUST go through pull requests. Never commit directly to master.**
 
-1. Create feature branch from master
-2. Make changes in feature branch
-3. Submit PR for review
-4. Merge to master → ArgoCD auto-syncs to cluster
+**🚨 CRITICAL: ALWAYS BRANCH FROM LATEST MASTER 🚨** - Before creating any new branch, ALWAYS ensure you're on the latest master: `git checkout master && git pull origin master`. Then create your feature branch. This prevents creating branches from stale state and avoids merge conflicts.
+
+1. Ensure master is up-to-date: `git checkout master && git pull origin master`
+2. Create feature branch from master
+3. Make changes in feature branch
+4. Submit PR for review
+5. Merge to master → ArgoCD auto-syncs to cluster
 
 ### Working with Automated Reviews
 
