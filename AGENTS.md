@@ -55,6 +55,34 @@ kubectl create secret generic temp --namespace=my-ns --from-literal=new-key=valu
 - Public cert is safe to commit; private key stays in secure storage
 - Individual keys in encryptedData are decrypted independently
 
+**🚨 CRITICAL SECURITY WARNING - NEVER EXPOSE SECRETS 🚨**
+
+**ABSOLUTELY PROHIBITED:**
+- ❌ **NEVER** post plaintext secret values in GitHub PR comments, descriptions, or issues
+- ❌ **NEVER** include base64-decoded values in public communications
+- ❌ **NEVER** show actual secret values when explaining changes
+- ❌ **NEVER** use real secrets as examples in documentation
+
+**When working with secrets:**
+- ✅ Discuss that values were regenerated WITHOUT showing the actual values
+- ✅ Explain sealed-secrets encryption changes WITHOUT exposing plaintext
+- ✅ Reference secrets by name/purpose, NEVER by value
+
+**Example - WRONG:**
+```
+The client-secret value 8b439c4a... was preserved
+```
+
+**Example - CORRECT:**
+```
+The client-secret was preserved (fetched from cluster)
+```
+
+**SEVERITY:** Exposing secrets in public GitHub repositories is a **CRITICAL SECURITY INCIDENT**. If this happens:
+1. Delete the comment immediately
+2. Rotate the exposed secret immediately
+3. Update both sealed secrets files (Dex + service)
+
 ## Testing Guidelines
 - Treat every change as production-impacting: run the relevant `kubectl diff` and `--dry-run=server` commands locally.
 - When introducing new CRDs or operators, confirm CRD availability by referencing ADR updates or linking the upstream Helm/app source in the PR.

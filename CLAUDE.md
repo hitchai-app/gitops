@@ -285,6 +285,34 @@ git add infrastructure/my-app/my-secret-sealed.yaml
 - **Private key backup** - stored securely outside Git (see @adr/0009-secrets-management-strategy.md)
 - **Individual keys work independently** - each key in encryptedData is decrypted separately by the controller
 
+**🚨 CRITICAL SECURITY WARNING - NEVER EXPOSE SECRETS 🚨**
+
+**ABSOLUTELY PROHIBITED:**
+- ❌ **NEVER** post plaintext secret values in GitHub PR comments, descriptions, or issues
+- ❌ **NEVER** include base64-decoded values in public communications
+- ❌ **NEVER** show actual secret values when explaining changes
+- ❌ **NEVER** use real secrets as examples in documentation
+
+**When working with secrets:**
+- ✅ Discuss that values were regenerated WITHOUT showing the actual values
+- ✅ Explain sealed-secrets encryption changes WITHOUT exposing plaintext
+- ✅ Reference secrets by name/purpose, NEVER by value
+
+**Example - WRONG:**
+```
+The client-secret value 8b439c4a... was preserved
+```
+
+**Example - CORRECT:**
+```
+The client-secret was preserved (fetched from cluster)
+```
+
+**SEVERITY:** Exposing secrets in public GitHub repositories is a **CRITICAL SECURITY INCIDENT**. If this happens:
+1. Delete the comment immediately using `gh pr comment <pr-number> --delete-last`
+2. Rotate the exposed secret immediately
+3. Update all sealed secrets files that reference the exposed secret
+
 ## Disaster Recovery
 
 - **Storage**: Longhorn S3 backups (@adr/0002-longhorn-storage-from-day-one.md)
