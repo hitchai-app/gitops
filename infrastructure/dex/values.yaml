@@ -19,7 +19,9 @@ config:
   issuer: https://auth.ops.last-try.org
 
   storage:
-    type: memory
+    type: kubernetes
+    config:
+      inCluster: true
 
   web:
     http: 0.0.0.0:5556
@@ -153,10 +155,6 @@ envVars:
 
 service:
   type: ClusterIP
-  sessionAffinity: ClientIP
-  sessionAffinityConfig:
-    clientIP:
-      timeoutSeconds: 10800  # 3 hours
   ports:
     http:
       port: 5556
