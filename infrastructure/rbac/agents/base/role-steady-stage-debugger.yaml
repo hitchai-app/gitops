@@ -1,0 +1,93 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: steady-stage-admin
+  namespace: steady-stage
+rules:
+  # Core API group - full control
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - pods/log
+      - pods/exec
+      - pods/portforward
+      - services
+      - endpoints
+      - persistentvolumeclaims
+      - configmaps
+      - secrets
+      - events
+    verbs: ["*"]
+  # ServiceAccounts - no delete to prevent privilege issues
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  # Resource constraints - read-only to prevent bypass
+  - apiGroups:
+      - ""
+    resources:
+      - limitranges
+      - resourcequotas
+    verbs: ["get", "list", "watch"]
+  # Apps API group - full control
+  - apiGroups:
+      - "apps"
+    resources:
+      - deployments
+      - daemonsets
+      - statefulsets
+      - replicasets
+    verbs: ["*"]
+  # Batch API group - full control
+  - apiGroups:
+      - "batch"
+    resources:
+      - jobs
+      - cronjobs
+    verbs: ["*"]
+  # Autoscaling API group - full control
+  - apiGroups:
+      - "autoscaling"
+    resources:
+      - horizontalpodautoscalers
+    verbs: ["*"]
+  # Networking API group - full control
+  - apiGroups:
+      - "networking.k8s.io"
+    resources:
+      - ingresses
+      - networkpolicies
+    verbs: ["*"]
+  # Policy API group - full control
+  - apiGroups:
+      - "policy"
+    resources:
+      - poddisruptionbudgets
+    verbs: ["*"]
+  # Storage API group - read-only for discovery
+  - apiGroups:
+      - "storage.k8s.io"
+    resources:
+      - storageclasses
+    verbs: ["get", "list", "watch"]
+  # RBAC - read-only for inspection
+  - apiGroups:
+      - "rbac.authorization.k8s.io"
+    resources:
+      - roles
+      - rolebindings
+      - clusterroles
+      - clusterrolebindings
+    verbs: ["get", "list", "watch"]
+  # CloudNativePG - full control for PostgreSQL management
+  - apiGroups:
+      - "postgresql.cnpg.io"
+    resources:
+      - clusters
+      - backups
+      - scheduledbackups
+      - poolers
+    verbs: ["*"]
