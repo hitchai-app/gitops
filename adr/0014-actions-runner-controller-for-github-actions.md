@@ -12,9 +12,12 @@ Current constraint: Single Hetzner node (128GB RAM) scaling to multi-node.
 
 ## Decision
 
-Use **GitHub Actions Runner Controller (ARC)** with ephemeral Docker-in-Docker runners managed via ArgoCD.
+Use **GitHub Actions Runner Controller (ARC)** with ephemeral runners managed via ArgoCD.
 
-Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker enabled)
+**Deployment architecture:**
+- Heavy runners: Docker-in-Docker enabled (0-4 runners, 12Gi per runner)
+- Lite runners: No Docker (0-12 runners, 4Gi per runner)
+- Both managed by single ArgoCD Application for lifecycle consistency
 
 ## Alternatives Considered
 
@@ -76,24 +79,28 @@ Initial deployment: Single heavy runner scale set (0-4 runners, Docker-in-Docker
 
 ## Future Enhancements
 
-### 1. Increase Runner Capacity with Overcommit Strategy
+### 1. Runner Capacity Strategy: Two Scale Sets
 
-**Current approach: Single DinD runner scale set with overcommit**
+**Current approach: Heavy + Lite runner scale sets**
 
-We use a single DinD runner type for all jobs (light and heavy) with an overcommit strategy:
-- **Low resource requests**: Ensures many pods can schedule
-- **High resource limits**: Allows bursting for heavy jobs (Docker builds)
-- **ResourceQuota cap**: Prevents total namespace exhaustion
+We deploy two runner scale sets optimized for different workload types:
 
-**Why not split into K8s-only and DinD runners:**
-- GitHub Actions `services:` block is very common and requires Docker
-- Operational simplicity: one scale set to maintain
-- Overcommit handles both light jobs (use ~512Mi) and heavy jobs (burst to 4Gi)
+**Heavy runners (hitchai-app-runners):**
+- Docker-in-Docker enabled for builds requiring `docker build` or `services:` block
+- 12Gi memory limit per runner (10Gi Docker cache + 2Gi overhead)
+- Max 4 concurrent runners (constrained by ResourceQuota)
+- Overcommit: 512Mi requests, 12Gi limits (allows bursting)
+
+**Lite runners (hitchai-app-runners-lite):**
+- No Docker daemon (Kubernetes-native only)
+- 4Gi memory limit per runner
+- Max 12 concurrent runners (3× more parallelism)
+- For linting, unit tests, type checking, kubectl operations
 
 **Scaling strategy:**
-- Increase `maxRunners` as needed (currently 4)
-- Monitor actual resource usage and adjust
-- ResourceQuota prevents overcommit from causing node exhaustion
+- Workflows specify runner type: `runs-on: hitchai-app-runners` (heavy) or `runs-on: hitchai-app-runners-lite` (lite)
+- Heavy runners: Increase `maxRunners` requires increasing ResourceQuota first
+- Lite runners: Already scaled to 12 concurrent (48Gi of 50Gi quota)
 
 #### ResourceQuota Constraint Discovery (Oct 2025)
 
