@@ -74,6 +74,12 @@ listenerTemplate:
       # CRITICAL: Container name MUST be "listener" - changing it will create a sidecar instead
       # Reference: https://github.com/actions/actions-runner-controller/blob/master/charts/gha-runner-scale-set/values.yaml
       - name: listener
+        # Expose metrics endpoint for Prometheus scraping and health probes
+        # The listener container serves metrics on port 8080 at /metrics
+        ports:
+          - containerPort: 8080
+            name: metrics
+            protocol: TCP
         # Health probes to detect and recover from stuck listener state
         # Context: Listener can get stuck polling the same messageID without processing new jobs
         # Related issues:
