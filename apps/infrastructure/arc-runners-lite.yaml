@@ -19,12 +19,7 @@ spec:
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       ref: values
-    # Additional resources (RBAC)
-    - repoURL: https://github.com/hitchai-app/gitops.git
-      targetRevision: HEAD
-      path: infrastructure/arc-runners
-      directory:
-        recurse: true
+    # Reference shared resources managed by arc-runners app (no directory source needed)
   destination:
     server: https://kubernetes.default.svc
     namespace: arc-runners

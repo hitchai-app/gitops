@@ -18,12 +18,12 @@ spec:
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       ref: values
-    # Additional resources (sealed secret, RBAC)
+    # Shared resources (sealed secret, RBAC)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
-      path: infrastructure/arc-runners
+      path: infrastructure/arc-runners/shared
       directory:
-        recurse: true
+        recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: arc-runners
