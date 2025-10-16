@@ -6,19 +6,30 @@ metadata:
 spec:
   project: default
   sources:
-    # Helm chart from OCI registry (ghcr.io)
+    # Heavy runners: Docker-in-Docker capable (12Gi per runner, max 4 concurrent)
     - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
-      path: .
+      chart: gha-runner-scale-set
       targetRevision: 0.12.1
       helm:
         releaseName: hitchai-app-runners
         valueFiles:
           - $values/infrastructure/arc-runners/hitchai-app/values.yaml
-    # Git repository containing values file
+
+    # Lite runners: No Docker (4Gi per runner, max 12 concurrent)
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+      chart: gha-runner-scale-set
+      targetRevision: 0.12.1
+      helm:
+        releaseName: hitchai-app-runners-lite
+        valueFiles:
+          - $values/infrastructure/arc-runners/hitchai-app-lite/values-lite.yaml
+
+    # Git repository containing values files
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       ref: values
-    # Shared resources (sealed secret, RBAC)
+
+    # Shared resources (sealed secret, RBAC) used by both runner types
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: infrastructure/arc-runners/shared
