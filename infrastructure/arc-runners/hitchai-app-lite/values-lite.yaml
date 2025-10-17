@@ -29,6 +29,29 @@ template:
     # ServiceAccount with read-only cluster access for kubectl operations
     # Used by Claude Code in GitHub Actions to verify deployments, check pod status, etc.
     serviceAccountName: github-actions-reviewer
+    initContainers:
+    - name: install-kubectl
+      image: curlimages/curl:8.9.1
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          set -euo pipefail
+          arch="$(uname -m)"
+          case "${arch}" in
+            x86_64) kube_arch=amd64 ;;
+            aarch64) kube_arch=arm64 ;;
+            *)
+              echo "unsupported architecture: ${arch}" >&2
+              exit 1
+              ;;
+          esac
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "${tmp_dir}"' EXIT
+          curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/${kube_arch}/kubectl" -o "${tmp_dir}/kubectl"
+          install -m 0755 "${tmp_dir}/kubectl" /opt/tools/kubectl
+      volumeMounts:
+      - name: runner-tools
+        mountPath: /opt/tools
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
@@ -42,9 +65,14 @@ template:
         limits:
           cpu: "1000m"
           memory: "4Gi"
+      env:
+      - name: PATH
+        value: /opt/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       volumeMounts:
       - name: work
         mountPath: /home/runner/_work
+      - name: runner-tools
+        mountPath: /opt/tools
 
     volumes:
     # Minimal volume configuration - just workflow workspace
@@ -52,6 +80,10 @@ template:
       emptyDir:
         medium: Memory
         sizeLimit: 2Gi  # Workflow workspace
+    - name: runner-tools
+      emptyDir:
+        medium: Memory
+        sizeLimit: 200Mi  # Shared CLI binaries (kubectl)
 
 # Explicitly link this scale set to the controller the chart failed to discover automatically.
 controllerServiceAccount:

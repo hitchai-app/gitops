@@ -108,6 +108,30 @@ template:
       - name: docker-lib
         mountPath: /var/lib/docker  # Docker storage (layers, images, cache) in RAM
 
+    # Install cluster tooling (kubectl) into a shared tmpfs before runner starts
+    - name: install-kubectl
+      image: curlimages/curl:8.9.1
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          set -euo pipefail
+          arch="$(uname -m)"
+          case "${arch}" in
+            x86_64) kube_arch=amd64 ;;
+            aarch64) kube_arch=arm64 ;;
+            *)
+              echo "unsupported architecture: ${arch}" >&2
+              exit 1
+              ;;
+          esac
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "${tmp_dir}"' EXIT
+          curl -fsSL "https://dl.k8s.io/release/$(curl -fsSL https://dl.k8s.io/release/stable.txt)/bin/linux/${kube_arch}/kubectl" -o "${tmp_dir}/kubectl"
+          install -m 0755 "${tmp_dir}/kubectl" /opt/tools/kubectl
+      volumeMounts:
+      - name: runner-tools
+        mountPath: /opt/tools
+
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
@@ -131,11 +155,16 @@ template:
         # Maximum time runner waits for Docker daemon to be ready
         - name: RUNNER_WAIT_FOR_DOCKER_IN_SECONDS
           value: "120"
+        # Prepend shared tools directory (kubectl) to PATH
+        - name: PATH
+          value: /opt/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
       volumeMounts:
       - name: work
         mountPath: /home/runner/_work
       - name: dind-sock
         mountPath: /var/run
+      - name: runner-tools
+        mountPath: /opt/tools
 
     volumes:
     # RAM-optimized volumes: All use tmpfs (medium: Memory) for performance
@@ -163,6 +192,11 @@ template:
       emptyDir:
         medium: Memory
         sizeLimit: 1Gi  # Runner binaries and tools (increased from 500Mi - actual size varies)
+
+    - name: runner-tools
+      emptyDir:
+        medium: Memory
+        sizeLimit: 200Mi  # Shared CLI binaries (kubectl)
 
 # Explicitly link this scale set to the controller the chart failed to discover automatically.
 controllerServiceAccount:
