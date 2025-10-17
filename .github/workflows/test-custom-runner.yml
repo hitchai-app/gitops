@@ -1,0 +1,46 @@
+name: Test Custom Runner Image
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - test/custom-runner-image
+
+jobs:
+  test-toolchain:
+    runs-on: hitchai-app-runners-test
+    steps:
+      - name: Verify kubectl
+        run: |
+          kubectl version --client
+          echo "✓ kubectl found"
+
+      - name: Verify helm
+        run: |
+          helm version
+          echo "✓ helm found"
+
+      - name: Verify kustomize
+        run: |
+          kustomize version
+          echo "✓ kustomize found"
+
+      - name: Verify yq
+        run: |
+          yq --version
+          echo "✓ yq found"
+
+      - name: Verify jq
+        run: |
+          jq --version
+          echo "✓ jq found"
+
+      - name: Verify gh CLI
+        run: |
+          gh --version
+          echo "✓ gh CLI found"
+
+      - name: Test runner functionality
+        run: |
+          echo "All tools verified successfully!"
+          echo "Custom runner image works correctly."

@@ -24,6 +24,15 @@ spec:
         valueFiles:
           - $values/infrastructure/arc-runners/hitchai-app-lite/values-lite.yaml
 
+    # Test runner: Validate custom image (1 runner, temporary)
+    - repoURL: oci://ghcr.io/actions/actions-runner-controller-charts/gha-runner-scale-set
+      chart: gha-runner-scale-set
+      targetRevision: 0.12.1
+      helm:
+        releaseName: hitchai-app-runners-test
+        valueFiles:
+          - $values/infrastructure/arc-runners/test/values-test.yaml
+
     # Git repository containing values files
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD

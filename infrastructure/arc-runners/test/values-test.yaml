@@ -1,0 +1,42 @@
+# Test Runner Scale Set - for validating custom image
+# This is a temporary test setup to validate custom runner image works
+
+# Required: GitHub configuration
+githubConfigUrl: "https://github.com/hitchai-app"
+githubConfigSecret: "hitchai-app-github-app"
+
+# CRITICAL: Test runner name
+runnerScaleSetName: "hitchai-app-runners-test"
+
+# Minimal scaling - just 1 runner for testing
+maxRunners: 1
+
+# Runner pod template - testing custom image
+template:
+  spec:
+    serviceAccountName: github-actions-reviewer
+    containers:
+    - name: runner
+      image: ghcr.io/hitchai-app/arc-runner:0.1.1
+      command: ["/home/runner/run.sh"]
+      resources:
+        requests:
+          cpu: "100m"
+          memory: "256Mi"
+        limits:
+          cpu: "1000m"
+          memory: "2Gi"
+      volumeMounts:
+      - name: work
+        mountPath: /home/runner/_work
+
+    volumes:
+    - name: work
+      emptyDir:
+        medium: Memory
+        sizeLimit: 1Gi
+
+# Explicitly link to controller
+controllerServiceAccount:
+  namespace: arc-systems
+  name: arc-gha-rs-controller
