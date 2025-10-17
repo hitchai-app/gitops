@@ -111,6 +111,7 @@ template:
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
+      command: ["/home/runner/run.sh"]
       # Overcommit strategy: Low requests for scheduling, high limits allow bursting
       # RAM-optimized: All volumes use tmpfs (thin-provisioned, only actual usage consumes RAM)
       # Per-pod: 512Mi requests → 16 pods fit in quota
