@@ -29,11 +29,9 @@ template:
     # ServiceAccount with read-only cluster access for kubectl operations
     # Used by Claude Code in GitHub Actions to verify deployments, check pod status, etc.
     serviceAccountName: github-actions-reviewer
-    # Custom runner image bundles kubectl/helm/kustomize/yq/jq
     containers:
     - name: runner
-      image: ghcr.io/hitchai-app/arc-runner:0.1.1
-      command: ["/home/runner/run.sh"]
+      image: ghcr.io/actions/actions-runner:latest
       # Lightweight runner strategy: Minimal limits for maximum parallelism
       # No Docker daemon overhead - suitable for linting, unit tests, type checking
       resources:
