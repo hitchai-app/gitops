@@ -32,6 +32,7 @@ template:
     containers:
     - name: runner
       image: ghcr.io/actions/actions-runner:latest
+      command: ["/home/runner/run.sh"]
       # Lightweight runner strategy: Minimal limits for maximum parallelism
       # No Docker daemon overhead - suitable for linting, unit tests, type checking
       resources:
