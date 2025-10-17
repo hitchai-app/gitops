@@ -11,6 +11,17 @@ runnerScaleSetName: "hitchai-app-runners-test"
 # Minimal scaling - just 1 runner for testing
 maxRunners: 1
 
+# Container mode: Use Kubernetes mode for custom images
+# Reference: https://github.com/actions/actions-runner-controller/issues/3733
+containerMode:
+  type: "kubernetes"
+  kubernetesModeWorkVolumeClaim:
+    accessModes: ["ReadWriteOnce"]
+    storageClassName: "longhorn-single-replica"
+    resources:
+      requests:
+        storage: 1Gi
+
 # Runner pod template - testing custom image
 template:
   spec:
