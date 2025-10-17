@@ -42,7 +42,7 @@ template:
     # Runner externals size varies and can exceed 512Mi
     # Custom runner image bundles kubectl/helm/kustomize/yq/jq
     - name: init-dind-externals
-      image: ghcr.io/hitchai-app/arc-runner:0.1.0
+      image: ghcr.io/hitchai-app/arc-runner:0.1.1
       command: ["cp", "-r", "/home/runner/externals/.", "/home/runner/tmpDir/"]
       volumeMounts:
         - name: dind-externals
@@ -111,7 +111,7 @@ template:
 
     containers:
     - name: runner
-      image: ghcr.io/hitchai-app/arc-runner:0.1.0
+      image: ghcr.io/hitchai-app/arc-runner:0.1.1
       command: ["/home/runner/run.sh"]
       # Overcommit strategy: Low requests for scheduling, high limits allow bursting
       # RAM-optimized: All volumes use tmpfs (thin-provisioned, only actual usage consumes RAM)

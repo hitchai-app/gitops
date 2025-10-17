@@ -32,7 +32,7 @@ template:
     # Custom runner image bundles kubectl/helm/kustomize/yq/jq
     containers:
     - name: runner
-      image: ghcr.io/hitchai-app/arc-runner:0.1.0
+      image: ghcr.io/hitchai-app/arc-runner:0.1.1
       command: ["/home/runner/run.sh"]
       # Lightweight runner strategy: Minimal limits for maximum parallelism
       # No Docker daemon overhead - suitable for linting, unit tests, type checking
