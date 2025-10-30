@@ -22,6 +22,8 @@ spec:
             defaultReplicaCount: "1"
             backupTarget: "s3://longhorn-backups@auto/"
             backupTargetCredentialSecret: "longhorn-backup-secret"
+            storageOverProvisioningPercentage: "1000"
+            storageMinimalAvailablePercentage: "25"
 
           # Resource limits for Longhorn components
           longhornManager:
