@@ -3,9 +3,10 @@ clickhouse:
     storageClass: single-replica
     size: 30Gi
   resources:
+    # SigNoz log queries and ClickHouse merges were OOMing with the default cap
     limits:
-      cpu: 1500m
-      memory: 3Gi
+      cpu: 2000m
+      memory: 8Gi
     requests:
-      cpu: 300m
-      memory: 1536Mi
+      cpu: 500m
+      memory: 4Gi
