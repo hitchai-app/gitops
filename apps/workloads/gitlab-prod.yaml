@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab-prod
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    # 1. GitLab Helm chart from official repository
+    - repoURL: https://charts.gitlab.io
+      chart: gitlab
+      targetRevision: 8.8.0  # Latest stable as of 2025-11
+      helm:
+        releaseName: gitlab
+        valueFiles:
+          - $values/workloads/gitlab/values.yaml
+    # 2. Git repository with values file and manifests
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitlab-prod
+  syncPolicy:
+    automated:
+      prune: false  # Manual prune for safety (GitLab is stateful)
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas  # HPA manages replicas
+    - group: ""
+      kind: Secret
+      name: gitlab-gitlab-initial-root-password
+      jsonPointers:
+        - /data  # Generated secret, don't sync

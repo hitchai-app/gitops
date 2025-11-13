@@ -1,0 +1,281 @@
+# GitLab Minimal Deployment - Full Feature Set
+# Target: ~10GB RAM total (includes bundled PostgreSQL, Redis, MinIO)
+# Use Case: New project, small team (5-10 users), all features enabled
+
+global:
+  # Domain configuration
+  hosts:
+    domain: ops.last-try.org
+    https: true
+    gitlab:
+      name: gitlab.ops.last-try.org
+    registry:
+      name: registry.ops.last-try.org
+
+  # Ingress configuration (Traefik)
+  ingress:
+    enabled: true
+    class: traefik
+    configureCertmanager: false  # Use existing cert-manager
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    tls:
+      enabled: true
+      secretName: gitlab-tls
+
+  # Edition
+  edition: ce
+
+  # Time zone
+  time_zone: UTC
+
+  # Initial root password (will be generated as secret)
+  initialRootPassword:
+    secret: gitlab-gitlab-initial-root-password
+    key: password
+
+  # Email configuration (optional, configure later)
+  email:
+    from: 'gitlab@ops.last-try.org'
+    display_name: GitLab
+    reply_to: 'noreply@ops.last-try.org'
+
+# GitLab Rails Components
+gitlab:
+  # Webservice (main application - API and UI)
+  webservice:
+    enabled: true
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1.2Gi
+      limits:
+        cpu: 1500m
+        memory: 1.5Gi
+    minReplicas: 1
+    maxReplicas: 2
+    workerProcesses: 2  # Reduced from default 4
+    workerTimeout: 60
+
+  # Sidekiq (background job processor)
+  sidekiq:
+    enabled: true
+    resources:
+      requests:
+        cpu: 300m
+        memory: 900Mi
+      limits:
+        cpu: 1000m
+        memory: 1.2Gi
+    minReplicas: 1
+    maxReplicas: 2
+    # Single pod handling all queues for minimal deployment
+    pods:
+      - name: all-in-one
+        concurrency: 10  # Reduced from default 20
+        queues: ''  # Empty = all queues
+
+  # Gitaly (Git repository storage)
+  gitaly:
+    enabled: true
+    resources:
+      requests:
+        cpu: 200m
+        memory: 800Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+    persistence:
+      enabled: true
+      storageClass: longhorn  # Use existing Longhorn
+      size: 50Gi
+      accessMode: ReadWriteOnce
+
+  # GitLab Shell (SSH access for git)
+  gitlab-shell:
+    enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 200Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  # Praefect (Gitaly HA - disabled for single node)
+  praefect:
+    enabled: false
+
+  # Kubernetes Agent Server
+  kas:
+    enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 150Mi
+    minReplicas: 1
+    maxReplicas: 2
+
+  # GitLab Pages (static site hosting)
+  gitlab-pages:
+    enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 200m
+        memory: 150Mi
+
+  # Mailroom (incoming email)
+  mailroom:
+    enabled: false  # Disable unless needed
+
+  # Migrations (database schema updates)
+  migrations:
+    enabled: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+  # Toolbox (for backups and maintenance tasks)
+  toolbox:
+    enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 300Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    backups:
+      cron:
+        enabled: true
+        schedule: "0 2 * * *"  # Daily at 2 AM
+        persistence:
+          enabled: true
+          storageClass: longhorn
+          size: 10Gi
+
+# Container Registry
+registry:
+  enabled: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 600Mi
+    limits:
+      cpu: 500m
+      memory: 800Mi
+  hpa:
+    minReplicas: 1
+    maxReplicas: 2
+  # Storage backend (uses bundled MinIO via global.minio)
+  storage:
+    secret: registry-storage
+    key: config
+  maintenance:
+    uploadPurging:
+      enabled: true
+      age: 168h  # Delete incomplete uploads after 7 days
+      interval: 24h
+      dryRun: false
+
+# NGINX Ingress Controller (GitLab internal)
+nginx-ingress:
+  enabled: false  # We use Traefik
+
+# Bundled PostgreSQL (minimal resources)
+postgresql:
+  install: true
+  image:
+    tag: 14.13.0
+  primary:
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 500m
+        memory: 1Gi
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 20Gi
+
+# Bundled Redis (minimal resources)
+redis:
+  install: true
+  master:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 300m
+        memory: 512Mi
+    persistence:
+      enabled: true
+      storageClass: longhorn
+      size: 5Gi
+
+# Bundled MinIO (for object storage)
+minio:
+  install: true
+  replicas: 1  # Single instance for minimal deployment
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 50Gi  # LFS, artifacts, uploads, packages, registry
+
+# Cert-manager (use existing)
+certmanager:
+  install: false
+
+# Prometheus (minimal monitoring)
+prometheus:
+  install: true
+  server:
+    enabled: true
+    resources:
+      requests:
+        cpu: 100m
+        memory: 400Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    retention: 7d
+    persistentVolume:
+      enabled: true
+      storageClass: longhorn
+      size: 10Gi
+
+# Grafana (minimal dashboards)
+grafana:
+  enabled: false  # Use existing Grafana from observability stack
+
+# GitLab Runner (use existing ARC runners)
+gitlab-runner:
+  install: false
+
+# Shared Secrets
+shared-secrets:
+  enabled: true
+  env: production
+  rbac:
+    create: true
