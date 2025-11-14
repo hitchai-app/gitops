@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: gitlab-prod
+  name: gitlab
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -22,7 +22,7 @@ spec:
       ref: values
   destination:
     server: https://kubernetes.default.svc
-    namespace: gitlab-prod
+    namespace: gitlab
   syncPolicy:
     automated:
       prune: false  # Manual prune for safety (GitLab is stateful)
