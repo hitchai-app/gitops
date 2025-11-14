@@ -1,5 +1,6 @@
 # GitLab Minimal Deployment - Full Feature Set
-# Target: ~10GB RAM total (includes bundled PostgreSQL, Redis, MinIO)
+# Target: ~9.5GB RAM total (includes bundled PostgreSQL, Redis, MinIO)
+# Integrates with: Traefik ingress, kube-prometheus-stack observability
 # Use Case: New project, small team (5-10 users), all features enabled
 
 global:
@@ -16,6 +17,7 @@ global:
   ingress:
     enabled: true
     class: traefik
+    provider: traefik  # Required for SSH support (IngressRouteTCP)
     configureCertmanager: false  # Use existing cert-manager
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
@@ -57,6 +59,12 @@ gitlab:
     maxReplicas: 2
     workerProcesses: 2  # Reduced from default 4
     workerTimeout: 60
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: kube-prometheus-stack
 
   # Sidekiq (background job processor)
   sidekiq:
@@ -70,6 +78,12 @@ gitlab:
         memory: 1.2Gi
     minReplicas: 1
     maxReplicas: 2
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: kube-prometheus-stack
     # Single pod handling all queues for minimal deployment
     pods:
       - name: all-in-one
@@ -86,6 +100,12 @@ gitlab:
       limits:
         cpu: 500m
         memory: 1Gi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: kube-prometheus-stack
     persistence:
       enabled: true
       storageClass: longhorn  # Use existing Longhorn
@@ -102,6 +122,12 @@ gitlab:
       limits:
         cpu: 200m
         memory: 256Mi
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          release: kube-prometheus-stack
 
   # Praefect (Gitaly HA - disabled for single node)
   praefect:
@@ -178,6 +204,12 @@ registry:
   hpa:
     minReplicas: 1
     maxReplicas: 2
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
   # Storage backend (uses bundled MinIO via global.minio)
   storage:
     secret: registry-storage
@@ -247,27 +279,13 @@ minio:
 certmanager:
   install: false
 
-# Prometheus (minimal monitoring)
+# Prometheus (use existing kube-prometheus-stack)
 prometheus:
-  install: true
-  server:
-    enabled: true
-    resources:
-      requests:
-        cpu: 100m
-        memory: 400Mi
-      limits:
-        cpu: 500m
-        memory: 512Mi
-    retention: 7d
-    persistentVolume:
-      enabled: true
-      storageClass: longhorn
-      size: 10Gi
+  install: false
 
-# Grafana (minimal dashboards)
+# Grafana (use existing from observability stack)
 grafana:
-  enabled: false  # Use existing Grafana from observability stack
+  enabled: false
 
 # GitLab Runner (use existing ARC runners)
 gitlab-runner:
