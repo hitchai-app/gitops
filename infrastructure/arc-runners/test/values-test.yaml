@@ -28,7 +28,7 @@ template:
     serviceAccountName: github-actions-reviewer
     containers:
     - name: runner
-      image: ghcr.io/actions/actions-runner:latest
+      image: ghcr.io/hitchai-app/arc-runner:0.1.1
       command: ["/home/runner/run.sh"]
       resources:
         requests:
