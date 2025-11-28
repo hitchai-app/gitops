@@ -1,0 +1,65 @@
+# MinIO Tenant - Minimal Configuration
+# ADR Reference: 0006-minio-operator-single-drive-bootstrap.md
+# Note: MinIO operator requires minimum 4 volumes for erasure coding
+# Using EC:2 mode (50% parity) for simplicity
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: minio
+  namespace: minio
+spec:
+  image: quay.io/minio/minio:RELEASE.2025-04-08T15-41-24Z
+
+  # Single server with 4 volumes (minimum for erasure coding)
+  pools:
+    - name: pool-0
+      servers: 1
+      volumesPerServer: 4
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: longhorn
+          resources:
+            requests:
+              storage: 20Gi  # 80Gi total (4 x 20Gi), ~40Gi usable with EC:2
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+  # Mount path
+  mountPath: /export
+
+  # Disable auto-generated TLS (use cert-manager per ADR 0008)
+  requestAutoCert: false
+
+  # External certificate from cert-manager
+  externalCertSecret:
+    - name: minio-tls
+      type: kubernetes.io/tls
+
+  # Console configuration
+  console:
+    consoleSecret:
+      name: minio-console-secret
+
+  # Prometheus metrics
+  prometheusOperator: true
+
+  # Environment variables for root credentials
+  configuration:
+    name: minio-env-configuration
+
+  # Features
+  features:
+    bucketDNS: false

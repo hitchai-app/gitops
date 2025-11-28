@@ -1,0 +1,79 @@
+# Shared PostgreSQL Cluster via CloudNativePG
+# ADR Reference: 0004-cloudnativepg-for-postgresql.md
+# Single instance on single-node cluster, scales to 3 replicas on multi-node
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-shared
+  namespace: postgres
+spec:
+  instances: 1  # Single instance for single-node cluster
+
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+
+  postgresql:
+    parameters:
+      # Memory settings (conservative for shared cluster)
+      shared_buffers: "256MB"
+      effective_cache_size: "512MB"
+      work_mem: "16MB"
+      maintenance_work_mem: "64MB"
+      # Connection settings
+      max_connections: "200"
+      # Logging
+      log_statement: "ddl"
+      log_min_duration_statement: "1000"  # Log queries > 1s
+
+  storage:
+    storageClass: longhorn  # Single-replica per ADR 0007
+    size: 20Gi
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  # Bootstrap with default superuser
+  bootstrap:
+    initdb:
+      database: app
+      owner: app
+
+  # Managed roles for applications
+  # Secrets must be in same namespace as cluster
+  managed:
+    roles:
+      - name: gitlab
+        ensure: present
+        login: true
+        passwordSecret:
+          name: gitlab-db-credentials
+
+  # Enable monitoring (Prometheus metrics)
+  monitoring:
+    enablePodMonitor: true
+    podMonitorMetricRelabelings:
+      - sourceLabels: [__name__]
+        regex: "cnpg_.*"
+        action: keep
+
+  # Backup configuration (using existing Longhorn S3 bucket)
+  # TODO: Configure S3 backup when ready
+  # backup:
+  #   barmanObjectStore:
+  #     destinationPath: s3://longhorn-backup/postgres
+  #     s3Credentials:
+  #       accessKeyId:
+  #         name: postgres-s3-credentials
+  #         key: ACCESS_KEY_ID
+  #       secretAccessKey:
+  #         name: postgres-s3-credentials
+  #         key: SECRET_ACCESS_KEY
+  #   retentionPolicy: "30d"
+
+  # Affinity (no anti-affinity on single node)
+  affinity:
+    enablePodAntiAffinity: false

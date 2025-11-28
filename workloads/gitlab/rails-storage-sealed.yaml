@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: gitlab-rails-storage
+  namespace: gitlab
+spec:
+  encryptedData:
+    connection: AgBN1cKtufEabzVbi7C0yJ3wFWyZFEXqV3LZeOt/hwJRZUPeESq8v7rIJxVOYCY8Szmy/WwDNyNRewJM9ZMWOJqFtKV3vo2mC/Kq2Z1iNqOXaFH12daRlK+kFynJ2NO4jnhwDigdM5i3VzhMVTOUrq17SO8JHvyRUa7KpYuBmFcbJuEOg/IQ0SX5wdFbLpSqlWQGVvea6i9CIv6HxUmBdZ2ZrQE6iZesbg6Nx1PMf0YsJQcQ1TeH12nQTun1YOtXmGyK2m20p6WRiR4Zcqb8a1xIHgO/ZW1xl9e0OfZ+wIPmkHZAt5uuEhacUbNb0utrJZ5pkgUxGmyqjZOVp7ykx2NX5pi2b5B9jb5cpQn+fShinIlE7pAJKV9LxUVB97crcwQhy0qcUXz4kL3rsrx0gmCSPS+g5l03T6+ReweMvEXdl1BBPmP83xeGt/aWFidD5bMdsaHi0rdmM6fTdc8cL0dW4tklzOte4xnpymsyqIBaaI88+pDehYu3MJCcw6M/VRZpJ+/X+2YmCzIXgH+ZK7g5pX2UZXULhrPLP4MjJ04QJUw/cf+JI+fDoCDE+56L/ywM9+dBVAs5kv5qlW9p++9CR7t2vasiCPI9TMSpoEd+Id7rvb8Mk6avb7SrNOKbsecHR1JQY66vFlYr7VWTvQro7yRAW17jp1pLH2smiU2zVP4N3hd3VmqvBn34LRpFZRitFQ7oOlWbzbwWi6sCBltOZBhkZEkpPMbEJj/E7m7LwFYpjIXNtKgV5NXgbNnoQz44vTqT9WYlzI2Uctk5+iYo4j5xrCgd5K8xPXeEeXgC6V62RcsORrC0NNjOQZoMySs3As+yhFpjxjAKV1cLu8Yi2bavRFESPnALxCR0HmD8BVl/4bgyaV2pFPOrXwOYfKH+kJOiPCg2e+1jXHD3Bx4YISu+G9KQMO/hTaiy3oN8L4YBwY8DydcFWsZkov6yz1nC40Zs/QgB/i4Wjci6OZnCvFlK
+  template:
+    metadata:
+      name: gitlab-rails-storage
+      namespace: gitlab
+    type: Opaque
