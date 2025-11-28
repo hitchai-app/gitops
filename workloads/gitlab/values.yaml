@@ -1,7 +1,7 @@
 # GitLab Minimal Deployment - Full Feature Set
-# Target: ~6-7GB RAM (uses external PostgreSQL, Valkey, MinIO)
+# Target: ~6-7GB RAM (uses dedicated PostgreSQL, Valkey, MinIO in same namespace)
 # Integrates with: Traefik ingress, kube-prometheus-stack observability
-# External services: postgres-shared (CloudNativePG), valkey, minio-tenant
+# Dedicated services: gitlab-postgres (CloudNativePG), gitlab-valkey, gitlab-minio
 # ADR References: 0004, 0005, 0006
 # Use Case: New project, small team (5-10 users), all features enabled
 
@@ -44,29 +44,24 @@ global:
     display_name: GitLab
     reply_to: 'noreply@ops.last-try.org'
 
-  # External PostgreSQL (CloudNativePG - ADR 0004)
+  # PostgreSQL (CloudNativePG cluster in same namespace - ADR 0004)
   psql:
-    host: postgres-shared-rw.postgres.svc.cluster.local
+    host: gitlab-postgres-rw
     port: 5432
     database: gitlabhq_production
     username: gitlab
     password:
-      secret: gitlab-postgresql-password
-      key: postgresql-password
+      secret: gitlab-postgres-app
+      key: password
 
-  # External Redis/Valkey (ADR 0005)
+  # Redis/Valkey (StatefulSet in same namespace - ADR 0005)
   redis:
-    host: valkey.valkey.svc.cluster.local
+    host: gitlab-valkey
     port: 6379
-    # No password configured per ADR 0005 (internal cluster only)
 
-  # External MinIO (ADR 0006)
+  # MinIO disabled (using object_store with dedicated tenant - ADR 0006)
   minio:
-    enabled: true
-    credentials:
-      secret: gitlab-minio-credentials
-      accessKey: accesskey
-      secretKey: secretkey
+    enabled: false
 
   # Object storage configuration (all buckets use external MinIO)
   appConfig:

@@ -1,13 +1,13 @@
 # GitLab Deployment
 
-Operations reference for GitLab CE with external infrastructure.
+Operations reference for GitLab CE with dedicated infrastructure.
 
 ## Architecture
 
-Uses shared infrastructure per ADRs:
-- **PostgreSQL**: CloudNativePG cluster (`postgres-shared`) - ADR 0004
-- **Redis**: Valkey StatefulSet - ADR 0005
-- **Object Storage**: MinIO tenant - ADR 0006
+All services deployed in `gitlab` namespace:
+- **PostgreSQL**: CloudNativePG cluster (`gitlab-postgres`) - ADR 0004
+- **Redis**: Valkey StatefulSet (`gitlab-valkey`) - ADR 0005
+- **Object Storage**: MinIO tenant (`gitlab-minio`) - ADR 0006
 
 ## Quick Access
 
@@ -45,20 +45,17 @@ kubectl exec -n gitlab <toolbox-pod> -- backup-utility
 
 Metrics via kube-prometheus-stack ServiceMonitors.
 
-Key metrics: `gitlab_transaction_duration_seconds`, `sidekiq_queue_size`
-
 ## Troubleshooting
 
 ```bash
-# Pod issues
-kubectl describe pod <pod> -n gitlab
+# Pod status
+kubectl get pods -n gitlab
 
 # Database connectivity
-kubectl exec -n gitlab <webservice-pod> -- \
-  gitlab-rails dbconsole -p
+kubectl exec -n gitlab <webservice-pod> -- gitlab-rails dbconsole -p
 
-# External services
-kubectl get pods -n postgres   # PostgreSQL
-kubectl get pods -n valkey     # Redis
-kubectl get pods -n minio      # MinIO
+# Component logs
+kubectl logs -n gitlab deployment/gitlab-webservice-default
+kubectl logs -n gitlab statefulset/gitlab-postgres-1
+kubectl logs -n gitlab statefulset/gitlab-valkey
 ```

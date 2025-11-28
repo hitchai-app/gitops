@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: valkey
-  namespace: valkey
+  name: gitlab-valkey
+  namespace: gitlab
   labels:
-    app: valkey
+    app: gitlab-valkey
 spec:
   type: ClusterIP
   ports:
@@ -15,4 +15,4 @@ spec:
       targetPort: metrics
       name: metrics
   selector:
-    app: valkey
+    app: gitlab-valkey

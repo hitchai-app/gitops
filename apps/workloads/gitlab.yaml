@@ -16,10 +16,32 @@ spec:
         releaseName: gitlab
         valueFiles:
           - $values/workloads/gitlab/values.yaml
-    # 2. Git repository with values file and manifests
+    # 2. Git repository with values file
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       ref: values
+    # 3. PostgreSQL cluster (CloudNativePG)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: workloads/gitlab/postgres
+    # 4. Valkey (Redis-compatible cache)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: workloads/gitlab/valkey
+    # 5. MinIO tenant (object storage)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: workloads/gitlab/minio
+    # 6. Certificates
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: workloads/gitlab/certificates
+    # 7. Sealed secrets (rails-storage, registry-storage)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: workloads/gitlab
+      directory:
+        include: "*-sealed.yaml"
   destination:
     server: https://kubernetes.default.svc
     namespace: gitlab

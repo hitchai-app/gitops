@@ -1,0 +1,48 @@
+# GitLab PostgreSQL Cluster via CloudNativePG
+# ADR Reference: 0004-cloudnativepg-for-postgresql.md
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: gitlab-postgres
+  namespace: gitlab
+spec:
+  instances: 1
+
+  imageName: ghcr.io/cloudnative-pg/postgresql:17.2
+
+  postgresql:
+    parameters:
+      shared_buffers: "256MB"
+      effective_cache_size: "512MB"
+      work_mem: "16MB"
+      maintenance_work_mem: "64MB"
+      max_connections: "200"
+      log_statement: "ddl"
+      log_min_duration_statement: "1000"
+
+  storage:
+    storageClass: longhorn
+    size: 20Gi
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+
+  bootstrap:
+    initdb:
+      database: gitlabhq_production
+      owner: gitlab
+
+  monitoring:
+    enablePodMonitor: true
+    podMonitorMetricRelabelings:
+      - sourceLabels: [__name__]
+        regex: "cnpg_.*"
+        action: keep
+
+  affinity:
+    enablePodAntiAffinity: false
