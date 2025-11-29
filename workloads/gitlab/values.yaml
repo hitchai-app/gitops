@@ -63,6 +63,10 @@ global:
   minio:
     enabled: false
 
+  # Gitaly enabled at global level (required by chart 9.x)
+  gitaly:
+    enabled: true
+
   # Object storage configuration (all buckets use external MinIO)
   appConfig:
     object_store:
@@ -146,9 +150,8 @@ gitlab:
         concurrency: 10  # Reduced from default 20
         queues: ''  # Empty = all queues
 
-  # Gitaly (Git repository storage)
+  # Gitaly (Git repository storage) - enabled via global.gitaly.enabled
   gitaly:
-    enabled: true
     resources:
       requests:
         cpu: 200m
@@ -164,7 +167,7 @@ gitlab:
           release: kube-prometheus-stack
     persistence:
       enabled: true
-      storageClass: longhorn  # Use existing Longhorn
+      storageClass: single-replica  # ADR 0007
       size: 50Gi
       accessMode: ReadWriteOnce
 
@@ -244,7 +247,7 @@ gitlab:
         schedule: "0 2 * * *"  # Daily at 2 AM
         persistence:
           enabled: true
-          storageClass: longhorn
+          storageClass: single-replica  # ADR 0007
           size: 10Gi
 
 # Container Registry
