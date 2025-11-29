@@ -7,7 +7,7 @@ metadata:
   name: gitlab-minio
   namespace: gitlab
 spec:
-  image: quay.io/minio/minio:RELEASE.2025-04-08T15-41-24Z
+  image: quay.io/minio/minio:RELEASE.2025-10-15T17-29-55Z
 
   pools:
     - name: pool-0

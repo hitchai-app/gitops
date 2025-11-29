@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: valkey
-          image: valkey/valkey:8.0.2-alpine
+          image: valkey/valkey:9.0.0-alpine
           command:
             - /bin/sh
             - -c
@@ -61,7 +61,7 @@ spec:
             periodSeconds: 5
 
         - name: exporter
-          image: oliver006/redis_exporter:v1.61.0
+          image: oliver006/redis_exporter:v1.80.1
           ports:
             - containerPort: 9121
               name: metrics
