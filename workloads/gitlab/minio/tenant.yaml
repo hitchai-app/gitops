@@ -1,5 +1,6 @@
-# GitLab MinIO Tenant
+# GitLab MinIO Tenant - SNSD (Single-Node Single-Drive)
 # ADR Reference: 0006-minio-operator-single-drive-bootstrap.md
+# Note: SNSD accepts zero in-cluster durability for simplest footprint
 apiVersion: minio.min.io/v2
 kind: Tenant
 metadata:
@@ -11,7 +12,7 @@ spec:
   pools:
     - name: pool-0
       servers: 1
-      volumesPerServer: 4
+      volumesPerServer: 1  # SNSD per ADR 0006
       volumeClaimTemplate:
         metadata:
           name: data
@@ -21,7 +22,7 @@ spec:
           storageClassName: longhorn
           resources:
             requests:
-              storage: 20Gi
+              storage: 50Gi  # Full capacity, no parity overhead
       resources:
         requests:
           cpu: 200m
