@@ -21,8 +21,8 @@ global:
     class: traefik
     provider: traefik  # Required for SSH support (IngressRouteTCP)
     configureCertmanager: false  # Use existing cert-manager
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
+    # Note: Do NOT add cert-manager.io/cluster-issuer annotation here
+    # It triggers auto-certificate creation which conflicts with our explicit Certificate CRD
     tls:
       enabled: true
       secretName: gitlab-tls
@@ -304,6 +304,8 @@ minio:
   install: false
 
 # Cert-manager - DISABLED (use existing cert-manager with letsencrypt-prod ClusterIssuer)
+installCertmanager: false
+
 certmanager-issuer:
   email: ops@last-try.org
 
