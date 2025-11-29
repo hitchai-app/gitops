@@ -21,7 +21,7 @@ spec:
       log_min_duration_statement: "1000"
 
   storage:
-    storageClass: longhorn
+    storageClass: single-replica  # ADR 0007: single-replica for apps with built-in replication
     size: 20Gi
 
   resources:

@@ -81,7 +81,7 @@ spec:
         name: data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: longhorn
+        storageClassName: single-replica  # ADR 0007
         resources:
           requests:
             storage: 5Gi
