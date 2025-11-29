@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: gitlab-minio-env
+  namespace: gitlab
+spec:
+  encryptedData:
+    config.env: AgCMEKHvPvUeyz7UwGOc973wujg441f68si4r8U2T+qI6IdZuIo2hFSUNqgTXq+4UKN+IyQ3LRA4IadjQeUPm9keaCbpa0pU0YRMwyuCrl43EMc5OPLNpf0ox7u0lQIMHUY/lk36HBS38XcrKfo8D2aAv6DKujlGb4+0E5jaXRhtEcRCmw79ITTcJEprqapc/eDXQ3RKXVWVGlhAkgicsWQBW3gtL8h5aGAJmow/lI0QUUGMz8kLRjs3TlQ+Fb7IR9u/WrbcMzNYhTvzTRhebp7IPiHrVN60HUTJD6+LA5GeNrutORiZSzaGhttVMkdH6zbpIPmo/jDwZr/M9bk2duvw2VHSQeJESHhSpqrMPeyNJ+Ky7v1bsI0DrS6RRJQOBXc6weg4/YnpP4A7JKCe3tgKA2NrE+mrQ47/OTuipcInt7fLXu9LxbmufPI3EMh2xxtV2tDqcunPV9OHhVAXSJ6rotfoh9WOykFD4lL+2qaq18iD5tQNQBjTOHP0/VjA+0J9Zo/8b2zaRB5NeEluPFcySLmP/2JOR6UgJph1Tjlw8gMw5tEwW2J2f+LxjPr/vsiXvv/PsOgvvNNbgWRgqo9BhDtyijzMK9WkjiDpRnecvcgIbRC14xrBTjSw63HQ8CRkOePJdQFHg1/73s67ReGdbIn+e3Jl+/xFTqRCm67CE4Lh9sHORFzXS+FLYAqdWba7TZpXiAqDLnz17h5L5nkLdiiGRCvQYH6BuOJ1RS12dWkTk3Zd0tsmhB7b73sD89ZyxuZA+NfvSMDBVGHHQLus1t4QHS46scStqv/rkFZXJt+REsZdFM0dPxYDPV7xLCBG0l3IuGFcFMs=
+  template:
+    metadata:
+      name: gitlab-minio-env
+      namespace: gitlab
+    type: Opaque
