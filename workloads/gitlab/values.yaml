@@ -58,6 +58,8 @@ global:
   redis:
     host: gitlab-valkey
     port: 6379
+    auth:
+      enabled: false  # Valkey runs without password per ADR 0005
 
   # MinIO disabled (using object_store with dedicated tenant - ADR 0006)
   minio:
