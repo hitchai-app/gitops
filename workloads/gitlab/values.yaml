@@ -319,3 +319,11 @@ shared-secrets:
   env: production
   rbac:
     create: true
+
+# Upgrade Check - DISABLED for fresh install
+# ArgoCD maps Helm pre-upgrade hooks to PreSync, running them even on first install.
+# The upgrade-check job fails because gitlab-gitlab-chart-info ConfigMap doesn't exist yet.
+# See: https://github.com/argoproj/argo-cd/issues/7536
+# TODO: Re-enable after first successful deployment
+upgradeCheck:
+  enabled: false
