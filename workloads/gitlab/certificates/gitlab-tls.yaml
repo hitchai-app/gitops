@@ -11,4 +11,3 @@ spec:
   dnsNames:
     - gitlab.ops.last-try.org
     - registry.ops.last-try.org
-  rotationPolicy: Always
