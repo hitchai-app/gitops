@@ -228,11 +228,11 @@ gitlab:
     enabled: true
     resources:
       requests:
-        cpu: 100m
-        memory: 200Mi
-      limits:
-        cpu: 500m
+        cpu: 200m
         memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1536Mi  # Migrations are memory-intensive
 
   # Toolbox (for backups and maintenance tasks)
   toolbox:
