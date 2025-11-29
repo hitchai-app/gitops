@@ -293,9 +293,9 @@ redis:
 minio:
   install: false
 
-# Cert-manager (use existing)
-certmanager:
-  install: false
+# Cert-manager - DISABLED (use existing cert-manager with letsencrypt-prod ClusterIssuer)
+certmanager-issuer:
+  email: ops@last-try.org
 
 # Prometheus (use existing kube-prometheus-stack)
 prometheus:
