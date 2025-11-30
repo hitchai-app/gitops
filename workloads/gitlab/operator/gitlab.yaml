@@ -20,11 +20,11 @@ spec:
           registry:
             name: registry.ops.last-try.org
 
-        # Ingress configuration (Traefik)
+        # Ingress configuration (standard K8s Ingress with Traefik class)
         ingress:
           enabled: true
           class: traefik
-          provider: traefik
+          # Note: Don't set provider:traefik - causes IngressRouteTCP which operator doesn't support
           configureCertmanager: false
           tls:
             enabled: true
