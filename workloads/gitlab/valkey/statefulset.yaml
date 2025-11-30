@@ -8,6 +8,11 @@ metadata:
 spec:
   serviceName: gitlab-valkey
   replicas: 1
+  podManagementPolicy: OrderedReady
+  revisionHistoryLimit: 10
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
   selector:
     matchLabels:
       app: gitlab-valkey
@@ -19,6 +24,7 @@ spec:
       containers:
         - name: valkey
           image: valkey/valkey:9.0.0-alpine
+          imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
             - -c
@@ -39,6 +45,7 @@ spec:
           ports:
             - containerPort: 6379
               name: redis
+              protocol: TCP
           resources:
             requests:
               cpu: 100m
@@ -54,17 +61,27 @@ spec:
               command: ["valkey-cli", "ping"]
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
           readinessProbe:
             exec:
               command: ["valkey-cli", "ping"]
             initialDelaySeconds: 5
             periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+            timeoutSeconds: 1
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
 
         - name: exporter
           image: oliver006/redis_exporter:v1.80.1
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9121
               name: metrics
+              protocol: TCP
           env:
             - name: REDIS_ADDR
               value: "redis://localhost:6379"
@@ -75,6 +92,19 @@ spec:
             limits:
               cpu: 100m
               memory: 64Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
 
   volumeClaimTemplates:
     - metadata:
