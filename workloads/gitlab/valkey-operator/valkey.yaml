@@ -1,6 +1,6 @@
 # GitLab Valkey Instance
 # Managed by SAP valkey-operator (cache.cs.sap.com/v1alpha1)
-# ADR Reference: 0005-statefulset-for-valkey.md (updated for operator)
+# ADR Reference: 0020-sap-valkey-operator.md
 apiVersion: cache.cs.sap.com/v1alpha1
 kind: Valkey
 metadata:
@@ -25,7 +25,7 @@ spec:
   # Prometheus metrics exporter
   metrics:
     enabled: true
-    serviceMonitor:
+    monitor:
       enabled: true
       additionalLabels:
         release: kube-prometheus-stack
