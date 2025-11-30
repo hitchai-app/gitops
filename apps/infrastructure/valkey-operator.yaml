@@ -12,8 +12,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: oci://ghcr.io/sap/valkey-operator-helm
-    chart: valkey-operator
+    repoURL: oci://ghcr.io/sap/valkey-operator-helm/valkey-operator
+    path: .
     targetRevision: 0.1.8
     helm:
       releaseName: valkey-operator
