@@ -34,6 +34,42 @@ spec:
       path: workloads/gitlab
       directory:
         include: "*-sealed.yaml"
+  # Ignore K8s default fields added by API server/controllers
+  # Prevents OutOfSync for StatefulSet fields like imagePullPolicy, protocol, volumeMode, etc.
+  # Reference: https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/
+  ignoreDifferences:
+    - group: apps
+      kind: StatefulSet
+      name: gitlab-valkey
+      namespace: gitlab-system
+      managedFieldsManagers:
+        - kube-controller-manager
+      jqPathExpressions:
+        # VolumeClaimTemplate defaults
+        - .spec.volumeClaimTemplates[]?.spec.volumeMode
+        # Container defaults
+        - .spec.template.spec.containers[]?.imagePullPolicy
+        - .spec.template.spec.containers[]?.terminationMessagePath
+        - .spec.template.spec.containers[]?.terminationMessagePolicy
+        - .spec.template.spec.containers[]?.ports[]?.protocol
+        # Probe defaults
+        - .spec.template.spec.containers[]?.livenessProbe.failureThreshold
+        - .spec.template.spec.containers[]?.livenessProbe.successThreshold
+        - .spec.template.spec.containers[]?.livenessProbe.timeoutSeconds
+        - .spec.template.spec.containers[]?.readinessProbe.failureThreshold
+        - .spec.template.spec.containers[]?.readinessProbe.successThreshold
+        - .spec.template.spec.containers[]?.readinessProbe.timeoutSeconds
+        # Pod spec defaults
+        - .spec.template.spec.dnsPolicy
+        - .spec.template.spec.restartPolicy
+        - .spec.template.spec.schedulerName
+        - .spec.template.spec.securityContext
+        - .spec.template.spec.terminationGracePeriodSeconds
+        # StatefulSet spec defaults
+        - .spec.podManagementPolicy
+        - .spec.revisionHistoryLimit
+        - .spec.updateStrategy
+        - .spec.persistentVolumeClaimRetentionPolicy
   destination:
     server: https://kubernetes.default.svc
     namespace: gitlab-system
