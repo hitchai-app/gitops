@@ -112,6 +112,7 @@ spec:
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: single-replica  # ADR 0007
+        volumeMode: Filesystem
         resources:
           requests:
             storage: 5Gi
