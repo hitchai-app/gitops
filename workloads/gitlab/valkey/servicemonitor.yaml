@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: gitlab-valkey
-  namespace: gitlab
+  namespace: gitlab-system
   labels:
     release: kube-prometheus-stack
 spec:
