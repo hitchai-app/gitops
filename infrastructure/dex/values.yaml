@@ -75,7 +75,20 @@ config:
       name: 'Prometheus OAuth2 Proxy'
       secretEnv: DEX_CLIENT_SECRET_PROMETHEUS
 
-  staticPasswords: []
+    # GitLab (native OIDC)
+    - id: gitlab
+      redirectURIs:
+        - 'https://gitlab.ops.last-try.org/users/auth/openid_connect/callback'
+      name: 'GitLab'
+      secretEnv: DEX_CLIENT_SECRET_GITLAB
+
+  # Static users for local authentication (bcrypt hashed passwords)
+  # Generate hash: htpasswd -bnBC 10 "" 'password' | tr -d ':\n' | sed 's/$2y/$2a/'
+  staticPasswords:
+    - email: "admin@ops.last-try.org"
+      hash: $DEX_STATIC_PASSWORD_ADMIN
+      username: admin
+      userID: "admin-001"
 
   logger:
     level: info
@@ -118,6 +131,16 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: prometheus-client-secret
+  - name: DEX_CLIENT_SECRET_GITLAB
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: gitlab-client-secret
+  - name: DEX_STATIC_PASSWORD_ADMIN
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: static-password-admin
 
 service:
   type: ClusterIP
