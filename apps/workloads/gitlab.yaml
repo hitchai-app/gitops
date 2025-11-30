@@ -52,6 +52,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
     retry:
       limit: 3
       backoff:
@@ -65,14 +66,21 @@ spec:
         - /spec/replicas  # HPA manages replicas
     - group: apps
       kind: StatefulSet
-      jsonPointers:
-        - /spec/template/metadata/annotations  # Checksum annotations change between renders
-        - /spec/volumeClaimTemplates/0/status  # Runtime status
+      jqPathExpressions:
+        - .spec.persistentVolumeClaimRetentionPolicy  # K8s default
+        - .spec.podManagementPolicy  # K8s default
+        - .spec.revisionHistoryLimit  # K8s default
+        - .spec.template.metadata.annotations  # Checksum annotations
+        - .spec.template.metadata.creationTimestamp  # K8s adds null
+        - .spec.volumeClaimTemplates[].status  # Runtime status
     - group: batch
       kind: Job
-      jsonPointers:
-        - /spec/selector  # Auto-generated selector
-        - /spec/template/metadata/labels  # Auto-generated labels
+      jqPathExpressions:
+        - .spec.selector  # Auto-generated
+        - .spec.template.metadata.labels."batch.kubernetes.io/controller-uid"
+        - .spec.template.metadata.labels."batch.kubernetes.io/job-name"
+        - .spec.template.metadata.labels."controller-uid"
+        - .spec.template.metadata.labels."job-name"
     - group: ""
       kind: Secret
       name: gitlab-gitlab-initial-root-password
