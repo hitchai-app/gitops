@@ -3,9 +3,6 @@ kind: Application
 metadata:
   name: gitlab
   namespace: argocd
-  annotations:
-    # Use server-side diff to handle K8s default fields properly
-    argocd.argoproj.io/compare-options: ServerSideDiff=true,IncludeMutationWebhook=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
