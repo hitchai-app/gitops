@@ -93,6 +93,14 @@ config:
       hash: "$2a$10$e8.34e9CEoZzmQk8aj45ROMUUPxM3pQcUHNmMGUp7Pcl8/C0OGRJO"
       username: admin
       userID: "admin-001"
+    - email: "george@ops.last-try.org"
+      hash: "$2a$10$x4jJ3D/hVlV.IXTrRIavieFpTox2j54j5aG3pUmu5V7N5h6/Q7De6"
+      username: george
+      userID: "george-002"
+    - email: "flawless@ops.last-try.org"
+      hash: "$2a$10$RrHv7R854IWMmn6SXu.VD.D/KC9iR7rRJpN1o91MgLxvgWkkcArL."
+      username: flawless
+      userID: "flawless-003"
 
   logger:
     level: info
