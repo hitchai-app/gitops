@@ -36,7 +36,7 @@ spec:
         include: "*-sealed.yaml"
   destination:
     server: https://kubernetes.default.svc
-    namespace: gitlab
+    namespace: gitlab-system
   syncPolicy:
     automated:
       prune: false  # Manual prune for safety (GitLab is stateful)

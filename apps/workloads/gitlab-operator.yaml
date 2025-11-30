@@ -16,9 +16,6 @@ spec:
     helm:
       releaseName: gitlab-operator
       valuesObject:
-        # Operator watches gitlab namespace
-        watchNamespaces:
-          - gitlab
         # Resource limits for operator pod
         operator:
           resources:

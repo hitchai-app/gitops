@@ -4,7 +4,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: gitlab-postgres
-  namespace: gitlab
+  namespace: gitlab-system
 spec:
   instances: 1
 

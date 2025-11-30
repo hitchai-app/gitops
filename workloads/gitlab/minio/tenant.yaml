@@ -5,7 +5,7 @@ apiVersion: minio.min.io/v2
 kind: Tenant
 metadata:
   name: gitlab-minio
-  namespace: gitlab
+  namespace: gitlab-system
 spec:
   image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
 
