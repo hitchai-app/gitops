@@ -82,7 +82,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0002](0002-longhorn-storage-from-day-one.md) | Longhorn Storage from Day One | Accepted | 2025-10-05 |
 | [0003](0003-operators-over-statefulsets.md) | Operators over StatefulSets | Accepted | 2025-10-05 |
 | [0004](0004-cloudnativepg-for-postgresql.md) | CloudNativePG for PostgreSQL | Accepted | 2025-10-05 |
-| [0005](0005-statefulset-for-valkey.md) | Valkey StatefulSet | Accepted | 2025-10-07 |
+| [0005](0005-statefulset-for-valkey.md) | Valkey StatefulSet | Superseded | 2025-10-07 |
 | [0006](0006-minio-operator-single-drive-bootstrap.md) | MinIO Operator Single-Drive Bootstrap | Accepted | 2025-10-05 |
 | [0007](0007-longhorn-storageclass-strategy.md) | Longhorn StorageClass Strategy | Accepted | 2025-10-05 |
 | [0008](0008-cert-manager-for-tls.md) | cert-manager for TLS Certificates | Accepted | 2025-10-05 |
@@ -97,6 +97,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0017](0017-observability-stack-evaluation.md) | Observability Stack Evaluation | Proposed | 2025-10-14 |
 | [0018](0018-dex-authentication-provider.md) | Dex Authentication Provider | Proposed | 2025-10-14 |
 | [0019](0019-resource-organization-and-application-granularity.md) | Resource Organization and Application Granularity | Accepted | 2025-10-15 |
+| [0020](0020-sap-valkey-operator.md) | SAP Valkey Operator | Accepted | 2025-11-30 |
 
 ## When to Create an ADR
 

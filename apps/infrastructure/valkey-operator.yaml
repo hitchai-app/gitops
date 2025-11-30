@@ -1,0 +1,46 @@
+# SAP Valkey Operator
+# Manages Valkey instances via CRD (cache.cs.sap.com/v1alpha1)
+# Uses Bitnami Valkey chart under the hood
+# Reference: https://github.com/SAP/valkey-operator
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: valkey-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: oci://ghcr.io/sap/valkey-operator-helm
+    chart: valkey-operator
+    targetRevision: 0.1.8
+    helm:
+      releaseName: valkey-operator
+      valuesObject:
+        replicaCount: 1
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        # Webhook TLS: operator self-manages certificates (default)
+        # Can enable cert-manager integration if needed later
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: valkey-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
