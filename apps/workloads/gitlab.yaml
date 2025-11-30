@@ -63,6 +63,16 @@ spec:
       kind: Deployment
       jsonPointers:
         - /spec/replicas  # HPA manages replicas
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/template/metadata/annotations  # Checksum annotations change between renders
+        - /spec/volumeClaimTemplates/0/status  # Runtime status
+    - group: batch
+      kind: Job
+      jsonPointers:
+        - /spec/selector  # Auto-generated selector
+        - /spec/template/metadata/labels  # Auto-generated labels
     - group: ""
       kind: Secret
       name: gitlab-gitlab-initial-root-password
