@@ -26,6 +26,9 @@ config:
   web:
     http: 0.0.0.0:5556
 
+  # Enable local password database for static users
+  enablePasswordDB: true
+
   connectors:
     - type: github
       id: github
