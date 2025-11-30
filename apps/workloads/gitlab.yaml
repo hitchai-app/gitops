@@ -8,35 +8,27 @@ metadata:
 spec:
   project: default
   sources:
-    # 1. GitLab Helm chart from official repository
-    - repoURL: https://charts.gitlab.io
-      chart: gitlab
-      targetRevision: 9.6.1  # GitLab 18.6.1
-      helm:
-        releaseName: gitlab
-        valueFiles:
-          - $values/workloads/gitlab/values.yaml
-    # 2. Git repository with values file
+    # 1. GitLab CR (managed by GitLab Operator)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
-      ref: values
-    # 3. PostgreSQL cluster (CloudNativePG)
+      path: workloads/gitlab/operator
+    # 2. PostgreSQL cluster (CloudNativePG - ADR 0004)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: workloads/gitlab/postgres
-    # 4. Valkey (Redis-compatible cache)
+    # 3. Valkey (Redis-compatible cache - ADR 0005)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: workloads/gitlab/valkey
-    # 5. MinIO tenant (object storage)
+    # 4. MinIO tenant (object storage - ADR 0006)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: workloads/gitlab/minio
-    # 6. Certificates
+    # 5. Certificates
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: workloads/gitlab/certificates
-    # 7. Sealed secrets (rails-storage, registry-storage)
+    # 6. Sealed secrets
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: workloads/gitlab
@@ -52,39 +44,9 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-      - RespectIgnoreDifferences=true
     retry:
       limit: 3
       backoff:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  ignoreDifferences:
-    - group: apps
-      kind: Deployment
-      jsonPointers:
-        - /spec/replicas  # HPA manages replicas
-    - group: apps
-      kind: StatefulSet
-      jqPathExpressions:
-        - .spec.persistentVolumeClaimRetentionPolicy  # K8s default
-        - .spec.podManagementPolicy  # K8s default
-        - .spec.revisionHistoryLimit  # K8s default
-        - .spec.updateStrategy  # K8s default (RollingUpdate)
-        - .spec.template.metadata.annotations  # Checksum annotations
-        - .spec.template.metadata.creationTimestamp  # K8s adds null
-        - .spec.volumeClaimTemplates[].status  # Runtime status
-        - .spec.volumeClaimTemplates[].metadata.creationTimestamp  # K8s adds null
-    - group: batch
-      kind: Job
-      jqPathExpressions:
-        - .spec.selector  # Auto-generated
-        - .spec.template.metadata.labels."batch.kubernetes.io/controller-uid"
-        - .spec.template.metadata.labels."batch.kubernetes.io/job-name"
-        - .spec.template.metadata.labels."controller-uid"
-        - .spec.template.metadata.labels."job-name"
-    - group: ""
-      kind: Secret
-      name: gitlab-gitlab-initial-root-password
-      jsonPointers:
-        - /data  # Generated secret, don't sync

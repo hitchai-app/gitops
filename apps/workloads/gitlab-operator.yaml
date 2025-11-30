@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.gitlab.io
+    chart: gitlab-operator
+    targetRevision: 2.6.1
+    helm:
+      releaseName: gitlab-operator
+      valuesObject:
+        # Operator watches gitlab namespace
+        watchNamespaces:
+          - gitlab
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitlab-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
