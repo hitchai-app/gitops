@@ -107,6 +107,25 @@ spec:
             enabled: true
             bucket: gitlab-dependency-proxy
 
+          # OmniAuth configuration for Dex SSO
+          omniauth:
+            enabled: true
+            autoSignInWithProvider: openid_connect
+            allowSingleSignOn:
+              - openid_connect
+            syncProfileFromProvider:
+              - openid_connect
+            syncProfileAttributes:
+              - email
+            blockAutoCreatedUsers: false
+            providers:
+              - secret: gitlab-oidc-provider
+                key: provider
+
+        # Disable user registration (SSO only)
+        signup:
+          enabled: false
+
       # GitLab Rails Components
       gitlab:
         webservice:
