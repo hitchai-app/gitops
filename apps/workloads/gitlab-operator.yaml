@@ -1,0 +1,40 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab-operator
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://charts.gitlab.io
+    chart: gitlab-operator
+    # Upgrade sequence: operator first, then GitLab CR chart version
+    # Operator 2.6.x supports GitLab chart 9.6.x
+    targetRevision: 2.6.1
+    helm:
+      releaseName: gitlab-operator
+      valuesObject:
+        # Operator watches gitlab namespace
+        watchNamespaces:
+          - gitlab
+        # Resource limits for operator pod
+        operator:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitlab-system
+  syncPolicy:
+    automated:
+      prune: false  # Match GitLab application safety policy
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
