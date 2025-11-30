@@ -84,9 +84,10 @@ config:
 
   # Static users for local authentication (bcrypt hashed passwords)
   # Generate hash: htpasswd -bnBC 10 "" 'password' | tr -d ':\n' | sed 's/$2y/$2a/'
+  # Note: Bcrypt hashes are safe in git (they're already hashed)
   staticPasswords:
     - email: "admin@ops.last-try.org"
-      hash: $DEX_STATIC_PASSWORD_ADMIN
+      hash: "$2a$10$e8.34e9CEoZzmQk8aj45ROMUUPxM3pQcUHNmMGUp7Pcl8/C0OGRJO"
       username: admin
       userID: "admin-001"
 
@@ -136,11 +137,6 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: gitlab-client-secret
-  - name: DEX_STATIC_PASSWORD_ADMIN
-    valueFrom:
-      secretKeyRef:
-        name: dex-secrets
-        key: static-password-admin
 
 service:
   type: ClusterIP
