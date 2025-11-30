@@ -43,3 +43,16 @@ spec:
 
   features:
     bucketDNS: false
+
+  # GitLab required buckets
+  buckets:
+    - name: gitlab-lfs
+    - name: gitlab-artifacts
+    - name: gitlab-uploads
+    - name: gitlab-packages
+    - name: gitlab-backups
+    - name: gitlab-mr-diffs
+    - name: gitlab-terraform-state
+    - name: gitlab-ci-secure-files
+    - name: gitlab-dependency-proxy
+    - name: gitlab-registry
