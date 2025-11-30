@@ -1,7 +1,10 @@
 # 0005. Valkey StatefulSet (Manual)
 
-**Status**: Accepted  
+**Status**: Superseded by [ADR 0020](0020-sap-valkey-operator.md)
+
 **Date**: 2025-10-07
+
+**Superseded**: 2025-11-30 - Migrated to SAP valkey-operator due to ArgoCD OutOfSync issues with Kubernetes default field injection.
 
 ## Context
 

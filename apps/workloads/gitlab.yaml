@@ -16,10 +16,10 @@ spec:
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: workloads/gitlab/postgres
-    # 3. Valkey (Redis-compatible cache - ADR 0005)
+    # 3. Valkey CR (SAP valkey-operator - ADR 0005)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
-      path: workloads/gitlab/valkey
+      path: workloads/gitlab/valkey-operator
     # 4. MinIO tenant (object storage - ADR 0006)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
