@@ -55,12 +55,14 @@ spec:
             secret: gitlab-postgres-app
             key: password
 
-        # Redis/Valkey (ADR 0005)
+        # Redis/Valkey (ADR 0020 - SAP valkey-operator)
         redis:
-          host: gitlab-valkey
+          host: valkey-gitlab-valkey-primary
           port: 6379
           auth:
-            enabled: false
+            enabled: true
+            secret: valkey-gitlab-valkey
+            key: valkey-password
 
         # MinIO disabled (using external tenant - ADR 0006)
         minio:
