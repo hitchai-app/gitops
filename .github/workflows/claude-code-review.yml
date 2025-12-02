@@ -43,11 +43,14 @@ jobs:
           # Use sticky comments for consistent review updates
           use_sticky_comment: true
 
-          # Allow gh CLI and kubectl for PR reviews
+          # Allow gh CLI, kubectl, and web tools for PR reviews
           # kubectl: RBAC enforces read-only access at cluster level (ServiceAccount: github-actions-reviewer)
+          # WebSearch/WebFetch: For verifying against official documentation
           allowed_tools: |
             Bash(gh pr:*)
             Bash(kubectl:*)
+            WebSearch
+            WebFetch
 
           # Direct prompt for automated review (no @claude mention needed)
           direct_prompt: |
@@ -81,6 +84,22 @@ jobs:
             - Good: `kubectl get applications -n argocd -o name` or `kubectl get applications -n argocd --field-selector metadata.name=longhorn`
             - Avoid: `kubectl get applications -n argocd | grep longhorn` (pipe operators require separate approval)
             - You have access to kubectl for cluster verification - use it to validate infrastructure state
+
+            **DOCUMENTATION VERIFICATION (MANDATORY):**
+            You MUST verify proposed solutions against official documentation. Do not trust PR claims blindly.
+            - Use WebSearch to find official docs for any technology being configured
+            - Use WebFetch to read the actual documentation pages
+            - Challenge: Does the configuration match what docs recommend?
+            - Challenge: Are there better/official ways to achieve the same goal?
+            - Challenge: Is the feature actually supported in the version being used?
+            - **Always include documentation links** in your review as evidence
+            - If docs contradict the PR approach, REQUEST_CHANGES with the correct solution
+            - Common doc sources: kubernetes.io, helm chart READMEs, operator GitHub repos, official project docs
+
+            Example verification workflow:
+            1. PR adds GitLab config → Search "GitLab Helm chart <feature> documentation"
+            2. PR uses ArgoCD feature → Fetch argo-cd.readthedocs.io to verify syntax
+            3. PR configures operator → Check operator's GitHub repo for CRD spec
 
             Review criteria (GitOps infrastructure - changes affect production):
             - What will fail in production
