@@ -21,12 +21,21 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: registry-cache
+  # Prevent daily sync oscillation from Helm-generated secret
+  # Reference: https://github.com/argoproj/argo-cd/issues/18530
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: dockerhub-cache-docker-registry-secret
+      jsonPointers:
+        - /data
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
     - CreateNamespace=true
+    - RespectIgnoreDifferences=true
     retry:
       limit: 5
       backoff:

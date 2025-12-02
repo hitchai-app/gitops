@@ -31,6 +31,19 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: valkey-system
+  # Prevent daily sync oscillation from self-managed webhook TLS rotation
+  # Reference: https://github.com/argoproj/argo-cd/issues/18530
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: valkey-operator-tls
+      jsonPointers:
+        - /data
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: valkey-operator
+      jqPathExpressions:
+        - .webhooks[].clientConfig.caBundle
   syncPolicy:
     automated:
       prune: true
@@ -38,6 +51,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
     retry:
       limit: 3
       backoff:
