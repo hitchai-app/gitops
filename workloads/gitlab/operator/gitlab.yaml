@@ -143,9 +143,12 @@ spec:
           workerProcesses: 2
           workerTimeout: 60
           # ActionCable for real-time WebSocket features (merge requests, issues, etc.)
-          # Required for /-/cable endpoint to work
+          # ACTION_CABLE_IN_APP enables embedded mode in Rails
+          # workhorse.extraArgs tells workhorse to proxy /-/cable to Rails
           extraEnv:
             ACTION_CABLE_IN_APP: "true"
+          workhorse:
+            extraArgs: "-cableBackend http://localhost:8080"
           metrics:
             enabled: true
             serviceMonitor:
