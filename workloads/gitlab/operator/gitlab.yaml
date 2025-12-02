@@ -142,6 +142,10 @@ spec:
           maxReplicas: 2
           workerProcesses: 2
           workerTimeout: 60
+          # ActionCable for real-time WebSocket features (merge requests, issues, etc.)
+          # Required for /-/cable endpoint to work
+          extraEnv:
+            ACTION_CABLE_IN_APP: "true"
           metrics:
             enabled: true
             serviceMonitor:
