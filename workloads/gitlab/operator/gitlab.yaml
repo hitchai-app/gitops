@@ -26,6 +26,10 @@ spec:
           class: traefik
           # Note: Don't set provider:traefik - causes IngressRouteTCP which operator doesn't support
           configureCertmanager: false
+          # Traefik middleware for ActionCable WebSocket support
+          # Required: X-Forwarded-Proto: https must reach Rails for origin validation
+          annotations:
+            traefik.ingress.kubernetes.io/router.middlewares: gitlab-system-forwarded-headers@kubernetescrd
           tls:
             enabled: true
             secretName: gitlab-tls
