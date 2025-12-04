@@ -32,9 +32,9 @@ redis:
   enabled: false
 
 # External Redis/Valkey
-# SAP Valkey Operator creates secrets as valkey-{instance-name}
+# SAP Valkey Operator creates services/secrets as valkey-{instance-name}-*
 externalRedis:
-  host: sentry-valkey-primary
+  host: valkey-sentry-valkey-primary
   port: 6379
   existingSecret: valkey-sentry-valkey
   existingSecretKey: valkey-password
