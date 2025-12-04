@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sentry-tls
+  namespace: sentry-system
+spec:
+  secretName: sentry-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - sentry.ops.last-try.org
