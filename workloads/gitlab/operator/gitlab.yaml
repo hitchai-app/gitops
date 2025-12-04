@@ -261,11 +261,11 @@ spec:
           enabled: true
           resources:
             requests:
-              cpu: 50m
-              memory: 300Mi
+              cpu: 100m
+              memory: 1Gi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: "1"
+              memory: 2Gi
           backups:
             cron:
               enabled: true
