@@ -11,10 +11,10 @@ metadata:
 spec:
   project: default
   sources:
-    # Helm chart from GitLab registry
-    - repoURL: registry.gitlab.com/gitlab-org/charts/gitlab-agent
+    # Helm chart from GitLab charts repository
+    - repoURL: https://charts.gitlab.io
       chart: gitlab-agent
-      targetRevision: 2.10.0
+      targetRevision: 2.21.1
       helm:
         releaseName: gitlab-agent
         valuesObject:
