@@ -11,7 +11,9 @@ user:
   existingSecretKey: admin-password
 
 # Initialize on first install
-asHook: true
+# asHook: false = regular Jobs (ArgoCD compatible)
+# asHook: true = Helm hooks (not properly executed by ArgoCD)
+asHook: false
 
 # Disable bundled PostgreSQL - use external CloudNativePG
 postgresql:
