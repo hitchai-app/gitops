@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: gitlab-runner-token
+  namespace: gitlab-runner
+spec:
+  encryptedData:
+    runner-token: AgB1IB0n3hEDCBYDa4JavsQgi9fSL3pKylSYPBCihK5Z0tiIjB1hA8AHiqpgafkbmHzKlGgVIevz+lioTz0IjX5fJeq/PN/LbrqZmQm2ohgQjgqm5xeFXGQCxw8RMl+FNQMS2zS79gQGI4aN66fc/Dkw6QdgkgAgUGRb5LHlCPanfp0CrghkSOJSL8ioR38IgzjzUOgNrxZIeulNbXQu8eFGENpxI8QV0BBjDjPPC37LQ2ayyNi5YnkpjgrbpX8vkwAb7c/izXWPNb8xXKIAsMldv1Q2d71IAIMl27BcOOyCkd1CjNIKCeYQ51pvX9be2RjhOZgiOXu+kEGMT0dRfZabbZS+J1JNeYwGN5GQOy0yD0flZ7BGOr1PGWd/c6k7VjByUZcPwpsrZgjLYNB5RykGG1TpROaZoDKXD/urQiZclwu0qmToyv7UKw7FUG4giAQ/qvCM28bZwYoxyGZ1a7rAcV3BQuyplAYt3d1zul9FM8IAlXWvFg6e7DsWi+NmZR8rByt0p6HMqfaDtHaSKr8vptyzwHJ9xP/EDehSAmyrbIrVQHYLYx/FIHD8yElkhw+1WEujc6va1M9RzE5F9gc8668Q+u5w8AlVqM4jPRdgFs1TXLRApo5kt4OTvw/EjLh2uDBX8bUubo/+Cdl378AhzVqgMphWVxNY6lUSLbuH9S6wTNM6VXT/U1/ShvXZEpJy3ouqHZVdrm1X7+l6tIsincnKBiJkOSRBbw==
+  template:
+    metadata:
+      name: gitlab-runner-token
+      namespace: gitlab-runner
+    type: Opaque
