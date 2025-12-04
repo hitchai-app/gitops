@@ -98,6 +98,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0018](0018-dex-authentication-provider.md) | Dex Authentication Provider | Proposed | 2025-10-14 |
 | [0019](0019-resource-organization-and-application-granularity.md) | Resource Organization and Application Granularity | Accepted | 2025-10-15 |
 | [0020](0020-sap-valkey-operator.md) | SAP Valkey Operator | Accepted | 2025-11-30 |
+| [0021](0021-sentry-error-tracking.md) | Sentry Error Tracking Platform | Accepted | 2025-12-04 |
 
 ## When to Create an ADR
 

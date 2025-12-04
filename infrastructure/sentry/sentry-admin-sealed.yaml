@@ -1,0 +1,13 @@
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: sentry-admin-secret
+  namespace: sentry-system
+spec:
+  encryptedData:
+    admin-password: AgCZn/1xxzGD2OgZqqNGqp+7xz7dXLcTGwo0QNUREEmT6jBO+ukvU9ktdHwt2rO/IQzQy8pWPuI4Z0nr+LASq0ahbFENaXw85UDU/xNHbpOrdJlQRSEPGQi3u3QCOrLKZZodty/P3E5AdcYGs7uB8dg2vzU7dg3JDBUazXL2WXXLbcfKZsjOG1P1acdD6tiEf2U23gU+mtccpMTx3qm27wu1VNs78ncIngkADktpsHMjGSkEnSsZUXFFYNh3JSN3NxzIoeaXBmiUOPpCkileXKeEmHtHYimvpehvIVIgpheXfTsemvQK94txJcOo6Ho5hOBT9Gbyk77eiRbKj2Mrta76VfetsmJHKkLlmpQUd8UI6N5gHz7Eh7nvYl356/GAHkDRl2yFSaBdow/x6lncdt68khGsKCeIjx7eks88LECsO13V4yWz9GjOpSFXlY2FUQhNhNs9CRIXGk8ZQFSYZ37Qy33aBwxoDV9OnIDZmp56UvIRFI9PQ8NC4s1f7lHgDZMc5hu3p4WTX6uOsloS7yItwMQgSzAba2ysNCHujflPEanKxQ+VDa2ztAubuPPgEEk9+0uvtiXVcp7AI4KBKoL8CHMMNNwCy3aV7sGgcAH/D/9pEq864P0tjmMCgRpaD+7ixVhNhTRgsYOPOjmKiFjyHrbg5ySudnYZ7iU3GKhixLCjIPMEACUZf9Jf364IYDYAtCz3g2sbITNb3gYTqrA2QbBJ+TmJnxz+0p96Xhq4Nw==
+  template:
+    metadata:
+      name: sentry-admin-secret
+      namespace: sentry-system
+    type: Opaque
