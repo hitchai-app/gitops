@@ -1,9 +1,0 @@
-# GitLab Agent Token
-#
-# Create sealed secret with:
-#   kubectl create secret generic gitlab-agent-token \
-#     --namespace=gitlab-agent \
-#     --from-literal=token=YOUR_TOKEN \
-#     --dry-run=client -o yaml | \
-#     kubeseal --cert .sealed-secrets-pub.pem --format yaml > \
-#     workloads/gitlab-agent/gitlab-agent-token-sealed.yaml
