@@ -93,12 +93,14 @@ ADRs are numbered sequentially with zero-padding:
 | [0013](0013-observability-foundation.md) | Observability Foundation | Accepted | 2025-10-08 |
 | [0014](0014-actions-runner-controller-for-github-actions.md) | Actions Runner Controller for GitHub Actions | Accepted | 2025-10-11 |
 | [0015](0015-harbor-container-registry.md) | Harbor Container Registry | Deferred | 2025-10-12 |
-| [0016](0016-gitlab-platform-migration.md) | GitLab Platform Migration | Deferred | 2025-10-12 |
+| [0016](0016-gitlab-platform-migration.md) | GitLab Platform Migration | Superseded | 2025-10-12 |
 | [0017](0017-observability-stack-evaluation.md) | Observability Stack Evaluation | Proposed | 2025-10-14 |
 | [0018](0018-dex-authentication-provider.md) | Dex Authentication Provider | Proposed | 2025-10-14 |
 | [0019](0019-resource-organization-and-application-granularity.md) | Resource Organization and Application Granularity | Accepted | 2025-10-15 |
 | [0020](0020-sap-valkey-operator.md) | SAP Valkey Operator | Accepted | 2025-11-30 |
-| [0021](0021-sentry-error-tracking.md) | Sentry Error Tracking Platform | Accepted | 2025-12-04 |
+| [0021](0021-sentry-error-tracking.md) | Sentry Error Tracking Platform | Superseded | 2025-12-04 |
+| [0022](0022-glitchtip-error-tracking.md) | GlitchTip Error Tracking | Accepted | 2025-12-04 |
+| [0023](0023-forgejo-woodpecker-ci.md) | Forgejo + Woodpecker CI | Accepted | 2025-12-04 |
 
 ## When to Create an ADR
 

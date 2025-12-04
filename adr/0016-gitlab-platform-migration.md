@@ -1,8 +1,10 @@
 # 0016. GitLab Platform Migration
 
-**Status**: Deferred
+**Status**: Superseded by [ADR 0023](0023-forgejo-woodpecker-ci.md)
 
 **Date**: 2025-10-12
+
+**Superseded**: 2025-12-04 - GitLab was deployed but proved too heavy (~30 pods, 8-12GB RAM). Replaced with Forgejo + Woodpecker CI.
 
 ## Context
 

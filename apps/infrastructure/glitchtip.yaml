@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: glitchtip
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    # 1. Helm chart from GlitchTip repository
+    - repoURL: https://gitlab.com/api/v4/projects/16325141/packages/helm/stable
+      chart: glitchtip
+      targetRevision: 7.0.0
+      helm:
+        releaseName: glitchtip
+        valueFiles:
+          - $values/infrastructure/glitchtip/values.yaml
+
+    # 2. Git repo with values file
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      ref: values
+
+    # 3. Git repo with additional manifests (namespace, postgres, certificates, sealed secrets)
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/glitchtip
+      directory:
+        recurse: true
+        exclude: "values.yaml"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: glitchtip-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

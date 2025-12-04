@@ -1,0 +1,50 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: glitchtip-postgres
+  namespace: glitchtip-system
+spec:
+  instances: 1
+
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
+
+  bootstrap:
+    initdb:
+      database: glitchtip
+      owner: glitchtip
+
+  storage:
+    size: 10Gi
+    storageClass: single-replica
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+  backup:
+    barmanObjectStore:
+      destinationPath: s3://cluster-backups/glitchtip-postgres
+      endpointURL: https://s3.eu-central-003.backblazeb2.com
+      s3Credentials:
+        accessKeyId:
+          name: cloudnativepg-backup-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: cloudnativepg-backup-creds
+          key: SECRET_ACCESS_KEY
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
+
+  scheduledBackups:
+    - name: glitchtip-postgres-backup
+      schedule: "0 0 * * *"
+      backupOwnerReference: self
