@@ -191,6 +191,9 @@ kafka:
         memory: 1Gi
       limits:
         memory: 2Gi
+  # Single-node: set default replication factor to 1
+  provisioning:
+    replicationFactor: 1
 
 # RabbitMQ (bundled - task queue)
 rabbitmq:
