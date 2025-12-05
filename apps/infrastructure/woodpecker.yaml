@@ -7,9 +7,8 @@ spec:
   project: default
   sources:
     # 1. Helm chart from Woodpecker OCI registry
-    - repoURL: oci://ghcr.io/woodpecker-ci/helm
-      chart: woodpecker
-      targetRevision: 3.0.1
+    - repoURL: oci://ghcr.io/woodpecker-ci/helm/woodpecker
+      targetRevision: 3.4.2
       helm:
         releaseName: woodpecker
         valueFiles:
