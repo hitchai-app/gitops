@@ -1,0 +1,68 @@
+---
+# Job to configure Dex OAuth2 authentication source
+# Runs after Forgejo is ready to add OIDC provider
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: forgejo-oauth-setup
+  namespace: forgejo-system
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: oauth-setup
+          image: code.forgejo.org/forgejo/forgejo:10
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Waiting for Forgejo to be ready..."
+              sleep 30
+
+              echo "Checking if Dex auth source exists..."
+              if /usr/local/bin/gitea admin auth list | grep -q "dex"; then
+                echo "Dex auth source already exists, skipping"
+                exit 0
+              fi
+
+              echo "Adding Dex OAuth2 authentication source..."
+              /usr/local/bin/gitea admin auth add-oauth \
+                --name "dex" \
+                --provider "openidConnect" \
+                --key "forgejo" \
+                --secret "${OIDC_CLIENT_SECRET}" \
+                --auto-discover-url "https://auth.ops.last-try.org/.well-known/openid-configuration" \
+                --group-claim-name "groups" \
+                --admin-group "hitchai-app:admins" \
+                --restricted-group "" \
+                --skip-local-2fa
+
+              echo "OAuth2 source added successfully"
+          env:
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-oidc
+                  key: client-secret
+            - name: GITEA_WORK_DIR
+              value: /data
+            - name: GITEA_CUSTOM
+              value: /data/gitea
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /data/gitea/conf
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: gitea-shared-storage
+        - name: config
+          secret:
+            secretName: forgejo-inline-config
