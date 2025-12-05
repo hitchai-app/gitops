@@ -44,7 +44,5 @@ spec:
         compression: gzip
     retentionPolicy: "30d"
 
-  scheduledBackups:
-    - name: forgejo-postgres-backup
-      schedule: "0 0 * * *"
-      backupOwnerReference: self
+# ScheduledBackup is a separate CRD, not inline in Cluster spec
+# TODO: Create ScheduledBackup resource when backup credentials are available
