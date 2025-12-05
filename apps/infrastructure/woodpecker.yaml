@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: woodpecker
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    # 1. Helm chart from Woodpecker OCI registry
+    - repoURL: oci://ghcr.io/woodpecker-ci/helm
+      chart: woodpecker
+      targetRevision: 3.0.1
+      helm:
+        releaseName: woodpecker
+        valueFiles:
+          - $values/infrastructure/woodpecker/values.yaml
+
+    # 2. Git repo with values file
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      ref: values
+
+    # 3. Git repo with additional manifests (namespace, certificates, sealed secrets)
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/woodpecker
+      directory:
+        recurse: true
+        exclude: "values.yaml"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: woodpecker-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

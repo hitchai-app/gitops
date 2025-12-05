@@ -1,8 +1,10 @@
 # 0021. Sentry Error Tracking Platform
 
-**Status**: Accepted
+**Status**: Superseded by [ADR 0022](0022-glitchtip-error-tracking.md)
 
 **Date**: 2025-12-04
+
+**Superseded**: 2025-12-04 - Sentry's resource footprint (57 pods, ~6.5GB RAM, Kafka, ClickHouse) proved too heavy for single-node cluster. Replaced with GlitchTip.
 
 ## Context
 
