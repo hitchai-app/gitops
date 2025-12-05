@@ -53,11 +53,9 @@ redis-cluster:
 
 # Forgejo configuration
 gitea:
+  # No local admin - use Dex OIDC
   admin:
-    existingSecret: forgejo-admin-secret
-    userKey: username
-    passwordKey: password
-    emailKey: email
+    existingSecret: ""
 
   config:
     APP_NAME: "Forgejo: Git Ops"
@@ -105,6 +103,16 @@ gitea:
     openid:
       ENABLE_OPENID_SIGNIN: false
       ENABLE_OPENID_SIGNUP: false
+
+    # OAuth2 settings
+    oauth2:
+      ENABLED: true
+
+    oauth2_client:
+      ENABLE_AUTO_REGISTRATION: true
+      ACCOUNT_LINKING: auto
+      UPDATE_AVATAR: true
+      USERNAME: nickname
 
     log:
       LEVEL: Info
