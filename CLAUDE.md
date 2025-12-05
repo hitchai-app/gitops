@@ -141,8 +141,8 @@ This repository uses automated code review via GitHub Actions. See [`AGENTS.md`]
 spec:
   project: default
   sources:
-    # 1. Helm chart from OCI/HTTP registry
-    - repoURL: oci://ghcr.io/org/charts
+    # 1. Helm chart from OCI registry (no oci:// prefix per ArgoCD docs)
+    - repoURL: ghcr.io/org/charts
       chart: my-chart
       targetRevision: 1.0.0
       helm:
@@ -159,6 +159,13 @@ spec:
       path: infrastructure/my-app
 ```
 
+**OCI Helm chart syntax** ([ArgoCD docs](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/)):
+- `repoURL`: Registry path WITHOUT `oci://` prefix (e.g., `ghcr.io/org/charts`)
+- `chart`: Chart name as separate field
+- `targetRevision`: Chart version
+
+**OCI credential matching**: ArgoCD uses PREFIX matching. A secret with `url: ghcr.io` matches ALL ghcr.io requests. For public charts, use anonymous access (no secret). For private charts, use narrowly-scoped secrets (e.g., `url: ghcr.io/your-org`).
+
 **Why this approach:**
 - ✅ Works perfectly with app-of-apps pattern (no field stripping)
 - ✅ Simpler - no kustomization files needed
@@ -171,7 +178,7 @@ spec:
 - ❌ Requires kustomization.yaml files that add unnecessary complexity
 - ❌ Needs `--enable-helm` flag that may not survive parent→child Application sync
 
-**Examples:** `apps/infrastructure/arc-controller.yaml`, `apps/infrastructure/arc-runners.yaml`, `apps/infrastructure/observability.yaml`
+**Examples:** `apps/infrastructure/woodpecker.yaml`, `apps/infrastructure/forgejo.yaml`
 
 ### Kubernetes Manifests
 
