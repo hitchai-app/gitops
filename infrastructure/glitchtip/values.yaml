@@ -19,6 +19,11 @@ env:
     CELERY_WORKER_MAX_TASKS_PER_CHILD: "10000"
     # Email disabled for now
     EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+    # OIDC via Dex
+    SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__name: "Dex"
+    SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__provider_id: "dex"
+    SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__client_id: "glitchtip"
+    SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__settings__server_url: "https://auth.ops.last-try.org"
   secret: {}
 
 # External PostgreSQL (CloudNativePG)
