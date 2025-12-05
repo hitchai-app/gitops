@@ -6,8 +6,9 @@ metadata:
 spec:
   project: default
   sources:
-    # 1. Helm chart from Forgejo OCI registry
-    - repoURL: oci://code.forgejo.org/forgejo-helm/forgejo
+    # 1. Helm chart from Forgejo OCI registry (no oci:// prefix per ArgoCD docs)
+    - repoURL: code.forgejo.org/forgejo-helm
+      chart: forgejo
       targetRevision: 15.0.3
       helm:
         releaseName: forgejo
