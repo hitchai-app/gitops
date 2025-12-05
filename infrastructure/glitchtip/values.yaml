@@ -7,8 +7,8 @@ image:
   tag: v5.2.0
   pullPolicy: IfNotPresent
 
-# Use existing secret for SECRET_KEY
-existingSecret: glitchtip-secrets
+# Use existing secret for SECRET_KEY (must be named "glitchtip" for chart)
+existingSecret: glitchtip
 
 env:
   normal:
