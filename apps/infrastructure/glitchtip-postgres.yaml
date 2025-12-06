@@ -1,16 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: glitchtip
+  name: glitchtip-postgres
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/hitchai-app/gitops
     targetRevision: master
-    path: infrastructure/glitchtip/app
-    directory:
-      recurse: true
+    path: infrastructure/glitchtip/postgres
   destination:
     server: https://kubernetes.default.svc
     namespace: glitchtip-system
