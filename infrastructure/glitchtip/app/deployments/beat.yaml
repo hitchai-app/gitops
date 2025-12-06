@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glitchtip-beat
+  namespace: glitchtip-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: glitchtip
+      component: beat
+  template:
+    metadata:
+      labels:
+        app: glitchtip
+        component: beat
+    spec:
+      containers:
+        - name: beat
+          image: glitchtip/glitchtip:v5.2.0
+          command: ["bin/run-beat.sh"]
+          envFrom:
+            - configMapRef:
+                name: glitchtip
+            - secretRef:
+                name: glitchtip
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: glitchtip-postgres-app
+                  key: uri
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              memory: 256Mi

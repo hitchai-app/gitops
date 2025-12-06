@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glitchtip-worker
+  namespace: glitchtip-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: glitchtip
+      component: worker
+  template:
+    metadata:
+      labels:
+        app: glitchtip
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: glitchtip/glitchtip:v5.2.0
+          command: ["bin/run-celery-with-autoreload.sh"]
+          envFrom:
+            - configMapRef:
+                name: glitchtip
+            - secretRef:
+                name: glitchtip
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: glitchtip-postgres-app
+                  key: uri
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          livenessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - celery -A glitchtip inspect ping -d celery@$HOSTNAME
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10

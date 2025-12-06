@@ -1,19 +1,19 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: glitchtip
+  name: glitchtip-postgres
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-2"
 spec:
   project: default
   source:
     repoURL: https://github.com/hitchai-app/gitops
     targetRevision: master
-    path: apps/infrastructure/glitchtip
-    directory:
-      recurse: false
+    path: infrastructure/glitchtip/postgres
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: glitchtip-system
   syncPolicy:
     automated:
       prune: true

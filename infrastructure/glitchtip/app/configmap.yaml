@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: glitchtip
+  namespace: glitchtip-system
+data:
+  GLITCHTIP_DOMAIN: "https://glitchtip.ops.last-try.org"
+  ENABLE_USER_REGISTRATION: "false"
+  ENABLE_ORGANIZATION_CREATION: "false"
+  CELERY_WORKER_AUTOSCALE: "1,2"
+  CELERY_WORKER_MAX_TASKS_PER_CHILD: "10000"
+  EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
+  REDIS_URL: "redis://valkey-glitchtip.glitchtip-system.svc.cluster.local:6379"
+  # OIDC via Dex
+  SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__name: "Dex"
+  SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__provider_id: "dex"
+  SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__client_id: "glitchtip"
+  SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__settings__server_url: "https://auth.ops.last-try.org"
