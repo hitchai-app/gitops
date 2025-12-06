@@ -6,48 +6,51 @@
 
 ## Context
 
-Applications like GlitchTip need infrastructure dependencies (PostgreSQL, Valkey). Need a pattern for organizing these within ArgoCD.
-
-Options:
-1. Single ArgoCD Application with multi-source (tightly coupled)
-2. Sub-applications for each dependency (independent lifecycle)
+Applications like GlitchTip need infrastructure dependencies (PostgreSQL, Valkey). Need a pattern for organizing these within ArgoCD with guaranteed deployment order.
 
 ## Decision
 
-Use **sub-applications for infrastructure dependencies** when they have independent lifecycles.
+Use **app-of-apps pattern with sync waves** for applications with infrastructure dependencies.
 
 **Structure:**
 ```
 apps/infrastructure/
-├── glitchtip.yaml           # Main app (deployments, services)
-├── glitchtip-postgres.yaml  # Sub-app (CloudNativePG cluster)
-└── glitchtip-valkey.yaml    # Sub-app (SAP Valkey instance)
+├── glitchtip.yaml              # Parent app → points to glitchtip/
+└── glitchtip/                  # Child Application CRDs
+    ├── postgres.yaml           # sync-wave: "-2"
+    ├── valkey.yaml             # sync-wave: "-1"
+    └── app.yaml                # sync-wave: "0"
 ```
 
-**When to use sub-apps:**
-- Databases (PostgreSQL, MySQL) - separate backup/restore lifecycle
-- Caches (Redis, Valkey) - can restart without affecting main app
-- Message queues - independent scaling
+**Sync order guaranteed by waves:**
+1. Wave -2: postgres (CloudNativePG cluster)
+2. Wave -1: valkey (SAP Valkey instance)
+3. Wave 0: app (deployments, services, migration job)
 
-**When to use multi-source (single app):**
-- Tightly coupled resources (ConfigMaps, Secrets, Ingress)
-- Resources that must sync atomically
+**When to use this pattern:**
+- Applications with database dependencies
+- Applications with cache/queue dependencies
+- Any app needing ordered infrastructure provisioning
+
+**When NOT to use (single app sufficient):**
+- Stateless applications
+- Applications using shared infrastructure (e.g., shared postgres cluster)
 
 ## Consequences
 
 ### Positive
+- Guaranteed deployment order via sync waves
 - Independent health status per component in ArgoCD UI
-- Isolated sync/rollback per dependency
-- Clear dependency visibility
-- Can sync database without touching application
+- Parent app shows overall health of all children
+- Can sync individual components without affecting others
 
 ### Negative
-- More ArgoCD Applications to manage
-- Must coordinate sync order manually if needed
-- Slightly more complex initial setup
+- More Application CRDs to manage
+- Nested app structure adds complexity
+- Must understand sync-wave semantics
 
 ## References
 
+- ArgoCD Sync Waves: https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/
 - ArgoCD App-of-Apps: https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/
 - ADR 0010: GitOps Repository Structure
-- ADR 0019: Resource Organization and Application Granularity
