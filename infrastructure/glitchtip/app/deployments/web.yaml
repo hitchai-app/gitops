@@ -32,6 +32,13 @@ spec:
                 secretKeyRef:
                   name: glitchtip-postgres-app
                   key: uri
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: valkey-glitchtip-binding
+                  key: password
+            - name: REDIS_URL
+              value: "redis://:$(REDIS_PASSWORD)@valkey-glitchtip-primary.glitchtip-system.svc.cluster.local:6379"
           resources:
             requests:
               cpu: 100m
