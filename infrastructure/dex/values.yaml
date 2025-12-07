@@ -85,10 +85,11 @@ config:
       name: 'Forgejo'
       secretEnv: DEX_CLIENT_SECRET_FORGEJO
 
-    # GlitchTip (native OIDC)
+    # GlitchTip (native OIDC via django-allauth)
+    # Callback URL format: /accounts/oidc/{provider_id}/login/callback/
     - id: glitchtip
       redirectURIs:
-        - 'https://glitchtip.ops.last-try.org/socialaccount/login/callback/openid_connect/'
+        - 'https://glitchtip.ops.last-try.org/accounts/oidc/dex/login/callback/'
       name: 'GlitchTip'
       secretEnv: DEX_CLIENT_SECRET_GLITCHTIP
 
