@@ -18,7 +18,7 @@ spec:
       containers:
         - name: worker
           image: glitchtip/glitchtip:v5.2.0
-          command: ["bin/run-celery-with-autoreload.sh"]
+          command: ["bin/run-celery.sh"]
           envFrom:
             - configMapRef:
                 name: glitchtip
