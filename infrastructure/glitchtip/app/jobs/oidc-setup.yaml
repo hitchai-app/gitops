@@ -1,0 +1,74 @@
+---
+# Job to configure Dex OIDC authentication provider
+# Runs after GlitchTip is ready to add OpenID Connect provider
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: glitchtip-oidc-setup
+  namespace: glitchtip-system
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: oidc-setup
+          image: glitchtip/glitchtip:v5.2.0
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              echo "Checking if Dex OIDC provider exists..."
+
+              # Quick check - exit early if already configured
+              EXISTS=$(python manage.py shell -c "
+              from allauth.socialaccount.models import SocialApp
+              print('yes' if SocialApp.objects.filter(provider='openid_connect', provider_id='dex').exists() else 'no')
+              " 2>/dev/null | tail -1)
+
+              if [ "$EXISTS" = "yes" ]; then
+                echo "Dex OIDC provider already exists, skipping"
+                exit 0
+              fi
+
+              echo "Creating Dex OIDC provider..."
+              python manage.py shell -c "
+              from allauth.socialaccount.models import SocialApp
+              import json
+              import os
+
+              secret = os.environ.get('OIDC_CLIENT_SECRET', '')
+              if not secret:
+                  print('ERROR: OIDC_CLIENT_SECRET not set')
+                  exit(1)
+
+              SocialApp.objects.create(
+                  provider='openid_connect',
+                  provider_id='dex',
+                  name='Dex',
+                  client_id='glitchtip',
+                  secret=secret,
+                  settings=json.dumps({'server_url': 'https://auth.ops.last-try.org'})
+              )
+              print('Created OIDC provider: Dex')
+              "
+
+              echo "OIDC provider configured successfully"
+          env:
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: glitchtip
+                  key: SOCIALACCOUNT_PROVIDERS__openid_connect__APPS__0__secret
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: glitchtip-postgres-app
+                  key: uri
+          envFrom:
+            - configMapRef:
+                name: glitchtip
