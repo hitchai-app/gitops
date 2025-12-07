@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: glitchtip-web
+  namespace: glitchtip-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: glitchtip
+      component: web
+  template:
+    metadata:
+      labels:
+        app: glitchtip
+        component: web
+    spec:
+      containers:
+        - name: web
+          image: glitchtip/glitchtip:v5.2.0
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: glitchtip
+            - secretRef:
+                name: glitchtip
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: glitchtip-postgres-app
+                  key: uri
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /_health/
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /_health/
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 5

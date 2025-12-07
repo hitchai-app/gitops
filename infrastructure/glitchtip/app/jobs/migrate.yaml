@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: glitchtip-migrate
+  namespace: glitchtip-system
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  template:
+    metadata:
+      labels:
+        app: glitchtip
+        component: migrate
+    spec:
+      containers:
+        - name: migrate
+          image: glitchtip/glitchtip:v5.2.0
+          command: ["bin/run-migrate.sh"]
+          envFrom:
+            - configMapRef:
+                name: glitchtip
+            - secretRef:
+                name: glitchtip
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: glitchtip-postgres-app
+                  key: uri
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+      restartPolicy: Never
+  backoffLimit: 3
+  activeDeadlineSeconds: 900
