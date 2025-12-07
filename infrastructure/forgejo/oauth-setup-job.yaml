@@ -1,6 +1,8 @@
 ---
 # Job to configure Dex OAuth2 authentication source
 # Runs after Forgejo is ready to add OIDC provider
+# Note: Due to Gitea/Forgejo caching bug (github.com/go-gitea/gitea/issues/8356),
+# Forgejo may need restart after first OAuth source creation
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -8,7 +10,7 @@ metadata:
   namespace: forgejo-system
   annotations:
     argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
   ttlSecondsAfterFinished: 300
   template:
@@ -26,28 +28,32 @@ spec:
             - -c
             - |
               set -e
+              CONFIG="/data/gitea/conf/app.ini"
+
               echo "Waiting for Forgejo to be ready..."
-              sleep 30
+              sleep 10
 
               echo "Checking if Dex auth source exists..."
-              if /usr/local/bin/gitea admin auth list | grep -q "dex"; then
+              if /usr/local/bin/gitea admin auth list --config "$CONFIG" 2>/dev/null | grep -q "dex"; then
                 echo "Dex auth source already exists, skipping"
                 exit 0
               fi
 
               echo "Adding Dex OAuth2 authentication source..."
               /usr/local/bin/gitea admin auth add-oauth \
+                --config "$CONFIG" \
                 --name "dex" \
                 --provider "openidConnect" \
                 --key "forgejo" \
                 --secret "${OIDC_CLIENT_SECRET}" \
                 --auto-discover-url "https://auth.ops.last-try.org/.well-known/openid-configuration" \
+                --scopes "openid email profile groups" \
                 --group-claim-name "groups" \
                 --admin-group "hitchai-app:admins" \
-                --restricted-group "" \
                 --skip-local-2fa
 
               echo "OAuth2 source added successfully"
+              echo "Note: Forgejo may need restart to recognize new auth source (see gitea#8356)"
           env:
             - name: OIDC_CLIENT_SECRET
               valueFrom:
@@ -61,12 +67,7 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-            - name: config
-              mountPath: /data/gitea/conf
       volumes:
         - name: data
           persistentVolumeClaim:
             claimName: gitea-shared-storage
-        - name: config
-          secret:
-            secretName: forgejo-inline-config
