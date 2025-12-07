@@ -38,7 +38,6 @@ spec:
               echo "Creating Dex OIDC provider..."
               python manage.py shell -c "
               from allauth.socialaccount.models import SocialApp
-              import json
               import os
 
               secret = os.environ.get('OIDC_CLIENT_SECRET', '')
@@ -52,7 +51,7 @@ spec:
                   name='Dex',
                   client_id='glitchtip',
                   secret=secret,
-                  settings=json.dumps({'server_url': 'https://auth.ops.last-try.org'})
+                  settings={'server_url': 'https://auth.ops.last-try.org'}
               )
               print('Created OIDC provider: Dex')
               "
