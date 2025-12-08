@@ -32,8 +32,10 @@ service:
     type: ClusterIP
     port: 3000
   ssh:
-    type: ClusterIP
-    port: 22
+    type: LoadBalancer
+    port: 2222
+    annotations:
+      metallb.universe.tf/allow-shared-ip: "default"
 
 # Ingress managed separately
 ingress:
@@ -64,7 +66,7 @@ gitea:
       DOMAIN: git.ops.last-try.org
       ROOT_URL: https://git.ops.last-try.org
       SSH_DOMAIN: git.ops.last-try.org
-      SSH_PORT: 22
+      SSH_PORT: 2222
       DISABLE_SSH: false
       START_SSH_SERVER: true
 
