@@ -9,8 +9,6 @@ spec:
     repoURL: https://github.com/hitchai-app/gitops
     targetRevision: master
     path: apps/infrastructure/glitchtip
-    directory:
-      recurse: false
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
