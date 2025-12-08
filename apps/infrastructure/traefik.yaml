@@ -16,9 +16,11 @@ spec:
           enabled: true
           isDefaultClass: true
 
-        # Service type
+        # Service type - share IP with other LoadBalancer services via MetalLB
         service:
           type: LoadBalancer
+          annotations:
+            metallb.universe.tf/allow-shared-ip: "default"
 
         # Global HTTP to HTTPS redirect
         ports:
