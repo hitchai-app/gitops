@@ -103,6 +103,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0023](0023-forgejo-woodpecker-ci.md) | Forgejo + Woodpecker CI | Accepted | 2025-12-04 |
 | [0024](0024-application-structure-with-dependencies.md) | Application Structure with Dependencies | Accepted | 2025-12-06 |
 | [0025](0025-helm-chart-compatibility-review.md) | Helm Chart Compatibility Review | Accepted | 2025-12-06 |
+| [0026](0026-forgejo-actions-ephemeral-runners.md) | Forgejo Actions with Ephemeral Runners | Accepted | 2025-12-10 |
 
 ## When to Create an ADR
 

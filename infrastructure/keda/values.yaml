@@ -1,0 +1,45 @@
+# KEDA Helm Chart Values
+# https://github.com/kedacore/charts/tree/main/keda
+
+# Resource limits
+resources:
+  operator:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  metricServer:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  webhooks:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# Logging
+logging:
+  operator:
+    level: info
+    format: json
+  metricServer:
+    level: 0
+  webhooks:
+    level: info
+
+# Prometheus metrics
+prometheus:
+  operator:
+    enabled: true
+  metricServer:
+    enabled: true
+  webhooks:
+    enabled: true
