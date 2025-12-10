@@ -1,0 +1,85 @@
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: forgejo-runner
+  namespace: forgejo-runner
+spec:
+  jobTargetRef:
+    parallelism: 1
+    completions: 1
+    backoffLimit: 0
+    ttlSecondsAfterFinished: 300
+    template:
+      spec:
+        restartPolicy: Never
+        # Native sidecar pattern (K8s 1.29+)
+        initContainers:
+          - name: dind
+            image: docker:27-dind
+            restartPolicy: Always
+            securityContext:
+              privileged: true
+            env:
+              - name: DOCKER_TLS_CERTDIR
+                value: ""
+            volumeMounts:
+              - name: docker-graph
+                mountPath: /var/lib/docker
+            resources:
+              requests:
+                cpu: 100m
+                memory: 256Mi
+              limits:
+                cpu: 2000m
+                memory: 2Gi
+        containers:
+          - name: runner
+            image: code.forgejo.org/forgejo/runner:6.3.1
+            command:
+              - forgejo-runner
+              - one-job
+              - --config
+              - /config/config.yaml
+            volumeMounts:
+              - name: runner-data
+                mountPath: /data
+              - name: runner-registration
+                mountPath: /data/.runner
+                subPath: .runner
+              - name: runner-config
+                mountPath: /config
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 2000m
+                memory: 1Gi
+        volumes:
+          - name: docker-graph
+            emptyDir: {}
+          - name: runner-data
+            emptyDir: {}
+          - name: runner-registration
+            secret:
+              secretName: forgejo-runner-registration
+          - name: runner-config
+            configMap:
+              name: forgejo-runner-config
+  pollingInterval: 30
+  minReplicaCount: 0
+  maxReplicaCount: 5
+  rollout:
+    strategy: gradual
+  scalingStrategy:
+    strategy: accurate
+  triggers:
+    - type: forgejo-runner
+      metadata:
+        name: forgejo-runner-keda
+        address: "https://git.ops.last-try.org"
+        labels: "ubuntu-latest,docker"
+        global: "true"
+      authenticationRef:
+        name: forgejo-runner-auth

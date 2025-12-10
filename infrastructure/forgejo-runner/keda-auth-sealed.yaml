@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: forgejo-keda-auth
+  namespace: forgejo-runner
+spec:
+  encryptedData:
+    token: AgCNBLqW+lEOpiTpbxGP3tH8Dx7lGlZPRtTYYUComsCc0M3NfIedIlUjWWE4InWL9RAw5/ovoHvs2TlXRXD6AULyrLGJ0413d6akcyyjqWiRQnCNY1v5sVQ4kTQoMYKnvft8/5OcojjNhnhznlK+bSK1lBXBkPTPGC3BDmyCEsD2YlPosk02ea7E9y624zWM2bemu4/IK7EKYfruJ3ZUzhOlU4O9LawK6m4EA8TERRWjW0KEtGsSa4SheQ5+1oc5p5+fzjBtga+JL7XZpy2b820ph9uDUL0shbxdFijRo/OywN52sk89JUuYrodaknMeYzj5+u3ihFaL8LDAuyUUwKPmOr4ZsccDGyPmR0lYqBbEERDwF35uGFmMneAfuEUfBqcSYIQEIeK/eYTJOMUDCoe5Zy6yMDoz5ZMgqdsH7n3ikCTIjzdoFZ+/OkNQi3c506jeyaONIfy+sRFnGKbYx2/QJfK1w74cy7miuGvWP5cpMgPRa0CfzlIWKWk67OtJcTnRhjX87zoCUulOKqGNIol45eXfK5mUzAZzAyF2IXA8ESSITgDzRCpXtmQmqsuLVmX0wokDkdUZsZFOAkfc5QNbRcdZc6rNz5dybNRoqFcHxyuipP4KS/vwYiO/wSEEN4bEDEhZOA2bJZkMA+H6LdxBbQ1Y8GrlLcwOGxEIs29LSplFXzWFl/Nf+iz5ajpnkGtWsXcFaNm5fXNHiyvR4Y6+j/7LFRHYMfDGBiNJduSy9q4fjx3UaXLv
+  template:
+    metadata:
+      name: forgejo-keda-auth
+      namespace: forgejo-runner
+    type: Opaque
