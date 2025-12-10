@@ -13,6 +13,8 @@ spec:
     template:
       spec:
         restartPolicy: Never
+        # Allow running jobs time to complete on pod termination
+        terminationGracePeriodSeconds: 300
         initContainers:
           # Copy .runner from secret to writable emptyDir
           - name: copy-runner-config
@@ -26,18 +28,30 @@ spec:
                 mountPath: /data
               - name: runner-registration
                 mountPath: /secret
-          # Native sidecar pattern (K8s 1.29+)
+          # Native sidecar pattern (K8s 1.29+) - ARC-style
           - name: dind
             image: docker:27-dind
             restartPolicy: Always
+            args:
+              - dockerd
+              - --host=unix:///var/run/docker.sock
+              - --group=0
             securityContext:
               privileged: true
-            env:
-              - name: DOCKER_TLS_CERTDIR
-                value: ""
+            # Startup probe ensures Docker is ready before runner starts
+            startupProbe:
+              exec:
+                command:
+                  - docker
+                  - info
+              initialDelaySeconds: 0
+              failureThreshold: 24
+              periodSeconds: 5
             volumeMounts:
               - name: docker-graph
                 mountPath: /var/lib/docker
+              - name: dind-sock
+                mountPath: /var/run
             resources:
               requests:
                 cpu: 100m
@@ -53,11 +67,16 @@ spec:
               - one-job
               - --config
               - /config/config.yaml
+            env:
+              - name: DOCKER_HOST
+                value: unix:///var/run/docker.sock
             volumeMounts:
               - name: runner-data
                 mountPath: /data
               - name: runner-config
                 mountPath: /config
+              - name: dind-sock
+                mountPath: /var/run
             resources:
               requests:
                 cpu: 100m
@@ -69,6 +88,8 @@ spec:
           - name: docker-graph
             emptyDir: {}
           - name: runner-data
+            emptyDir: {}
+          - name: dind-sock
             emptyDir: {}
           - name: runner-registration
             secret:
