@@ -1,0 +1,21 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minio-infra
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/flawless/gitops.git
+    targetRevision: HEAD
+    path: infrastructure/minio-infra
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minio-infra
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
