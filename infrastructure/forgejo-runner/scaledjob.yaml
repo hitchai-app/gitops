@@ -13,8 +13,20 @@ spec:
     template:
       spec:
         restartPolicy: Never
-        # Native sidecar pattern (K8s 1.29+)
         initContainers:
+          # Copy .runner from secret to writable emptyDir
+          - name: copy-runner-config
+            image: busybox:1.36
+            command:
+              - sh
+              - -c
+              - cp /secret/.runner /data/.runner
+            volumeMounts:
+              - name: runner-data
+                mountPath: /data
+              - name: runner-registration
+                mountPath: /secret
+          # Native sidecar pattern (K8s 1.29+)
           - name: dind
             image: docker:27-dind
             restartPolicy: Always
@@ -44,9 +56,6 @@ spec:
             volumeMounts:
               - name: runner-data
                 mountPath: /data
-              - name: runner-registration
-                mountPath: /data/.runner
-                subPath: .runner
               - name: runner-config
                 mountPath: /config
             resources:
