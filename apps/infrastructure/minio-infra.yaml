@@ -7,7 +7,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/flawless/gitops.git
+    repoURL: https://github.com/hitchai-app/gitops.git
     targetRevision: HEAD
     path: infrastructure/minio-infra
   destination:
