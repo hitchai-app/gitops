@@ -1,46 +1,35 @@
 ---
-apiVersion: batch/v1
-kind: Job
+apiVersion: v1
+kind: ServiceAccount
 metadata:
-  name: minio-setup
+  name: minio-setup-sa
   namespace: minio-infra
-  annotations:
-    argocd.argoproj.io/hook: PostSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+---
+apiVersion: sts.min.io/v1alpha1
+kind: PolicyBinding
+metadata:
+  name: minio-setup-binding
+  namespace: minio-infra
 spec:
-  ttlSecondsAfterFinished: 300
-  template:
-    spec:
-      restartPolicy: OnFailure
-      containers:
-        - name: mc
-          image: minio/mc:RELEASE.2024-11-21T17-21-54Z
-          command:
-            - /bin/sh
-            - -c
-            - |
-              set -e
-
-              # Wait for MinIO to be ready
-              echo "Waiting for MinIO..."
-              until mc alias set minio http://infra-hl.minio-infra.svc.cluster.local:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD; do
-                echo "MinIO not ready, retrying..."
-                sleep 5
-              done
-
-              # Create actions-cache bucket if not exists
-              echo "Creating actions-cache bucket..."
-              mc mb --ignore-existing minio/actions-cache
-
-              echo "MinIO setup complete!"
-          env:
-            - name: MINIO_ROOT_USER
-              valueFrom:
-                secretKeyRef:
-                  name: minio-root-credentials
-                  key: root-user
-            - name: MINIO_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: minio-root-credentials
-                  key: root-password
+  application:
+    serviceaccount: minio-setup-sa
+    namespace: minio-infra
+  policies:
+    - consoleAdmin
+---
+apiVersion: job.min.io/v1alpha1
+kind: MinIOJob
+metadata:
+  name: create-buckets
+  namespace: minio-infra
+spec:
+  serviceAccountName: minio-setup-sa
+  tenant:
+    name: infra
+    namespace: minio-infra
+  failureStrategy: continueOnFailure
+  commands:
+    - op: make-bucket
+      name: create-actions-cache
+      args:
+        name: actions-cache
