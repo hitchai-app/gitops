@@ -22,7 +22,7 @@ spec:
             command:
               - sh
               - -c
-              - cp /secret/.runner /data/.runner
+              - cp /secret/.runner /data/.runner && chmod 666 /data/.runner
             volumeMounts:
               - name: runner-data
                 mountPath: /data
