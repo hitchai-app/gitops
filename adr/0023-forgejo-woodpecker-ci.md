@@ -1,8 +1,10 @@
 # 0023. Forgejo + Woodpecker CI
 
-**Status**: Accepted
+**Status**: Superseded by [ADR 0026](0026-forgejo-actions-ci.md)
 
 **Date**: 2025-12-04
+
+**Superseded**: 2025-12-10 - Replaced Woodpecker CI with Forgejo Actions for native GitHub Actions-compatible CI/CD.
 
 ## Context
 

@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: forgejo-runner
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops
+    targetRevision: master
+    path: infrastructure/forgejo-runner
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: forgejo-runner
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

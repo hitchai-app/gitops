@@ -100,9 +100,10 @@ ADRs are numbered sequentially with zero-padding:
 | [0020](0020-sap-valkey-operator.md) | SAP Valkey Operator | Accepted | 2025-11-30 |
 | [0021](0021-sentry-error-tracking.md) | Sentry Error Tracking Platform | Superseded | 2025-12-04 |
 | [0022](0022-glitchtip-error-tracking.md) | GlitchTip Error Tracking | Accepted | 2025-12-04 |
-| [0023](0023-forgejo-woodpecker-ci.md) | Forgejo + Woodpecker CI | Accepted | 2025-12-04 |
+| [0023](0023-forgejo-woodpecker-ci.md) | Forgejo + Woodpecker CI | Superseded | 2025-12-04 |
 | [0024](0024-application-structure-with-dependencies.md) | Application Structure with Dependencies | Accepted | 2025-12-06 |
 | [0025](0025-helm-chart-compatibility-review.md) | Helm Chart Compatibility Review | Accepted | 2025-12-06 |
+| [0026](0026-forgejo-actions-ci.md) | Forgejo Actions (Native CI/CD) | Accepted | 2025-12-10 |
 
 ## When to Create an ADR
 

@@ -119,6 +119,11 @@ gitea:
     log:
       LEVEL: Info
 
+    # Actions (Forgejo's GitHub Actions compatible CI)
+    actions:
+      ENABLED: true
+      DEFAULT_ACTIONS_URL: https://github.com
+
   # Database password from CloudNativePG secret
   additionalConfigFromEnvs:
     - name: FORGEJO__database__PASSWD

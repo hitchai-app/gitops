@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo-runner
+  namespace: forgejo-runner
+  labels:
+    app: forgejo-runner
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo-runner
+  template:
+    metadata:
+      labels:
+        app: forgejo-runner
+    spec:
+      # DinD sidecar using Kubernetes native sidecar pattern (v1.29+)
+      initContainers:
+        - name: dind
+          image: docker:dind
+          args:
+            - dockerd
+            - --host=unix:///var/run/docker.sock
+            - --group=0
+          securityContext:
+            privileged: true
+          restartPolicy: Always
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "1000m"
+              memory: "4Gi"
+          startupProbe:
+            exec:
+              command:
+                - docker
+                - info
+            initialDelaySeconds: 0
+            failureThreshold: 24
+            periodSeconds: 5
+          volumeMounts:
+            - name: docker-sock
+              mountPath: /var/run
+            - name: docker-lib
+              mountPath: /var/lib/docker
+
+      containers:
+        - name: runner
+          image: data.forgejo.org/forgejo/runner:11
+          command:
+            - sh
+            - -c
+            - |
+              # Wait for registration file or register
+              if [ ! -f /data/.runner ]; then
+                forgejo-runner register \
+                  --instance "$FORGEJO_URL" \
+                  --token "$RUNNER_TOKEN" \
+                  --name "$RUNNER_NAME" \
+                  --labels "docker:docker://node:20-bookworm,ubuntu-latest:docker://catthehacker/ubuntu:act-latest" \
+                  --no-interactive
+              fi
+              # Start the daemon
+              exec forgejo-runner daemon --config /config/config.yaml
+          env:
+            - name: FORGEJO_URL
+              value: "https://git.ops.last-try.org"
+            - name: RUNNER_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: RUNNER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-runner-token
+                  key: token
+            - name: DOCKER_HOST
+              value: unix:///var/run/docker.sock
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: docker-sock
+              mountPath: /var/run
+            - name: runner-data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+
+      volumes:
+        - name: docker-sock
+          emptyDir: {}
+        - name: docker-lib
+          emptyDir: {}
+        - name: runner-data
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: forgejo-runner-config
