@@ -60,7 +60,7 @@ spec:
                   --instance "$FORGEJO_URL" \
                   --token "$RUNNER_TOKEN" \
                   --name "$RUNNER_NAME" \
-                  --labels "docker:docker://node:20-bookworm,ubuntu-latest:docker://catthehacker/ubuntu:act-latest" \
+                  --labels "docker:docker://node:20-bookworm,ubuntu-latest:docker://catthehacker/ubuntu:act-latest,ubuntu-22.04:docker://catthehacker/ubuntu:act-22.04" \
                   --no-interactive
               fi
               # Start the daemon
@@ -81,11 +81,11 @@ spec:
               value: unix:///var/run/docker.sock
           resources:
             requests:
-              cpu: "100m"
-              memory: "128Mi"
+              cpu: "200m"
+              memory: "256Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "2000m"
+              memory: "1Gi"
           volumeMounts:
             - name: docker-sock
               mountPath: /var/run
