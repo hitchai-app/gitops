@@ -1,6 +1,6 @@
 # 0023. Forgejo + Woodpecker CI
 
-**Status**: Accepted
+**Status**: Partially Superseded (Woodpecker replaced by Forgejo Actions - see [ADR 0026](0026-forgejo-actions-ephemeral-runners.md))
 
 **Date**: 2025-12-04
 
