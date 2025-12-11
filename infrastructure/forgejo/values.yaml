@@ -124,6 +124,17 @@ gitea:
       ENABLED: true
       CHUNKED_UPLOAD_PATH: /data/tmp/package-upload
 
+    # S3 storage for packages (MinIO)
+    storage:
+      STORAGE_TYPE: minio
+      MINIO_ENDPOINT: infra-hl.minio-infra.svc.cluster.local:9000
+      MINIO_BUCKET: forgejo-packages
+      MINIO_USE_SSL: false
+      MINIO_INSECURE_SKIP_VERIFY: true
+
+    "storage.packages":
+      STORAGE_TYPE: minio
+
     # Actions integration (for ACTIONS_RUNTIME_TOKEN)
     actions:
       ENABLED: true
@@ -136,3 +147,14 @@ gitea:
         secretKeyRef:
           name: forgejo-postgres-app
           key: password
+    # MinIO credentials for package storage
+    - name: FORGEJO__storage__MINIO_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: forgejo-minio-credentials
+          key: access-key
+    - name: FORGEJO__storage__MINIO_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: forgejo-minio-credentials
+          key: secret-key
