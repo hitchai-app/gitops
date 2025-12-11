@@ -33,6 +33,7 @@ spec:
 
               # Create buckets (ignore if exists)
               mc mb --ignore-existing myminio/actions-cache
+              mc mb --ignore-existing myminio/forgejo-packages
 
               echo "Buckets created successfully"
           volumeMounts:
