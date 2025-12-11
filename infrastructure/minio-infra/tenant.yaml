@@ -32,8 +32,11 @@ spec:
   configuration:
     name: minio-infra-config
 
-  # Disable operator auto-cert (use cert-manager instead per ADR 0006)
+  # Use cert-manager TLS certificate (per ADR 0006/0008)
   requestAutoCert: false
+  externalCertSecret:
+    - name: minio-infra-tls
+      type: kubernetes.io/tls
 
   # Expose via ClusterIP (internal only)
   exposeServices:
