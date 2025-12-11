@@ -27,7 +27,7 @@ spec:
             - name: STORAGE_S3_BUCKET
               value: "actions-cache"
             - name: AWS_ENDPOINT_URL
-              value: "https://minio.minio-infra.svc.cluster.local"
+              value: "https://infra-hl.minio-infra.svc.cluster.local:9000"
             - name: AWS_CA_BUNDLE
               value: "/etc/ssl/certs/minio-ca.crt"
             - name: AWS_REGION
