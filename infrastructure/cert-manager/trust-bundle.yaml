@@ -1,0 +1,20 @@
+---
+# Distribute internal CA to all namespaces as ConfigMap
+# Used by services to verify TLS certificates from internal CA
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: internal-ca-bundle
+spec:
+  sources:
+    # Include the internal CA certificate
+    - secret:
+        name: internal-ca-secret
+        key: ca.crt
+  target:
+    configMap:
+      key: ca.crt
+    namespaceSelector:
+      matchLabels:
+        # Only distribute to namespaces that need it
+        internal-ca: "true"

@@ -1,0 +1,29 @@
+---
+# TLS certificate for MinIO tenant (internal CA)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: minio-infra-tls
+  namespace: minio-infra
+spec:
+  secretName: minio-infra-tls
+  duration: 8760h  # 1 year
+  renewBefore: 720h  # 30 days
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    - minio.minio-infra.svc.cluster.local
+    - minio.minio-infra.svc
+    - minio.minio-infra
+    - infra-hl.minio-infra.svc.cluster.local
+    - infra-hl.minio-infra.svc
+    - infra-hl.minio-infra
+    - "*.infra-hl.minio-infra.svc.cluster.local"
+    - localhost
+  issuerRef:
+    name: internal-ca-issuer
+    kind: ClusterIssuer
