@@ -19,7 +19,8 @@ data:
         - "ubuntu-latest:docker://catthehacker/ubuntu:act-latest"
         - "docker:docker://catthehacker/ubuntu:act-latest"
     cache:
-      enabled: false
+      enabled: true
+      external_server: http://actions-cache-server.forgejo-runner.svc.cluster.local:3000/
     container:
       network: ""
       privileged: false

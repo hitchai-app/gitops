@@ -1,0 +1,44 @@
+---
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: infra
+  namespace: minio-infra
+spec:
+  # Single-Node Single-Drive (SNSD) configuration per ADR 0006
+  pools:
+    - name: pool-0
+      servers: 1
+      volumesPerServer: 1
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          storageClassName: single-replica
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 1000m
+          memory: 1Gi
+
+  # Credentials from sealed secret
+  configuration:
+    name: minio-infra-config
+
+  # Disable operator auto-cert (use cert-manager instead per ADR 0006)
+  requestAutoCert: false
+
+  # Expose via ClusterIP (internal only)
+  exposeServices:
+    minio: false
+    console: false
+
+  # Prometheus metrics
+  prometheusOperator: false
