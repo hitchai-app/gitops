@@ -1,30 +1,31 @@
 ---
-# ServiceAccount for MinIOJob in consumer namespace
+# ServiceAccount for MinIOJob
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: minio-bucket-sa
-  namespace: forgejo-runner
+  namespace: minio-infra
 ---
-# PolicyBinding grants access to shared MinIO tenant
+# PolicyBinding grants access to MinIO tenant
 apiVersion: sts.min.io/v1alpha1
 kind: PolicyBinding
 metadata:
-  name: forgejo-runner-minio-binding
-  namespace: forgejo-runner
+  name: minio-bucket-binding
+  namespace: minio-infra
 spec:
   application:
     serviceaccount: minio-bucket-sa
-    namespace: forgejo-runner
+    namespace: minio-infra
   policies:
     - consoleAdmin
 ---
-# Bucket declaration - lives with consumer per ADR 0010
+# Bucket declarations for infrastructure services
+# NOTE: MinIOJob must be in same namespace as tenant (cross-namespace not supported)
 apiVersion: job.min.io/v1alpha1
 kind: MinIOJob
 metadata:
-  name: forgejo-runner-bucket
-  namespace: forgejo-runner
+  name: infra-buckets
+  namespace: minio-infra
 spec:
   serviceAccountName: minio-bucket-sa
   tenant:
