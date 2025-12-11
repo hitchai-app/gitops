@@ -105,6 +105,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0025](0025-helm-chart-compatibility-review.md) | Helm Chart Compatibility Review | Accepted | 2025-12-06 |
 | [0026](0026-forgejo-actions-ephemeral-runners.md) | Forgejo Actions with Ephemeral Runners | Accepted | 2025-12-10 |
 | [0027](0027-shared-minio-for-infrastructure.md) | Shared MinIO Tenant for Infrastructure | Accepted | 2025-12-10 |
+| [0028](0028-crossplane-for-external-infrastructure.md) | Crossplane for External Infrastructure | Proposed | 2025-12-11 |
 
 ## When to Create an ADR
 
