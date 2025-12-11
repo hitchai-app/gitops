@@ -1,39 +1,42 @@
 ---
-# ServiceAccount for MinIOJob
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: minio-bucket-sa
-  namespace: minio-infra
----
-# PolicyBinding grants access to MinIO tenant
-apiVersion: sts.min.io/v1alpha1
-kind: PolicyBinding
-metadata:
-  name: minio-bucket-binding
-  namespace: minio-infra
-spec:
-  application:
-    serviceaccount: minio-bucket-sa
-    namespace: minio-infra
-  policies:
-    - consoleAdmin
----
-# Bucket declarations for infrastructure services
-# NOTE: MinIOJob must be in same namespace as tenant (cross-namespace not supported)
-apiVersion: job.min.io/v1alpha1
-kind: MinIOJob
+# Bucket creation job using mc CLI with root credentials
+# MinIOJob requires STS+TLS, but tenant has TLS disabled (ADR 0006)
+apiVersion: batch/v1
+kind: Job
 metadata:
   name: infra-buckets
   namespace: minio-infra
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
-  serviceAccountName: minio-bucket-sa
-  tenant:
-    name: infra
-    namespace: minio-infra
-  failureStrategy: continueOnFailure
-  commands:
-    - op: make-bucket
-      name: create-actions-cache
-      args:
-        name: actions-cache
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mc
+          image: minio/mc:latest
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Source MinIO root credentials from config secret
+              . /config/config.env
+
+              # Configure mc alias with root credentials (HTTP, no TLS)
+              mc alias set myminio http://infra-hl.minio-infra.svc.cluster.local:9000 \
+                "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+
+              # Create buckets (ignore if exists)
+              mc mb --ignore-existing myminio/actions-cache
+
+              echo "Buckets created successfully"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config
+          secret:
+            secretName: minio-infra-config
