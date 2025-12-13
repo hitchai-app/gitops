@@ -17,7 +17,7 @@ spec:
       owner: forgejo
 
   storage:
-    size: 10Gi
+    size: 20Gi
     storageClass: single-replica
 
   resources:
@@ -27,22 +27,22 @@ spec:
     limits:
       memory: 1Gi
 
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://cluster-backups/forgejo-postgres
-      endpointURL: https://s3.eu-central-003.backblazeb2.com
-      s3Credentials:
-        accessKeyId:
-          name: cloudnativepg-backup-creds
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: cloudnativepg-backup-creds
-          key: SECRET_ACCESS_KEY
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: "30d"
-
-# ScheduledBackup is a separate CRD, not inline in Cluster spec
-# TODO: Create ScheduledBackup resource when backup credentials are available
+  # Backup disabled until credentials are configured
+  # WAL files were filling disk because archiving failed with missing credentials
+  # TODO: Create cloudnativepg-backup-creds secret and re-enable
+  # backup:
+  #   barmanObjectStore:
+  #     destinationPath: s3://cluster-backups/forgejo-postgres
+  #     endpointURL: https://s3.eu-central-003.backblazeb2.com
+  #     s3Credentials:
+  #       accessKeyId:
+  #         name: cloudnativepg-backup-creds
+  #         key: ACCESS_KEY_ID
+  #       secretAccessKey:
+  #         name: cloudnativepg-backup-creds
+  #         key: SECRET_ACCESS_KEY
+  #     wal:
+  #       compression: gzip
+  #     data:
+  #       compression: gzip
+  #   retentionPolicy: "30d"
