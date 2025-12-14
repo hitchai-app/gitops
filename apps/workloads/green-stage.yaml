@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: green-stage
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://git.ops.last-try.org/green/green.git
+    targetRevision: main
+    path: k8s/stage
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: green-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

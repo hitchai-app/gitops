@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: green-minio-setup
+  namespace: minio-infra
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: mc
+          image: minio/mc:latest
+          env:
+            - name: GREEN_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: green-minio-creds
+                  key: ACCESS_KEY_ID
+            - name: GREEN_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: green-minio-creds
+                  key: SECRET_ACCESS_KEY
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              . /config/config.env
+
+              # Wait for MinIO
+              until mc alias set myminio http://infra-hl.minio-infra.svc.cluster.local:9000 \
+                "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"; do
+                echo "Waiting for MinIO..."
+                sleep 5
+              done
+
+              # Create bucket
+              mc mb --ignore-existing myminio/green-postgres
+
+              # Create user (ignore if exists)
+              mc admin user add myminio "$GREEN_ACCESS_KEY" "$GREEN_SECRET_KEY" 2>/dev/null || true
+
+              # Create policy
+              cat > /tmp/policy.json << 'EOF'
+              {
+                "Version": "2012-10-17",
+                "Statement": [{
+                  "Effect": "Allow",
+                  "Action": ["s3:*"],
+                  "Resource": ["arn:aws:s3:::green-postgres", "arn:aws:s3:::green-postgres/*"]
+                }]
+              }
+              EOF
+              mc admin policy create myminio green-backup /tmp/policy.json 2>/dev/null || true
+
+              # Attach policy to user
+              mc admin policy attach myminio green-backup --user "$GREEN_ACCESS_KEY" 2>/dev/null || true
+
+              echo "MinIO setup complete"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+      volumes:
+        - name: config
+          secret:
+            secretName: minio-infra-config
