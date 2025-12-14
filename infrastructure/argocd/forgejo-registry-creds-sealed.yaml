@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: forgejo-registry-creds
+  namespace: argocd
+spec:
+  encryptedData:
+    creds: AgA5k0RlnCUYGCWRYB18Y7h5D3qj76DxrsdeNBsq+atfkPVzjWwNXcMyBfTQiDEOpUMOaD6CxQiAjuxgJjJgm9pWFNr9CgfwZ9jGSDc3OqaYKyl+mFTe698u3FXmxE3ACjh+kHtrsVqovkD/NkUR1HbCEPpBCmLR+ZluUBJuvQDa5i0Hj0JPiVozQCNiQmfB17Efh64ZaXj7yMuymXA+UGeFX8lfGPi3YZgPR3M3cw+wQcyZgcHV4QvHqzwEwSEyWLp3zS5433A5ulobBGq2mCsXuVYtRgT2nrHrQnItOBb7HaAHUms0f6hjeUDErUTJfJ04kUV6e/f3d91bHJ3gkzOfxW3SFsD0Rltw1GAQiY3Wa+cFYHeU1hrZ8xGKfMTraDehGqW4SFx3eUDZtMFzZ/4zWVNQz4xaN3GNVMk2cmOOX7T2HaghCmliN63gPPimoqMPORdNmWUcbkEjfzmYrfOkf6wo07m5qr6HltLo44y74ePL5lbU/fGFNHEBLLcOhiJKV1LXFeszH3PblWYDN0Cu7j1H7AfQQreFMbiU3Vdh7Vg8OgE7QY3dAF9u8L8YN96ShZNaprX4CBANzWFSam3/vnDisOvS9HnbKOuRy1pfRWMZO0Yjq3sQm/chWJKqWsN/XEIzMp0iTJFzCoBMf8kdNNbc0UgPP8hCTKIvGD5XjB8SbLQLR48pb7uRsg9Bv+fNbNR4LRVk1Tcndt+rbx9BrTZHrHZWtWAkruwg3ydlw2J5HV341m9iOjKdJjQNP6TS
+  template:
+    metadata:
+      name: forgejo-registry-creds
+      namespace: argocd
