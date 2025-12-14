@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://argoproj.github.io/argo-helm
     chart: argocd-image-updater
-    targetRevision: 0.11.0
+    targetRevision: 1.0.2
     helm:
       values: |
         config:
@@ -16,7 +16,7 @@ spec:
             - name: Forgejo Registry
               prefix: git.ops.last-try.org
               api_url: https://git.ops.last-try.org/v2
-              credentials: pullsecret:argocd/forgejo-registry-creds
+              credentials: secret:argocd/forgejo-registry-creds#creds
               default: true
   destination:
     server: https://kubernetes.default.svc
