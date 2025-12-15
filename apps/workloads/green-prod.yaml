@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: green-stage
+  name: green-prod
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://git.ops.last-try.org/green/green-envs.git
     targetRevision: main
-    path: stage/argocd
+    path: prod/argocd
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd
