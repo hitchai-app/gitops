@@ -1,19 +1,14 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: green-stage
+  name: green-infrastructure
   namespace: argocd
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: backend=git.ops.last-try.org/green/green/backend
-    argocd-image-updater.argoproj.io/backend.update-strategy: newest-build
-    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/forgejo-green-repo
-    argocd-image-updater.argoproj.io/git-branch: main
 spec:
   project: default
   source:
     repoURL: https://git.ops.last-try.org/green/green.git
     targetRevision: main
-    path: k8s/stage
+    path: k8s/stage/infrastructure
     directory:
       recurse: true
   destination:
