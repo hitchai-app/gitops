@@ -64,9 +64,14 @@ garbageCollect:
   schedule: "0 * * * *"
 
 # Registry configuration
-# Enable deletion for garbage collection to work
+# CRITICAL: Must include filesystem driver for blob caching to work
+# Without this, registry only redirects to Docker Hub instead of caching locally
 configData:
   storage:
+    filesystem:
+      rootdirectory: /var/lib/registry
+    cache:
+      blobdescriptor: inmemory
     delete:
       enabled: true
 
