@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubernetes-replicator
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://helm.mittwald.de
+      chart: kubernetes-replicator
+      targetRevision: 2.12.0
+      helm:
+        releaseName: kubernetes-replicator
+        valueFiles:
+          - $values/infrastructure/kubernetes-replicator/values.yaml
+
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
