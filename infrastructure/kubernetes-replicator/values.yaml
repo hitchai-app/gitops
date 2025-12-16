@@ -1,5 +1,6 @@
 # kubernetes-replicator values
 # Replicates secrets/configmaps across namespaces
+# Used for PR environments to access stage database credentials via pull-based replication
 
 replicateSecrets: true
 replicateConfigMaps: true
@@ -7,10 +8,19 @@ replicateRoles: false
 replicateRoleBindings: false
 replicateServiceAccounts: false
 
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
 resources:
   limits:
     cpu: 100m
     memory: 128Mi
   requests:
-    cpu: 10m
+    cpu: 50m
     memory: 32Mi
