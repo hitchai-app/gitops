@@ -36,6 +36,8 @@ spec:
               - dockerd
               - --host=unix:///var/run/docker.sock
               - --group=0
+              # Use local registry cache for Docker Hub images
+              - --registry-mirror=http://dockerhub-cache-docker-registry.registry-cache.svc.cluster.local:5000
             securityContext:
               privileged: true
             # Startup probe ensures Docker is ready before runner starts
@@ -58,7 +60,7 @@ spec:
                 memory: 256Mi
               limits:
                 cpu: 2000m
-                memory: 2Gi
+                memory: 4Gi
         containers:
           - name: runner
             image: code.forgejo.org/forgejo/runner:6.3.1
@@ -97,7 +99,7 @@ spec:
           - name: runner-config
             configMap:
               name: forgejo-runner-config
-  pollingInterval: 30
+  pollingInterval: 5
   minReplicaCount: 0
   maxReplicaCount: 5
   rollout:

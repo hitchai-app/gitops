@@ -21,6 +21,9 @@ data:
     cache:
       enabled: true
       external_server: http://actions-cache-server.forgejo-runner.svc.cluster.local:3000/
+      # Secret for cache proxy HMAC signing (required for external_server)
+      # Using a static value since falcondev cache server doesn't validate it
+      secret: "forgejo-runner-cache-secret-2024"
     container:
       network: ""
       privileged: false
