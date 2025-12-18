@@ -27,8 +27,10 @@ data:
     container:
       network: ""
       privileged: false
-      options:
+      # Mount cached actions into job containers
+      options: "-v /act-cache:/root/.cache/act"
       workdir_parent:
-      valid_volumes: []
+      valid_volumes:
+        - /act-cache/**
       docker_host: unix:///var/run/docker.sock
       force_pull: false

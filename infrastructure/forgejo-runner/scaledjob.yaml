@@ -54,6 +54,8 @@ spec:
                 mountPath: /var/lib/docker
               - name: dind-sock
                 mountPath: /var/run
+              - name: act-action-cache
+                mountPath: /act-cache
             resources:
               requests:
                 cpu: 100m
@@ -93,6 +95,9 @@ spec:
             emptyDir: {}
           - name: dind-sock
             emptyDir: {}
+          - name: act-action-cache
+            persistentVolumeClaim:
+              claimName: act-action-cache
           - name: runner-registration
             secret:
               secretName: forgejo-runner-registration
