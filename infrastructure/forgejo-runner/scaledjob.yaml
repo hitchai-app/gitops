@@ -54,8 +54,6 @@ spec:
                 mountPath: /var/lib/docker
               - name: dind-sock
                 mountPath: /var/run
-              - name: act-action-cache
-                mountPath: /act-cache
             resources:
               requests:
                 cpu: 100m
@@ -81,6 +79,8 @@ spec:
                 mountPath: /config
               - name: dind-sock
                 mountPath: /var/run
+              - name: act-action-cache
+                mountPath: /data/.cache/act
             resources:
               requests:
                 cpu: 100m
