@@ -21,17 +21,13 @@ spec:
       name: letsencrypt-prod-account-key
 
     # DNS-01 challenge via Cloudflare
-    # Zone ID explicitly set to fix cleanup issues where cert-manager
-    # couldn't find the zone during challenge cleanup (Error 7003)
     solvers:
-    - dns01:
-        cloudflare:
-          email: Alushanov92@gmail.com
-          apiTokenSecretRef:
-            name: cloudflare-api-token
-            key: api-token
-          # last-try.org zone ID - required for proper DNS record cleanup
-          zoneID: "5ce8166ef3eb1c19ae12821226f02f52"
+      - dns01:
+          cloudflare:
+            email: Alushanov92@gmail.com
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -48,10 +44,9 @@ spec:
       name: letsencrypt-staging-account-key
 
     solvers:
-    - dns01:
-        cloudflare:
-          email: Alushanov92@gmail.com
-          apiTokenSecretRef:
-            name: cloudflare-api-token
-            key: api-token
-          zoneID: "5ce8166ef3eb1c19ae12821226f02f52"
+      - dns01:
+          cloudflare:
+            email: Alushanov92@gmail.com
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token
