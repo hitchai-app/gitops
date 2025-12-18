@@ -18,7 +18,7 @@ jobs:
     #   github.event.pull_request.user.login == 'new-developer' ||
     #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
 
-    runs-on: hitchai-app-runners-lite  # Self-hosted runner with kubectl cluster access
+    runs-on: hitchai-app-runners-lite # Self-hosted runner with kubectl cluster access
     permissions:
       contents: read
       pull-requests: write # Allow creating reviews and comments
@@ -31,6 +31,22 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install required tools
+        run: |
+          # Install gh CLI
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update && sudo apt-get install -y gh
+
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+          # Verify installations
+          gh --version
+          kubectl version --client
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@beta
@@ -38,7 +54,7 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
           # Allow all bots to trigger the review
-          allowed_bots: '*'
+          allowed_bots: "*"
 
           # Use sticky comments for consistent review updates
           use_sticky_comment: true
@@ -118,4 +134,3 @@ jobs:
             - COMMENT: For minor suggestions only
 
             CRITICAL: Submit formal review with `gh pr review` - do NOT just post a comment!
-
