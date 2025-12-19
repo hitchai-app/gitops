@@ -16,13 +16,13 @@ spec:
         # Allow running jobs time to complete on pod termination
         terminationGracePeriodSeconds: 300
         initContainers:
-          # Set permissions on action cache PVC (root-owned by default)
+          # Set ownership on action cache PVC (root-owned by default, runner runs as UID 1000)
           - name: init-cache-permissions
             image: busybox:1.36
             command:
               - sh
               - -c
-              - chmod 777 /cache
+              - chown 1000:1000 /cache
             volumeMounts:
               - name: act-action-cache
                 mountPath: /cache
