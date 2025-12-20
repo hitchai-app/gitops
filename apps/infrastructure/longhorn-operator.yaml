@@ -45,6 +45,8 @@ spec:
                 memory: 64Mi
 
           longhornUI:
+            # Single-node: keep UI at 1 replica; revisit when multi-node.
+            replicas: 1
             resources:
               requests:
                 cpu: 10m
@@ -52,6 +54,23 @@ spec:
               limits:
                 cpu: 100m
                 memory: 128Mi
+
+          # Webhooks/metrics components run as Deployments; reduce replicas on single node.
+          # TODO: Increase replicas when cluster has multiple nodes.
+          longhornAdmissionWebhook:
+            replicas: 1
+          longhornConversionWebhook:
+            replicas: 1
+          longhornRecoveryBackend:
+            replicas: 1
+
+          # CSI sidecars default to multiple replicas; reduce for single-node capacity.
+          # TODO: Increase replicas when cluster has multiple nodes.
+          csi:
+            attacherReplicaCount: 1
+            provisionerReplicaCount: 1
+            resizerReplicaCount: 1
+            snapshotterReplicaCount: 1
 
           # Storage class configuration
           # Note: We create explicit StorageClass manifests in infrastructure/longhorn/
