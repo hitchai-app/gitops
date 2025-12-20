@@ -1,0 +1,59 @@
+# GitLab Agent for Kubernetes
+# Enables kubectl access from GitLab CI/CD pipelines
+# Docs: https://docs.gitlab.com/ee/user/clusters/agent/
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab-agent
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    # Helm chart from GitLab charts repository
+    - repoURL: https://charts.gitlab.io
+      chart: gitlab-agent
+      targetRevision: 2.22.0
+      helm:
+        releaseName: gitlab-agent
+        valuesObject:
+          # KAS endpoint - internal cluster address (GitLab runs on same cluster)
+          # Uses gRPC protocol for agent-to-KAS communication
+          config:
+            kasAddress: grpc://gitlab-kas.gitlab-system.svc:8150
+            # Agent token from sealed secret
+            secretName: gitlab-agent-token
+
+          # Resource limits for small cluster
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+    # Sealed secret with agent token
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: workloads/gitlab-agent
+      directory:
+        include: "*-sealed.yaml"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitlab-agent
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

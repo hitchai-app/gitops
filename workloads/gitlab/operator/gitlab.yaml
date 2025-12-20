@@ -1,0 +1,341 @@
+# GitLab Custom Resource - Managed by GitLab Operator
+# Migrated from Helm chart to Operator for cleaner ArgoCD integration
+# ADR References: 0004, 0005, 0006
+apiVersion: apps.gitlab.com/v1beta1
+kind: GitLab
+metadata:
+  name: gitlab
+  namespace: gitlab-system
+spec:
+  chart:
+    version: "9.7.0"
+    values:
+      global:
+        # Domain configuration
+        hosts:
+          domain: ops.last-try.org
+          https: true
+          gitlab:
+            name: gitlab.ops.last-try.org
+          registry:
+            name: registry.ops.last-try.org
+
+        # Ingress configuration (standard K8s Ingress with Traefik class)
+        ingress:
+          enabled: true
+          class: traefik
+          # Note: Don't set provider:traefik - causes IngressRouteTCP which operator doesn't support
+          configureCertmanager: false
+          # Traefik middleware for ActionCable WebSocket support
+          # Required: X-Forwarded-Proto: https must reach Rails for origin validation
+          annotations:
+            traefik.ingress.kubernetes.io/router.middlewares: gitlab-system-forwarded-headers@kubernetescrd
+          tls:
+            enabled: true
+            secretName: gitlab-tls
+
+        # Edition
+        edition: ce
+        time_zone: UTC
+
+        # Initial root password
+        initialRootPassword:
+          secret: gitlab-gitlab-initial-root-password
+          key: password
+
+        # Email configuration
+        email:
+          from: 'gitlab@ops.last-try.org'
+          display_name: GitLab
+          reply_to: 'noreply@ops.last-try.org'
+
+        # PostgreSQL (CloudNativePG - ADR 0004)
+        psql:
+          host: gitlab-postgres-rw
+          port: 5432
+          database: gitlabhq_production
+          username: gitlab
+          password:
+            secret: gitlab-postgres-app
+            key: password
+
+        # Redis/Valkey (ADR 0020 - SAP valkey-operator)
+        redis:
+          host: valkey-gitlab-valkey-primary
+          port: 6379
+          auth:
+            enabled: true
+            secret: valkey-gitlab-valkey
+            key: valkey-password
+
+        # MinIO disabled (using external tenant - ADR 0006)
+        minio:
+          enabled: false
+
+        # Gitaly
+        gitaly:
+          enabled: true
+
+        # Object storage configuration
+        appConfig:
+          object_store:
+            enabled: true
+            proxy_download: true
+            connection:
+              secret: gitlab-rails-storage
+              key: connection
+          lfs:
+            enabled: true
+            bucket: gitlab-lfs
+          artifacts:
+            enabled: true
+            bucket: gitlab-artifacts
+          uploads:
+            enabled: true
+            bucket: gitlab-uploads
+          packages:
+            enabled: true
+            bucket: gitlab-packages
+          backups:
+            bucket: gitlab-backups
+          externalDiffs:
+            enabled: true
+            bucket: gitlab-mr-diffs
+          terraformState:
+            enabled: true
+            bucket: gitlab-terraform-state
+          ciSecureFiles:
+            enabled: true
+            bucket: gitlab-ci-secure-files
+          dependencyProxy:
+            enabled: true
+            bucket: gitlab-dependency-proxy
+
+          # OmniAuth configuration for Dex SSO
+          omniauth:
+            enabled: true
+            autoSignInWithProvider: openid_connect
+            allowSingleSignOn:
+              - openid_connect
+            syncProfileFromProvider:
+              - openid_connect
+            syncProfileAttributes:
+              - email
+            blockAutoCreatedUsers: false
+            providers:
+              - secret: gitlab-oidc-provider
+                key: provider
+
+        # Disable user registration (SSO only)
+        signup:
+          enabled: false
+
+      # GitLab Rails Components
+      gitlab:
+        webservice:
+          enabled: true
+          replicaCount: 1
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+          minReplicas: 1
+          maxReplicas: 2
+          workerProcesses: 2
+          workerTimeout: 60
+          # ActionCable for real-time WebSocket features (merge requests, issues, etc.)
+          # ACTION_CABLE_IN_APP enables embedded mode in Rails
+          # workhorse.extraArgs tells workhorse to proxy /-/cable to Rails
+          extraEnv:
+            ACTION_CABLE_IN_APP: "true"
+          workhorse:
+            extraArgs: "-cableBackend http://localhost:8080"
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              additionalLabels:
+                release: kube-prometheus-stack
+
+        sidekiq:
+          enabled: true
+          resources:
+            requests:
+              cpu: 300m
+              memory: 900Mi
+            limits:
+              cpu: 1000m
+              memory: 1.2Gi
+          minReplicas: 1
+          maxReplicas: 2
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              additionalLabels:
+                release: kube-prometheus-stack
+          pods:
+            - name: all-in-one
+              concurrency: 10
+              queues: ''
+
+        gitaly:
+          resources:
+            requests:
+              cpu: 200m
+              memory: 800Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              additionalLabels:
+                release: kube-prometheus-stack
+          persistence:
+            enabled: true
+            storageClass: single-replica
+            size: 50Gi
+            accessMode: ReadWriteOnce
+
+        gitlab-shell:
+          enabled: true
+          sshDaemon: gitlab-sshd
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: true
+              additionalLabels:
+                release: kube-prometheus-stack
+
+        praefect:
+          enabled: false
+
+        kas:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 150Mi
+          minReplicas: 1
+          maxReplicas: 2
+
+        gitlab-pages:
+          enabled: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 150Mi
+
+        mailroom:
+          enabled: false
+
+        migrations:
+          enabled: true
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1536Mi
+
+        toolbox:
+          enabled: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 2Gi
+          backups:
+            cron:
+              enabled: true
+              schedule: "0 2 * * *"
+              persistence:
+                enabled: true
+                storageClass: single-replica
+                size: 10Gi
+            objectStorage:
+              config:
+                secret: gitlab-backup-storage
+                key: config
+
+      # Container Registry
+      registry:
+        enabled: true
+        resources:
+          requests:
+            cpu: 200m
+            memory: 600Mi
+          limits:
+            cpu: 500m
+            memory: 800Mi
+        hpa:
+          minReplicas: 1
+          maxReplicas: 2
+        metrics:
+          enabled: true
+          serviceMonitor:
+            enabled: true
+            additionalLabels:
+              release: kube-prometheus-stack
+        storage:
+          secret: registry-storage
+          key: config
+        maintenance:
+          uploadPurging:
+            enabled: true
+            age: 168h
+            interval: 24h
+            dryRun: false
+
+      # Disable bundled components (using external)
+      nginx-ingress:
+        enabled: false
+      postgresql:
+        install: false
+      redis:
+        install: false
+      minio:
+        install: false
+      prometheus:
+        install: false
+      grafana:
+        enabled: false
+      gitlab-runner:
+        install: false
+
+      # Use existing cert-manager
+      installCertmanager: false
+      certmanager-issuer:
+        email: ops@last-try.org
+
+      # Shared Secrets
+      shared-secrets:
+        enabled: true
+        env: production
+        rbac:
+          create: true
+
+      # Upgrade Check disabled
+      upgradeCheck:
+        enabled: false

@@ -11,8 +11,8 @@ spec:
     repoURL: https://charts.gitlab.io
     chart: gitlab-operator
     # Upgrade sequence: operator first, then GitLab CR chart version
-    # Operator 2.6.x supports GitLab chart 9.6.x
-    targetRevision: 2.6.1
+    # Operator 2.6.x supports GitLab chart 9.7.x
+    targetRevision: 2.6.2
     helm:
       releaseName: gitlab-operator
       valuesObject:

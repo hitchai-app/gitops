@@ -1,0 +1,50 @@
+# GitLab Runner with Kubernetes Executor
+# Executes CI/CD jobs with Docker-in-Docker support
+# Docs: https://docs.gitlab.com/runner/install/kubernetes.html
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitlab-runner
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  sources:
+    # Helm chart from GitLab charts repository
+    - repoURL: https://charts.gitlab.io
+      chart: gitlab-runner
+      targetRevision: 0.84.0
+      helm:
+        releaseName: gitlab-runner
+        valueFiles:
+          - $values/infrastructure/gitlab-runner/values.yaml
+
+    # Git repository containing values and sealed secrets
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      ref: values
+
+    # Sealed secret with runner token
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: infrastructure/gitlab-runner
+      directory:
+        include: "*-sealed.yaml"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitlab-runner
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
