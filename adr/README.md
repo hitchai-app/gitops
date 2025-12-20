@@ -94,7 +94,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0014](0014-actions-runner-controller-for-github-actions.md) | Actions Runner Controller for GitHub Actions | Accepted | 2025-10-11 |
 | [0015](0015-harbor-container-registry.md) | Harbor Container Registry | Deferred | 2025-10-12 |
 | [0016](0016-gitlab-platform-migration.md) | GitLab Platform Migration | Superseded | 2025-10-12 |
-| [0017](0017-observability-stack-evaluation.md) | Observability Stack Evaluation | Proposed | 2025-10-14 |
+| [0017](0017-observability-stack-evaluation.md) | Observability Stack Evaluation | Superseded | 2025-10-14 |
 | [0018](0018-dex-authentication-provider.md) | Dex Authentication Provider | Proposed | 2025-10-14 |
 | [0019](0019-resource-organization-and-application-granularity.md) | Resource Organization and Application Granularity | Accepted | 2025-10-15 |
 | [0020](0020-sap-valkey-operator.md) | SAP Valkey Operator | Accepted | 2025-11-30 |
@@ -107,6 +107,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0027](0027-shared-minio-for-infrastructure.md) | Shared MinIO Tenant for Infrastructure | Accepted | 2025-12-10 |
 | [0028](0028-crossplane-for-external-infrastructure.md) | Crossplane for External Infrastructure | Proposed | 2025-12-11 |
 | [0029](0029-restore-gitlab-platform.md) | Restore GitLab Platform | Accepted | 2025-12-20 |
+| [0030](0030-remove-signoz-evaluation.md) | Remove SigNoz Evaluation Stack | Accepted | 2025-12-20 |
 
 ## When to Create an ADR
 
