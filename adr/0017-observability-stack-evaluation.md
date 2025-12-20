@@ -1,8 +1,10 @@
 # 0017. Observability Stack Evaluation
 
-**Status**: Proposed
+**Status**: Superseded by [ADR 0030](0030-remove-signoz-evaluation.md)
 
 **Date**: 2025-10-14
+
+**Superseded**: 2025-12-20 - SigNoz evaluation concluded; stack removed (see ADR 0030).
 
 ## Context
 
