@@ -1,0 +1,44 @@
+# GitLab Valkey Instance
+# Managed by SAP valkey-operator (cache.cs.sap.com/v1alpha1)
+# ADR Reference: 0020-sap-valkey-operator.md
+apiVersion: cache.cs.sap.com/v1alpha1
+kind: Valkey
+metadata:
+  name: gitlab-valkey
+  namespace: gitlab-system
+spec:
+  # Single instance - GitLab uses this for cache/sessions
+  # Data loss is acceptable per ADR 0005
+  replicas: 1
+
+  # Sentinel disabled - no HA needed for our use case
+  # Field is immutable once set
+  sentinel:
+    enabled: false
+
+  # Persistence for data durability across restarts
+  persistence:
+    enabled: true
+    storageClass: single-replica  # ADR 0007
+    size: 5Gi
+
+  # Prometheus metrics exporter
+  metrics:
+    enabled: true
+    monitor:
+      enabled: true
+      additionalLabels:
+        release: kube-prometheus-stack
+
+  # Resource limits matching previous StatefulSet
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # No TLS - internal cluster communication only
+  tls:
+    enabled: false

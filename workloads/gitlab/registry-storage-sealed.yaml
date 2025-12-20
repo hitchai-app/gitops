@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: registry-storage
+  namespace: gitlab-system
+spec:
+  encryptedData:
+    config: AgAyzGRVMI+Nz/DYPk+jVdv0ZcJKYylEmQMpgWVPE07YKTixgHtb60vPfofuJ3iZs7CVAOMszhMv/LlkCIjS1qKyyDJPa9xkU6985xrKw/7p7d4Rg5V/48T8vesjQebLpEVtg9/+dneJK4db3Boicx9zB3Y2rpqol4GiHRm3b+K1jFhvVaih+CeErAMyKPZnevQ1z1EiNSyBkSJEY+jVA1P1jrjxlepZTp5WgpI1F+APwkYMvMxOmBNlkkRTqc5/vEUQmsZiQS9EdnMyionWa3Vs8zv+hzwdQ7+WqCJe4pR5NfCkFJFnnsojDRkOp56H908AX77HmHda4AaHrRrqY1I4VTGdr6Ufrx+98J4wabv4sr0kpB6DtqUaAQoQi5v+URoEkG0EQ/kXMCE4HepLTkY/P9h3/VC89JO8txe1j6Oxp+8Unx0yjoM0lF2Wzha2xD0dvpB5x1k43HS8i0noB1IB6Q7wZ6JTkyLvJWYp4ZIbtO7Lvk7Pl2/N5g+J2UA+Ue7CyDszWqEy6K/65Jr2YWPp60V8PNhLLCHc8GMqS5aWa10W8bHNk+iFWo5nJBM4uo5OvPcwMKD8BTO/m9fe4d+QEUTKvQhApwOdnd5EnE+MD6cUUKAHDZ4i/tWag7FZhysUoiLSclcJMgOhUgbmbXVuqwxPu8kDV078xixbc/8LUXaWqVFsNDhnkNkpy3FqCYui02CAE81iE7YKhanvEmFLga5ZNdHUdFjQQx2paK26tnMek/tK1pyTjcPSlHVJs4P78fqJl0JJ7CKC8xeIAW3Ob4o/7ZLU/5Qau+C2jieCghsj3iWfy3n1EszTaTflA7VQpwKekDU9XEcVTaloTi3Q+A4v0GPOTfTuYnvouL1ZCfgehRWE5KB1/7jDXL2T1eVhJR9EwtaGxH8y1PQgvqhrCJXZkRV0dLru7kEHoJ5fw+I4N6u/FWXfsqGmCD9ztoRx2eNxT6zaQxTiZaoRYE41R2I=
+  template:
+    metadata:
+      name: registry-storage
+      namespace: gitlab-system
+    type: Opaque

@@ -1,6 +1,6 @@
 # 0023. Forgejo + Woodpecker CI
 
-**Status**: Partially Superseded (Woodpecker replaced by Forgejo Actions - see [ADR 0026](0026-forgejo-actions-ephemeral-runners.md))
+**Status**: Partially Superseded (Woodpecker replaced by Forgejo Actions - see [ADR 0026](0026-forgejo-actions-ephemeral-runners.md); GitLab restored - see [ADR 0029](0029-restore-gitlab-platform.md))
 
 **Date**: 2025-12-04
 
