@@ -85,6 +85,13 @@ config:
       name: 'Forgejo'
       secretEnv: DEX_CLIENT_SECRET_FORGEJO
 
+    # GitLab (OIDC)
+    - id: gitlab
+      redirectURIs:
+        - 'https://gitlab.ops.last-try.org/users/auth/openid_connect/callback'
+      name: 'GitLab'
+      secretEnv: DEX_CLIENT_SECRET_GITLAB
+
     # GlitchTip (native OIDC via django-allauth)
     # Callback URL format: /accounts/oidc/{provider_id}/login/callback/
     - id: glitchtip
@@ -156,6 +163,11 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: forgejo-client-secret
+  - name: DEX_CLIENT_SECRET_GITLAB
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: gitlab-client-secret
   - name: DEX_CLIENT_SECRET_GLITCHTIP
     valueFrom:
       secretKeyRef:
