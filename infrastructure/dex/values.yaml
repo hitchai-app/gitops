@@ -86,9 +86,10 @@ config:
       secretEnv: DEX_CLIENT_SECRET_FORGEJO
 
     # GitLab (OIDC)
+    # Redirect URI uses /auth/dex/ because GitLab omniauth args.name="dex"
     - id: gitlab
       redirectURIs:
-        - 'https://gitlab.ops.last-try.org/users/auth/openid_connect/callback'
+        - 'https://gitlab.ops.last-try.org/users/auth/dex/callback'
       name: 'GitLab'
       secretEnv: DEX_CLIENT_SECRET_GITLAB
 
