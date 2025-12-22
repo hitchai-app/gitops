@@ -114,11 +114,12 @@ spec:
           # OmniAuth configuration for Dex SSO
           omniauth:
             enabled: true
-            autoSignInWithProvider: openid_connect
+            # Provider name is derived from args.name (dex) in the OIDC config.
+            autoSignInWithProvider: dex
             allowSingleSignOn:
-              - openid_connect
+              - dex
             syncProfileFromProvider:
-              - openid_connect
+              - dex
             syncProfileAttributes:
               - email
             blockAutoCreatedUsers: false
