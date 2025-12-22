@@ -131,6 +131,11 @@ spec:
         signup:
           enabled: false
 
+        # Note: Password authentication must be disabled via GitLab Admin UI
+        # Admin → Settings → General → Sign-in restrictions:
+        # - Uncheck "Password authentication enabled for web interface"
+        # - Uncheck "Password authentication enabled for Git over HTTP(S)"
+
       # GitLab Rails Components
       gitlab:
         webservice:
