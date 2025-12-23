@@ -17,23 +17,20 @@ alertmanager:
           resources:
             requests:
               storage: 2Gi
-    secrets:
-      - alertmanager-discord-webhook
+    # Use AlertmanagerConfig CRDs for receiver configuration
+    alertmanagerConfigSelector:
+      matchLabels:
+        alertmanagerConfig: main
+    alertmanagerConfigMatcherStrategy:
+      type: None  # Don't add namespace matchers to routes
   config:
     global:
       resolve_timeout: 5m
+    # Minimal route - AlertmanagerConfig handles the actual routing
     route:
-      group_by: ['alertname', 'namespace']
-      group_wait: 30s
-      group_interval: 5m
-      repeat_interval: 3h
-      receiver: discord
+      receiver: "null"
     receivers:
-      - name: discord
-        discord_configs:
-          - webhook_url_file: /etc/alertmanager/secrets/alertmanager-discord-webhook/url
-            send_resolved: true
-      - name: "null"  # Silences Watchdog alerts (heartbeat)
+      - name: "null"
 
 grafana:
   ingress:
