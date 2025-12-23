@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
+  - alertmanager-config.yaml
   - alertmanager-discord-webhook-sealed.yaml
   - grafana-oauth-secret-sealed.yaml
   - oauth2-proxy-alertmanager/deployment.yaml
