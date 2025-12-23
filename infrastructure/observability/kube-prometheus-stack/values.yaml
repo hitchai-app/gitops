@@ -30,8 +30,8 @@ alertmanager:
       receiver: discord
     receivers:
       - name: discord
-        webhook_configs:
-          - url_file: /etc/alertmanager/secrets/alertmanager-discord-webhook/url
+        discord_configs:
+          - webhook_url_file: /etc/alertmanager/secrets/alertmanager-discord-webhook/url
             send_resolved: true
       - name: "null"  # Silences Watchdog alerts (heartbeat)
 
