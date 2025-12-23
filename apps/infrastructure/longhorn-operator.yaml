@@ -22,7 +22,7 @@ spec:
             defaultReplicaCount: "1"
             backupTarget: "s3://longhorn-backups@auto/"
             backupTargetCredentialSecret: "longhorn-backup-secret"
-            storageOverProvisioningPercentage: "1000"
+            storageOverProvisioningPercentage: "2000"  # Doubled for experimental cluster
             storageMinimalAvailablePercentage: "25"
 
           # Resource limits for Longhorn components
