@@ -26,6 +26,7 @@ spec:
           - --cookie-secret=$(OAUTH2_PROXY_COOKIE_SECRET)
           - --cookie-secure=true
           - --cookie-domain=.ops.last-try.org
+          - --cookie-csrf-per-request=true
           - --email-domain=*
           - --oidc-groups-claim=groups
           - --allowed-group=hitchai-app:ops
