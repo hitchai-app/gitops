@@ -27,22 +27,6 @@ spec:
     limits:
       memory: 1Gi
 
-  backup:
-    barmanObjectStore:
-      destinationPath: s3://cluster-backups/glitchtip-postgres
-      endpointURL: https://s3.eu-central-003.backblazeb2.com
-      s3Credentials:
-        accessKeyId:
-          name: cloudnativepg-backup-creds
-          key: ACCESS_KEY_ID
-        secretAccessKey:
-          name: cloudnativepg-backup-creds
-          key: SECRET_ACCESS_KEY
-      wal:
-        compression: gzip
-      data:
-        compression: gzip
-    retentionPolicy: "30d"
-
-# ScheduledBackup is a separate CRD, not inline in Cluster spec
-# TODO: Create ScheduledBackup resource when backup credentials are available
+  # Backup disabled - GlitchTip is non-critical error tracking data
+  # WAL archiving was filling disk due to missing backup credentials
+  # Re-enable when cloudnativepg-backup-creds secret is available
