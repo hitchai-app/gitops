@@ -9,10 +9,10 @@ spec:
   ingressClassName: traefik
   tls:
   - hosts:
-    - alertmanager.ops.last-try.org
-    secretName: alertmanager-tls
+    - am.ops.last-try.org
+    secretName: am-tls
   rules:
-  - host: alertmanager.ops.last-try.org
+  - host: am.ops.last-try.org
     http:
       paths:
       - path: /

@@ -31,7 +31,7 @@ spec:
           - --allowed-group=hitchai-app:ops
           - --upstream=http://kube-prometheus-stack-alertmanager.monitoring.svc.cluster.local:9093
           - --http-address=0.0.0.0:4180
-          - --redirect-url=https://alertmanager.ops.last-try.org/oauth2/callback
+          - --redirect-url=https://am.ops.last-try.org/oauth2/callback
           - --whitelist-domain=.ops.last-try.org
           - --pass-authorization-header=true
           - --pass-access-token=true
