@@ -1,5 +1,6 @@
 alertmanager:
   alertmanagerSpec:
+    externalUrl: https://alertmanager.ops.last-try.org
     resources:
       requests:
         cpu: 100m
@@ -89,6 +90,7 @@ grafana:
 
 prometheus:
   prometheusSpec:
+    externalUrl: https://prometheus.ops.last-try.org
     retention: 7d
     retentionSize: 15GiB
     resources:
