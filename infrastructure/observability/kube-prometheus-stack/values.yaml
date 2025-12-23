@@ -1,6 +1,6 @@
 alertmanager:
   alertmanagerSpec:
-    externalUrl: https://alertmanager.ops.last-try.org
+    externalUrl: https://am.ops.last-try.org
     resources:
       requests:
         cpu: 100m

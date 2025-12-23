@@ -67,7 +67,7 @@ config:
     # OAuth2 Proxy for Alertmanager
     - id: oauth2-proxy-alertmanager
       redirectURIs:
-        - 'https://alertmanager.ops.last-try.org/oauth2/callback'
+        - 'https://am.ops.last-try.org/oauth2/callback'
       name: 'Alertmanager OAuth2 Proxy'
       secretEnv: DEX_CLIENT_SECRET_ALERTMANAGER
 
