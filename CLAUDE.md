@@ -366,9 +366,8 @@ kubectl exec -n monitoring alertmanager-kube-prometheus-stack-alertmanager-0 -- 
   wget -qO- http://localhost:9093/api/v2/alerts | jq '.[] | select(.status.state == "active")'
 ```
 
-**Common expected alerts on single-node clusters:**
-- `KubeProxyDown`, `KubeSchedulerDown`, `KubeControllerManagerDown`, `etcd*` - these components run as static pods and aren't scraped by default
-- `Watchdog` - heartbeat alert, should always be firing
+**Note on `Watchdog` alert:**
+- `Watchdog` is a "dead man's switch" that should ALWAYS be firing - it verifies the alerting pipeline is working
 
 ## Disaster Recovery
 
