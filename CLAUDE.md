@@ -339,6 +339,37 @@ The client-secret was preserved (fetched from cluster)
 2. Rotate the exposed secret immediately
 3. Update all sealed secrets files that reference the exposed secret
 
+## Working with Alerts
+
+The cluster uses Prometheus for metrics and Alertmanager for alert routing.
+
+**Web UIs (require Dex authentication):**
+- Prometheus: `https://prometheus.ops.last-try.org/alerts` - view all alert rules and their states
+- Alertmanager: `https://am.ops.last-try.org` - view active alerts, silences, inhibitions
+- Grafana: `https://grafana.ops.last-try.org` - dashboards and alert visualization
+
+**CLI commands to check alerts:**
+
+```bash
+# List active alerts (formatted)
+kubectl exec -n monitoring alertmanager-kube-prometheus-stack-alertmanager-0 -- \
+  wget -qO- http://localhost:9093/api/v2/alerts | \
+  jq -r '.[] | select(.status.state == "active") | "[\(.labels.severity)] \(.labels.alertname) (\(.labels.namespace // "cluster")): \(.annotations.summary // .annotations.description)"'
+
+# Count alerts by severity
+kubectl exec -n monitoring alertmanager-kube-prometheus-stack-alertmanager-0 -- \
+  wget -qO- http://localhost:9093/api/v2/alerts | \
+  jq -r '.[] | select(.status.state == "active") | .labels.severity' | sort | uniq -c
+
+# Get full alert details as JSON
+kubectl exec -n monitoring alertmanager-kube-prometheus-stack-alertmanager-0 -- \
+  wget -qO- http://localhost:9093/api/v2/alerts | jq '.[] | select(.status.state == "active")'
+```
+
+**Common expected alerts on single-node clusters:**
+- `KubeProxyDown`, `KubeSchedulerDown`, `KubeControllerManagerDown`, `etcd*` - these components run as static pods and aren't scraped by default
+- `Watchdog` - heartbeat alert, should always be firing
+
 ## Disaster Recovery
 
 - **Storage**: Longhorn S3 backups (@adr/0002-longhorn-storage-from-day-one.md)
