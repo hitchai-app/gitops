@@ -58,8 +58,8 @@ spec:
             - name: OIDC_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: forgejo-oidc
-                  key: client-secret
+                  name: dex-secrets
+                  key: forgejo-client-secret
             - name: GITEA_WORK_DIR
               value: /data
             - name: GITEA_CUSTOM

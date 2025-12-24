@@ -71,7 +71,7 @@ grafana:
       name: Dex
       allow_sign_up: true
       client_id: grafana
-      client_secret: $__file{/etc/secrets/oauth/client-secret}
+      client_secret: $__file{/etc/secrets/dex/grafana-client-secret}
       scopes: openid profile email groups
       auth_url: https://auth.ops.last-try.org/auth
       token_url: https://auth.ops.last-try.org/token
@@ -80,12 +80,12 @@ grafana:
       # Users in hitchai-app:ops team get Admin, others get Viewer
       role_attribute_path: contains(groups[*], 'hitchai-app:ops') && 'Admin' || 'Viewer'
 
-  # Mount OAuth client secret from sealed secret
+  # Mount replicated dex-secrets for OAuth client secret
   extraSecretMounts:
-    - name: oauth-secret
-      secretName: grafana-oauth-secret
+    - name: dex-secrets
+      secretName: dex-secrets
       defaultMode: 0440
-      mountPath: /etc/secrets/oauth
+      mountPath: /etc/secrets/dex
       readOnly: true
 
 prometheus:

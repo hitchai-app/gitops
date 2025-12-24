@@ -42,12 +42,12 @@ spec:
         - name: OAUTH2_PROXY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: oauth2-proxy-alertmanager-secrets
-              key: client-secret
+              name: dex-secrets
+              key: alertmanager-client-secret
         - name: OAUTH2_PROXY_COOKIE_SECRET
           valueFrom:
             secretKeyRef:
-              name: oauth2-proxy-alertmanager-secrets
+              name: oauth2-proxy-alertmanager-cookie
               key: cookie-secret
         ports:
         - containerPort: 4180

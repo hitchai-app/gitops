@@ -6,12 +6,12 @@ namespace: monitoring
 resources:
   - alertmanager-config.yaml
   - alertmanager-discord-webhook-sealed.yaml
-  - grafana-oauth-secret-sealed.yaml
+  # grafana-oauth-secret removed - now uses replicated dex-secrets
   - oauth2-proxy-alertmanager/deployment.yaml
   - oauth2-proxy-alertmanager/service.yaml
-  - oauth2-proxy-alertmanager/secrets-sealed.yaml
+  - oauth2-proxy-alertmanager/cookie-secret-sealed.yaml
   - oauth2-proxy-alertmanager/ingress.yaml
   - oauth2-proxy-prometheus/deployment.yaml
   - oauth2-proxy-prometheus/service.yaml
-  - oauth2-proxy-prometheus/secrets-sealed.yaml
+  - oauth2-proxy-prometheus/cookie-secret-sealed.yaml
   - oauth2-proxy-prometheus/ingress.yaml
