@@ -8,5 +8,5 @@ resources:
   - backup-secret-sealed.yaml
   - oauth2-proxy/deployment.yaml
   - oauth2-proxy/service.yaml
-  - oauth2-proxy/secrets-sealed.yaml
+  - oauth2-proxy/cookie-secret-sealed.yaml
   - oauth2-proxy/ingress.yaml

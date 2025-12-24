@@ -41,12 +41,12 @@ spec:
         - name: OAUTH2_PROXY_CLIENT_SECRET
           valueFrom:
             secretKeyRef:
-              name: oauth2-proxy-longhorn-secrets
-              key: client-secret
+              name: dex-secrets
+              key: longhorn-client-secret
         - name: OAUTH2_PROXY_COOKIE_SECRET
           valueFrom:
             secretKeyRef:
-              name: oauth2-proxy-longhorn-secrets
+              name: oauth2-proxy-longhorn-cookie
               key: cookie-secret
         ports:
         - containerPort: 4180

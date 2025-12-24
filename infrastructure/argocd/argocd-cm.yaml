@@ -10,12 +10,12 @@ data:
   # ArgoCD URL (required for OIDC)
   url: https://argocd.ops.last-try.org
 
-  # Dex OIDC configuration
+  # Dex OIDC configuration (uses replicated dex-secrets from dex namespace)
   oidc.config: |
     name: Dex
     issuer: https://auth.ops.last-try.org
     clientID: argocd
-    clientSecret: $argocd-oidc:clientSecret
+    clientSecret: $dex-secrets:argocd-client-secret
     requestedScopes:
       - openid
       - profile
