@@ -114,3 +114,17 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
+
+# Disable control plane monitoring - components bind to localhost (127.0.0.1)
+# and are unreachable from Prometheus pods. Enabling would require either:
+# 1. Binding components to 0.0.0.0 + firewall rules, or
+# 2. Running a metrics proxy with hostNetwork: true
+# See: https://github.com/prometheus-community/helm-charts/issues/204
+kubeScheduler:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
