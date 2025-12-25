@@ -25,6 +25,14 @@ spec:
   # Prometheus metrics exporter
   metrics:
     enabled: true
+    # Increased from default 150m to reduce CPU throttling (was 53%)
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 300m
+        memory: 256Mi
     monitor:
       enabled: true
       additionalLabels:

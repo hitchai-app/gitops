@@ -87,12 +87,13 @@ checkInterval: 10
 unregisterRunners: true
 
 # Runner manager pod resources (not job pods)
+# Note: Increased CPU limit from 200m to 400m to reduce throttling during job coordination
 resources:
   requests:
-    cpu: 50m
-    memory: 64Mi
+    cpu: 100m
+    memory: 128Mi
   limits:
-    cpu: 200m
+    cpu: 400m
     memory: 256Mi
 
 # RBAC for runner manager
