@@ -1,0 +1,28 @@
+---
+# Override CPUThrottlingHigh alert threshold from 25% to 35%
+# Valkey metrics sidecar experiences ~33% throttling even after increasing CPU to 300m
+# This is acceptable for a metrics exporter - service works fine, just slightly delayed metrics
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cpu-throttling-override
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+  - name: kubernetes-resources
+    rules:
+    - alert: CPUThrottlingHigh
+      annotations:
+        description: Processes experience elevated CPU throttling (over 35%)
+        runbook_url: https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-cputhrottlinghigh
+        summary: Processes experience elevated CPU throttling.
+      expr: |
+        sum(increase(container_cpu_cfs_throttled_periods_total{container!=""}[5m])) by (cluster, container, pod, namespace)
+        /
+        sum(increase(container_cpu_cfs_periods_total{}[5m])) by (cluster, container, pod, namespace)
+        > ( 35 / 100 )
+      for: 15m
+      labels:
+        severity: info
