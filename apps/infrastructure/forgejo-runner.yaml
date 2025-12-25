@@ -12,6 +12,16 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: forgejo-runner
+  # Ignore KEDA-managed fields to prevent sync loops
+  ignoreDifferences:
+    - group: keda.sh
+      kind: ScaledJob
+      jsonPointers:
+        - /status
+    - group: keda.sh
+      kind: TriggerAuthentication
+      jsonPointers:
+        - /status
   syncPolicy:
     automated:
       prune: true
