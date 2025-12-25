@@ -18,7 +18,7 @@ metadata:
   name: actions-cache-server
   namespace: forgejo-runner
 spec:
-  replicas: 1
+  replicas: 0  # Scaled down - Forgejo not in use
   selector:
     matchLabels:
       app: actions-cache-server

@@ -116,7 +116,7 @@ spec:
               name: forgejo-runner-config
   pollingInterval: 5
   minReplicaCount: 0
-  maxReplicaCount: 5
+  maxReplicaCount: 0  # Scaled down - Forgejo not in use
   rollout:
     strategy: gradual
   scalingStrategy:
