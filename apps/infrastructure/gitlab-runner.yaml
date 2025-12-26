@@ -12,9 +12,11 @@ spec:
   project: default
   sources:
     # Helm chart from GitLab charts repository
+    # Chart version 0.83.x uses GitLab Runner 18.6.x (last stable before 18.7.0 regression)
+    # See: https://gitlab.com/gitlab-org/gitlab-runner/-/issues/39177
     - repoURL: https://charts.gitlab.io
       chart: gitlab-runner
-      targetRevision: 0.84.0
+      targetRevision: 0.83.3
       helm:
         releaseName: gitlab-runner
         valueFiles:
