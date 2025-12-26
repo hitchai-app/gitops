@@ -31,6 +31,12 @@ runners:
         poll_interval = 3
         poll_timeout = 180
 
+        # Image pull policy: use cached images if available
+        # "if-not-present" = pull only if image not on disk (uses cache)
+        # "always" = always pull from registry (default, slow with Docker Hub)
+        # "never" = never pull, fail if image not cached
+        pull_policy = "if-not-present"
+
         # Resource limits for job pods
         # Similar to ARC: Low requests for scheduling, high limits for bursting
         cpu_request = "250m"
