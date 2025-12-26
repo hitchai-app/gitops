@@ -72,7 +72,6 @@ runners:
         [[runners.kubernetes.services]]
           name = "docker"
           alias = "docker"
-          command = ["--tls=false"]
 
         [runners.kubernetes.pod_labels]
           "app.kubernetes.io/name" = "gitlab-runner-job"
