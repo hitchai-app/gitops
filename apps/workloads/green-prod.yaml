@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://git.ops.last-try.org/green/green-envs.git
+    repoURL: https://gitlab.ops.last-try.org/green/green-envs.git
     targetRevision: main
     path: prod/argocd
   destination:
