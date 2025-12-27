@@ -82,10 +82,10 @@ jobs:
             REVIEW PROCESS:
             1. **Provide detailed review feedback in THIS comment** (action creates this automatically)
             2. Get PR diff: `gh pr diff ${{ github.event.pull_request.number }}`
-            3. Review CLAUDE.md and ADRs for architectural context
+            3. **Verify against official source documentation FIRST** (MANDATORY - see below)
             4. **Verify cluster state** using kubectl if reviewing infrastructure changes
             5. Analyze changes against review criteria
-            5. **Submit clean formal review WITHOUT duplicate content:**
+            6. **Submit clean formal review WITHOUT duplicate content:**
                - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve` (no --body to avoid duplicates)
                - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes`
                - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment`
@@ -102,18 +102,22 @@ jobs:
             - You have access to kubectl for cluster verification - use it to validate infrastructure state
 
             **DOCUMENTATION VERIFICATION (MANDATORY):**
-            You MUST verify proposed solutions against official documentation. Do not trust PR claims blindly.
-            - Use WebSearch to find official docs for any technology being configured
+            You MUST verify proposed solutions against **OFFICIAL SOURCE DOCUMENTATION FIRST**.
+            Do NOT rely on internal documentation (CLAUDE.md, ADRs) as primary sources - these may be outdated.
+            - Use WebSearch to find **official upstream docs** for any technology being configured
             - Use WebFetch to read the actual documentation pages
-            - Challenge: Does the configuration match what docs recommend?
+            - **Always include links to official docs** (GitHub repos, official project sites) in your review
+            - Challenge: Does the configuration match what official docs recommend?
             - Challenge: Are there better/official ways to achieve the same goal?
             - Challenge: Is the feature actually supported in the version being used?
-            - **Always include documentation links** in your review as evidence
-            - If docs contradict the PR approach, REQUEST_CHANGES with the correct solution
-            - Common doc sources: kubernetes.io, helm chart READMEs, operator GitHub repos, official project docs
+            - If official docs contradict the PR approach, REQUEST_CHANGES with the correct solution
+            - Common official doc sources: kubernetes.io, GitHub READMEs, helm.sh, operator GitHub repos, official project sites
+
+            **WRONG:** Citing internal ADR/CLAUDE.md as "proof" that something is incorrect
+            **RIGHT:** Citing official bitnami-labs/sealed-secrets README as "proof" of correct configuration
 
             Example verification workflow:
-            1. PR adds GitLab config → Search "GitLab Helm chart <feature> documentation"
+            1. PR adds SealedSecret config → Fetch official https://github.com/bitnami-labs/sealed-secrets README
             2. PR uses ArgoCD feature → Fetch argo-cd.readthedocs.io to verify syntax
             3. PR configures operator → Check operator's GitHub repo for CRD spec
 
@@ -124,13 +128,12 @@ jobs:
             - Security vulnerabilities
             - Missing validations or error handling
             - Untested edge cases
-            - Alignment with ADR patterns
 
             Be skeptical and critical. If something looks wrong, it probably is.
 
             Verdict rules:
-            - APPROVE: Only if no blocking issues AND aligns with ADRs
-            - REQUEST_CHANGES: If any blocking concerns exist
+            - APPROVE: Only if no blocking issues AND follows official documentation
+            - REQUEST_CHANGES: If any blocking concerns exist or contradicts official docs
             - COMMENT: For minor suggestions only
 
             CRITICAL: Submit formal review with `gh pr review` - do NOT just post a comment!
