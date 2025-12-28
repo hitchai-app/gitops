@@ -6,7 +6,7 @@ metadata:
   namespace: argocd
 spec:
   encryptedData:
-    password: AgB0kbrfO80trhtxNtMCmZCq3X8oF9iJ3ioCbder0+GAmUyzwKT4AoQvDQWDzVZfz7Y7PIGQHUD630UHGbzkjkTk1MM/iKo3xlUnipxb+EioAA8sroI6CACbca8UKRI91XSKKJKJoqd0zwHCvut7WtvjD1LhrtVmC1SCIV6JMp/ClrlCRCZpqRcVaQTDlEMeuiWgBJTCutppig4YlkeD6AmVmPjL9svl7gGfgMJ2+P2i0C2Rl5tVD2nhsWPUWiId3UsCsdXVEUrDXE1xbEB2RhvNKqkuhSdj0HTJerePFgBKaRbxHkTExySDla48u9zH8xBjX89SC5ZsQWyMbCojt1uMNlkdABgX/T/FFM1U7BDhDBdvnPoOeRfxhGHgNiBwmme+OjBhqClrEPVJlk3+svPFbRq01TttF6ELOAa//qSvoReE+kTzkJ3cq77yaQBNyWGygI+mOQwV1bNrtAmkCIBsglnx8e3nVoBoho+YSN7YTcyFbOvB5rpo0QVI8aUVujtgtyKmuM88tlEaMIwAFxcqtH+VxjYPE+DijmRFfpvAWT6AhMzjbu80b6OBIY3MTqyybryFnpMOfT1mvZfm/QseDYKSpgZm+w5XN4kmQiY7ghwgr8p+WDA9yJZRGPmhyG1T8PIji2v8ghSZtdkavRZyxmu5nwnAsqJ4qsWwCnRPjgJYt5V3e14/hIyBRJiUAT3ZDjYKRY9HIDubftfT7psvUDe/XqrbxGhQ
+    password: AgBx/BOr5TJQNPsVo5NP7lEcs6wnMB8a0GaaEkQD2EOZTgySN67zv8ZkZJlwtGaRHzf/Kuf4mzUG9G+vK3mLi73jK9gjfp+iN+sbpxCDS7jhbAcSsob9B7GBPJigT6kT5DiplDhLwT/F5gg1uWdGhUBRgLEgkG/MTGZcq2FN+wZNcA6wdnCGTZP2L7dHtlZGEkMMhf4+EHK+9GZmDeaAqGWk4HD/9mbHs3DbfozDLL2bOkpY/KyOqtDGChfZyJmLEZqMHlzR+gzLO5x0OdNZW0JOlbkxPRX1JUmi+Qnf4xb4/IpSyryVHnsShDboX+42JogPU71RhmlTBY5gAnj3lUoLOLoIB0XGX6K1ZdWjVQZ8Vn3TrJdjFsiJYtS+3w4/+gvRlTLKwExvoSsJDPsVAYW+uLe+TUQjtCLESrhsraBLITj3ZDkE3HxzsDbsaNGUETT5G9Nw+gYNlvHNv6RUKiLyR7Z6mY/v1PpUpZw1ZmcQagjYMClVcdap2gq6gjrZurs8DRmQPX8ha2ZwSpm0DReMGoPPdcfilrA6SPQUvnKgvIRIQvlV7V1VdqjPEzsd6Fy78s4aa8cvWmTkjQd21GM709VWBXLJ76p4SAmFHqMXciXDIbJeqJP3hxCUkjkoijGFuqPJb47NV5mt32MrHQhwaf+VLmAIl7JabR3+msLJxZjkyamEZYHKiTPblQr9ehAN0Zb70eK1Xq3T6zZODn0dYZMuz/IFbHVVMpppyJ0/NkfgWh3rFKUNuUmmDmyAbgpH0MU=
   template:
     metadata:
       labels:
@@ -17,4 +17,4 @@ spec:
     data:
       type: git
       url: https://gitlab.ops.last-try.org
-      username: argocd-green
+      username: oauth2
