@@ -10,9 +10,9 @@ data:
   # Default policy: deny all by default
   policy.default: role:readonly
 
-  # OIDC SSO users from hitchai-app org get admin access
+  # OIDC SSO users from hitchai-app ops team get admin access
   policy.oidc.csv: |
-    g, hitchai-app:*, role:admin
+    g, hitchai-app:ops, role:admin
 
   # Agent debugging role (Option B: Read + Emergency Fix)
   # Uses composable policy keys - ArgoCD auto-concatenates policy.*.csv
