@@ -21,7 +21,6 @@ data:
       - profile
       - email
       - groups
-    usernameClaim: preferred_username
 
   # Agent account
   accounts.agent-flawless: apiKey,login
