@@ -67,12 +67,6 @@ runners:
           mount_path = "/certs/client"
           medium = "Memory"
 
-        # DinD service container
-        # Automatically started for jobs that need Docker
-        [[runners.kubernetes.services]]
-          name = "docker"
-          alias = "docker"
-
         [runners.kubernetes.pod_labels]
           "app.kubernetes.io/name" = "gitlab-runner-job"
           "gitlab-runner" = "true"
