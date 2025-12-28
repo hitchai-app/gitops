@@ -27,6 +27,11 @@ runners:
         image = "alpine:latest"
         privileged = true
 
+        # Set DOCKER_HOST for docker:dind services
+        # Services are accessible via their service name (e.g., tcp://docker:2376 for TLS)
+        # Docs: https://docs.gitlab.com/runner/install/environment_variables_in_helm_charts.html
+        environment = ["DOCKER_HOST=tcp://docker:2376"]
+
         # Poll interval for new jobs
         poll_interval = 3
         poll_timeout = 180
