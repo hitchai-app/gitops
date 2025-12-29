@@ -307,6 +307,10 @@ spec:
         storage:
           secret: registry-storage
           key: config
+          # Disable storage redirects to avoid exposing internal MinIO hostname
+          # Registry proxies uploads instead of redirecting clients to storage backend
+          redirect:
+            disable: true
         maintenance:
           uploadPurging:
             enabled: true
