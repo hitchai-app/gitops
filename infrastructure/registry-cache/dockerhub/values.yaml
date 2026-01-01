@@ -80,6 +80,11 @@ configData:
       blobdescriptor: inmemory
     delete:
       enabled: true
+  http:
+    debug:
+      addr: :5001
+      prometheus:
+        enabled: true
 
 # Prometheus metrics and monitoring
 # Documentation: https://docs.docker.com/registry/configuration/#prometheus
