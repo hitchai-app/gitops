@@ -11,6 +11,12 @@
 
 replicaCount: 1
 
+# Add heritage label to pods so ServiceMonitor can find them
+# Workaround for Helm chart bug: ServiceMonitor selector requires heritage=Helm
+# but deployment template doesn't add it to pods
+podLabels:
+  heritage: Helm
+
 image:
   repository: registry
   tag: "2.8.3"
@@ -82,10 +88,6 @@ metrics:
   port: 5001
   serviceMonitor:
     enabled: true
-    selector:
-      matchLabels:
-        app: docker-registry
-        release: dockerhub-cache
     labels:
       # Label for prometheus-operator to discover this ServiceMonitor
       release: kube-prometheus-stack
