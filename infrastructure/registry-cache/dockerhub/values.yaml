@@ -82,6 +82,10 @@ metrics:
   port: 5001
   serviceMonitor:
     enabled: true
+    selector:
+      matchLabels:
+        app: docker-registry
+        release: dockerhub-cache
     labels:
       # Label for prometheus-operator to discover this ServiceMonitor
       release: kube-prometheus-stack
