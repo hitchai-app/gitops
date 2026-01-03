@@ -101,6 +101,13 @@ config:
       name: 'GlitchTip'
       secretEnv: DEX_CLIENT_SECRET_GLITCHTIP
 
+    # OAuth2 Proxy for Green Admin
+    - id: oauth2-proxy-green-admin
+      redirectURIs:
+        - 'https://admin.green.ops.last-try.org/oauth2/callback'
+      name: 'Green Admin OAuth2 Proxy'
+      secretEnv: DEX_CLIENT_SECRET_GREEN_ADMIN
+
   # Static users for local authentication (bcrypt hashed passwords)
   # Generate hash: htpasswd -bnBC 10 "" 'password' | tr -d ':\n' | sed 's/$2y/$2a/'
   # Note: Bcrypt hashes are safe in git (they're already hashed)
@@ -174,6 +181,11 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: glitchtip-client-secret
+  - name: DEX_CLIENT_SECRET_GREEN_ADMIN
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: green-admin-client-secret
 
 service:
   type: ClusterIP
