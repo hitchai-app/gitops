@@ -11,6 +11,20 @@
 # GitLab server URL
 gitlabUrl: https://gitlab.ops.last-try.org
 
+# Environment variables for runner manager (cache credentials)
+# Secret replicated from minio-infra via kubernetes-replicator
+envVars:
+  - name: CACHE_S3_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: minio-infra-config
+        key: accesskey
+  - name: CACHE_S3_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: minio-infra-config
+        key: secretkey
+
 # Runner token from sealed secret
 # Create via: GitLab Admin > CI/CD > Runners > New instance runner
 runners:
@@ -79,6 +93,20 @@ runners:
         # Environment variables for job containers
         [runners.kubernetes.pod_annotations]
           "cluster-autoscaler.kubernetes.io/safe-to-evict" = "false"
+
+      # Distributed cache using MinIO (shared minio-infra tenant)
+      # Credentials from environment variables (injected via envVars)
+      [runners.cache]
+        Type = "s3"
+        Path = "runner"
+        Shared = true
+        [runners.cache.s3]
+          ServerAddress = "minio.minio-infra.svc.cluster.local:80"
+          BucketName = "gitlab-runner-cache"
+          BucketLocation = "us-east-1"
+          Insecure = true
+          AccessKey = "$CACHE_S3_ACCESS_KEY"
+          SecretKey = "$CACHE_S3_SECRET_KEY"
 
 # Concurrent jobs
 concurrent: 4
