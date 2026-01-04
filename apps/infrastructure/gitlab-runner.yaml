@@ -28,12 +28,19 @@ spec:
       targetRevision: HEAD
       ref: values
 
-    # Sealed secret with runner token
+    # Sealed secrets (runner token)
     - repoURL: https://github.com/hitchai-app/gitops.git
       targetRevision: HEAD
       path: infrastructure/gitlab-runner
       directory:
         include: "*-sealed.yaml"
+
+    # RBAC resources (ClusterRoleBindings)
+    - repoURL: https://github.com/hitchai-app/gitops.git
+      targetRevision: HEAD
+      path: infrastructure/gitlab-runner
+      directory:
+        include: "clusterrolebinding-*.yaml"
 
   destination:
     server: https://kubernetes.default.svc
