@@ -9,11 +9,12 @@ spec:
   groups:
     - name: disk-custom
       rules:
-        # Warning: Less than 20% free (BEFORE kubelet's ~15% eviction threshold)
+        # Warning: Less than 20% free (BEFORE kubelet eviction threshold)
+        # Actual threshold varies by kubelet config; our cluster uses ~15% (32GB on 214GB disk)
         - alert: NodeDiskSpaceLow
           annotations:
             summary: "Node {{ $labels.node }} disk space low (< 20% free)"
-            description: "Node {{ $labels.node }} has only {{ printf \"%.1f\" $value }}% disk space remaining. Kubelet eviction threshold is ~15%."
+            description: "Node {{ $labels.node }} has only {{ printf \"%.1f\" $value }}% disk space remaining."
           expr: |
             100 - (
               max by (node) (
