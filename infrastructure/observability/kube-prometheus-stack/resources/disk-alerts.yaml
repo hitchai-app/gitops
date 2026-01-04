@@ -1,0 +1,37 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: disk-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: disk-custom
+      rules:
+        # Warning: Less than 20% free (BEFORE kubelet's ~15% eviction threshold)
+        - alert: NodeDiskSpaceLow
+          annotations:
+            summary: "Node {{ $labels.node }} disk space low (< 20% free)"
+            description: "Node {{ $labels.node }} has only {{ printf \"%.1f\" $value }}% disk space remaining. Kubelet eviction threshold is ~15%."
+          expr: |
+            100 - (
+              max by (node) (
+                node_filesystem_avail_bytes{mountpoint="/", fstype!="tmpfs"}
+                / node_filesystem_size_bytes{mountpoint="/", fstype!="tmpfs"}
+              ) * 100
+            ) > 80
+          for: 5m
+          labels:
+            severity: warning
+
+        # Critical: Kubelet reports DiskPressure condition
+        - alert: NodeDiskPressure
+          annotations:
+            summary: "Node {{ $labels.node }} has DiskPressure"
+            description: "Kubelet on node {{ $labels.node }} is reporting DiskPressure. Pods may be evicted."
+          expr: |
+            kube_node_status_condition{condition="DiskPressure", status="true"} == 1
+          for: 1m
+          labels:
+            severity: critical
