@@ -101,10 +101,11 @@ config:
       name: 'GlitchTip'
       secretEnv: DEX_CLIENT_SECRET_GLITCHTIP
 
-    # OAuth2 Proxy for Green Admin
+    # OAuth2 Proxy for Green Admin (shared across stage/prod/PRs)
+    # Single callback URL - oauth2-proxy handles redirect back to original URL
     - id: oauth2-proxy-green-admin
       redirectURIs:
-        - 'https://admin.green.ops.last-try.org/oauth2/callback'
+        - 'https://oauth.green.ops.last-try.org/oauth2/callback'
       name: 'Green Admin OAuth2 Proxy'
       secretEnv: DEX_CLIENT_SECRET_GREEN_ADMIN
 
