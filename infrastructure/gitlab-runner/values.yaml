@@ -13,17 +13,16 @@ gitlabUrl: https://gitlab.ops.last-try.org
 
 # Environment variables for runner manager (cache credentials)
 # Secret replicated from minio-infra via kubernetes-replicator
-envVars:
-  - name: CACHE_S3_ACCESS_KEY
-    valueFrom:
-      secretKeyRef:
-        name: minio-infra-config
-        key: accesskey
-  - name: CACHE_S3_SECRET_KEY
-    valueFrom:
-      secretKeyRef:
-        name: minio-infra-config
-        key: secretkey
+# Docs: https://docs.gitlab.com/runner/install/kubernetes_helm_chart_configuration/#additional-environment-variables
+extraEnvFrom:
+  CACHE_S3_ACCESS_KEY:
+    secretKeyRef:
+      name: minio-infra-config
+      key: accesskey
+  CACHE_S3_SECRET_KEY:
+    secretKeyRef:
+      name: minio-infra-config
+      key: secretkey
 
 # Runner token from sealed secret
 # Create via: GitLab Admin > CI/CD > Runners > New instance runner
@@ -95,7 +94,7 @@ runners:
           "cluster-autoscaler.kubernetes.io/safe-to-evict" = "false"
 
       # Distributed cache using MinIO (shared minio-infra tenant)
-      # Credentials read from CACHE_S3_ACCESS_KEY/SECRET_KEY env vars (injected via envVars)
+      # Credentials read from CACHE_S3_ACCESS_KEY/SECRET_KEY env vars (injected via extraEnvFrom)
       # Docs: https://docs.gitlab.com/runner/configuration/advanced-configuration/#the-runnerscaches3-section
       [runners.cache]
         Type = "s3"
