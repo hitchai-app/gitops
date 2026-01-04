@@ -1,0 +1,46 @@
+---
+# One-time job to create gitlab-runner-cache bucket
+# Uses mc (MinIO Client) to create bucket if it doesn't exist
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-gitlab-runner-cache-bucket
+  namespace: minio-infra
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: mc
+          image: minio/mc:RELEASE.2024-11-21T17-21-54Z
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              # Source credentials from config.env
+              source /config/config.env
+              # Configure mc alias
+              mc alias set infra http://minio.minio-infra.svc.cluster.local:80 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+              # Create bucket (ignore if exists)
+              mc mb --ignore-existing infra/gitlab-runner-cache
+              echo "Bucket gitlab-runner-cache ready"
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      volumes:
+        - name: config
+          secret:
+            secretName: minio-infra-config

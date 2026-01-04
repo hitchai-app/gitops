@@ -339,6 +339,49 @@ The client-secret was preserved (fetched from cluster)
 2. Rotate the exposed secret immediately
 3. Update all sealed secrets files that reference the exposed secret
 
+### Cross-Namespace Secret Replication
+
+The cluster uses [kubernetes-replicator](https://github.com/mittwald/kubernetes-replicator) to share secrets across namespaces without duplicating sealed secret definitions.
+
+**How it works:**
+1. Add annotation to source secret's template metadata
+2. Replicator automatically syncs the secret to target namespaces
+3. Target namespaces reference the replicated secret by name
+
+**Adding replication to a sealed secret:**
+
+```yaml
+# infrastructure/my-app/secret-sealed.yaml
+spec:
+  template:
+    metadata:
+      annotations:
+        # Comma-separated list of target namespaces
+        replicator.v1.mittwald.de/replicate-to: "namespace-a,namespace-b"
+```
+
+**Example: MinIO credentials for GitLab Runner cache**
+
+```yaml
+# infrastructure/minio-infra/config-sealed.yaml
+spec:
+  template:
+    metadata:
+      annotations:
+        replicator.v1.mittwald.de/replicate-to: gitlab-runner
+```
+
+The `minio-infra-config` secret is then available in `gitlab-runner` namespace with the same name.
+
+**When to use replication vs. new sealed secret:**
+- ✅ **Use replication**: Same credentials needed in multiple namespaces (e.g., shared MinIO, shared DB)
+- ❌ **Create new secret**: Different credentials per namespace, namespace-specific configuration
+
+**Viewing replicated secrets:**
+```bash
+kubectl get secrets -A -l replicator.v1.mittwald.de/replicated-from
+```
+
 ## Working with Alerts
 
 The cluster uses Prometheus for metrics and Alertmanager for alert routing.
