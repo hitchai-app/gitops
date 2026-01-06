@@ -15,11 +15,11 @@ githubConfigSecret: "hitchai-app-github-app"
 # Use this in workflows with: runs-on: hitchai-app-runners-lite
 runnerScaleSetName: "hitchai-app-runners-lite"
 
-# Scaling
-# Lightweight runner strategy: 12 concurrent runners (no DinD overhead)
+# Scaling (reduced from 12 to 1 to lower ephemeral storage pressure)
+# Lightweight runner strategy: minimal concurrent runners
 # Per-pod: ~4Gi limit (runner only)
-# 12 runners × 4Gi = 48Gi (38% of 128GB cluster)
-maxRunners: 12
+# 1 runner × 4Gi = 4Gi
+maxRunners: 1
 
 # Runner pod template
 # Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller
