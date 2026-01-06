@@ -1,0 +1,54 @@
+# R2 Bucket for etcd Backups
+#
+# Creates Cloudflare R2 bucket using Terraform provider.
+# Bucket stores automated etcd snapshots for disaster recovery.
+#
+# Docs: https://developers.cloudflare.com/r2/examples/terraform/
+apiVersion: tf.upbound.io/v1beta1
+kind: Workspace
+metadata:
+  name: r2-etcd-backups
+spec:
+  providerConfigRef:
+    name: cloudflare
+  forProvider:
+    source: Inline
+    module: |
+      terraform {
+        required_providers {
+          cloudflare = {
+            source  = "cloudflare/cloudflare"
+            version = "~> 5.0"
+          }
+        }
+      }
+
+      variable "cloudflare_api_token" {
+        type      = string
+        sensitive = true
+      }
+
+      variable "cloudflare_account_id" {
+        type = string
+      }
+
+      provider "cloudflare" {
+        api_token = var.cloudflare_api_token
+      }
+
+      resource "cloudflare_r2_bucket" "etcd_backups" {
+        account_id = var.cloudflare_account_id
+        name       = "etcd-backups"
+        location   = "weur"
+      }
+
+      output "bucket_name" {
+        value = cloudflare_r2_bucket.etcd_backups.name
+      }
+
+    varFiles:
+    - source: SecretKey
+      secretKeyRef:
+        namespace: crossplane-system
+        name: cloudflare-credentials
+        key: credentials.json
