@@ -56,11 +56,12 @@ spec:
               echo "Creating etcd snapshot..."
               SNAPSHOT_FILE="/tmp/etcd-snapshot-$(date +%Y%m%d-%H%M%S).db"
 
+              # Use healthcheck-client cert (has clientAuth), not server cert (serverAuth only)
               ETCDCTL_API=3 etcdctl snapshot save "${SNAPSHOT_FILE}" \
                 --endpoints=https://127.0.0.1:2379 \
                 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
-                --cert=/etc/kubernetes/pki/etcd/server.crt \
-                --key=/etc/kubernetes/pki/etcd/server.key
+                --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+                --key=/etc/kubernetes/pki/etcd/healthcheck-client.key
 
               # Verify snapshot
               ETCDCTL_API=3 etcdctl snapshot status "${SNAPSHOT_FILE}" --write-out=table
