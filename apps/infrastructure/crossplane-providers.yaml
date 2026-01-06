@@ -1,8 +1,9 @@
-# Crossplane Providers and R2 Configuration
+# Crossplane Providers and Cloudflare Resources
 #
-# Manages:
-# - Terraform provider for Cloudflare R2 (no native R2 support yet)
-# - R2 bucket for etcd backups
+# Manages external infrastructure via Terraform provider:
+# - Cloudflare R2 buckets
+# - Cloudflare Load Balancers (future)
+# - Cloudflare DNS (future)
 #
 # Depends on: crossplane (operator must be running first)
 apiVersion: argoproj.io/v1alpha1
