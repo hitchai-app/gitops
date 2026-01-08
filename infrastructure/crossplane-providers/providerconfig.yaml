@@ -5,16 +5,12 @@
 #
 # Required secret keys:
 # - api-token: Cloudflare API token with R2:Edit permission
+#
+# Account ID is hardcoded in workspace YAMLs (not sensitive)
 apiVersion: tf.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:
   name: cloudflare
 spec:
-  # Credentials from Kubernetes secret
-  credentials:
-  - filename: cloudflare.tfvars.json
-    source: Secret
-    secretRef:
-      namespace: crossplane-system
-      name: cloudflare-credentials
-      key: credentials.json
+  # No global credentials - each Workspace references secrets via vars
+  configuration: Remote

@@ -3,33 +3,30 @@
 ## Required Secret: etcd-backup-r2-credentials
 
 Create R2 API token for the etcd-backups bucket:
-1. Cloudflare Dashboard → R2 → Manage R2 API Tokens
-2. Create API Token
-3. Permissions: Object Read & Write
-4. Specify bucket: etcd-backups (after Crossplane creates it)
+1. Wait for Crossplane to create the `etcd-backups` bucket
+2. Cloudflare Dashboard → R2 → Manage R2 API Tokens
+3. Create API Token
+4. Permissions: Object Read & Write
+5. Specify bucket: etcd-backups
 
 ## Create the Secret
 
 ```bash
-# Get from Cloudflare R2 API Tokens page
-R2_ACCESS_KEY_ID="your-access-key-id"
-R2_SECRET_ACCESS_KEY="your-secret-access-key"
-# Format: https://<account-id>.r2.cloudflarestorage.com
-R2_ENDPOINT="https://your-account-id.r2.cloudflarestorage.com"
+.tmp/seal-etcd-backup-credentials.sh
+```
 
-# Create and seal the secret
+Or manually:
+```bash
 kubectl create secret generic etcd-backup-r2-credentials \
   --namespace=kube-system \
-  --from-literal=access-key-id="${R2_ACCESS_KEY_ID}" \
-  --from-literal=secret-access-key="${R2_SECRET_ACCESS_KEY}" \
-  --from-literal=endpoint-url="${R2_ENDPOINT}" \
+  --from-literal=access-key-id="YOUR_ACCESS_KEY_ID" \
+  --from-literal=secret-access-key="YOUR_SECRET_ACCESS_KEY" \
   --dry-run=client -o yaml | \
   kubeseal --cert .sealed-secrets-pub.pem --format yaml \
   > infrastructure/etcd-backup/r2-credentials-sealed.yaml
-
-# Clean up (unset variables)
-unset R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_ENDPOINT
 ```
+
+Note: R2 endpoint is hardcoded in cronjob.yaml (not sensitive).
 
 ## Verify
 
@@ -47,11 +44,10 @@ kubectl logs -n kube-system -l job-name=etcd-backup-manual -f
 
 ## Recovery
 
-To restore from backup:
 ```bash
 # Download snapshot
 aws s3 cp s3://etcd-backups/etcd-snapshot-YYYYMMDD-HHMMSS.db /tmp/snapshot.db \
-  --endpoint-url=https://your-account-id.r2.cloudflarestorage.com
+  --endpoint-url=https://7c6222bba0337fbbad7876ad40c9ef59.r2.cloudflarestorage.com
 
 # Restore (on new/rebuilt control plane)
 ETCDCTL_API=3 etcdctl snapshot restore /tmp/snapshot.db \

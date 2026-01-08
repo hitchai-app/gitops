@@ -91,10 +91,7 @@ spec:
                   name: etcd-backup-r2-credentials
                   key: secret-access-key
             - name: R2_ENDPOINT
-              valueFrom:
-                secretKeyRef:
-                  name: etcd-backup-r2-credentials
-                  key: endpoint-url
+              value: "https://7c6222bba0337fbbad7876ad40c9ef59.r2.cloudflarestorage.com"
             - name: AWS_DEFAULT_REGION
               value: "auto"
 

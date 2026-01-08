@@ -28,16 +28,12 @@ spec:
         sensitive = true
       }
 
-      variable "cloudflare_account_id" {
-        type = string
-      }
-
       provider "cloudflare" {
         api_token = var.cloudflare_api_token
       }
 
       resource "cloudflare_r2_bucket" "etcd_backups" {
-        account_id = var.cloudflare_account_id
+        account_id = "7c6222bba0337fbbad7876ad40c9ef59"
         name       = "etcd-backups"
         location   = "weur"
       }
@@ -46,9 +42,10 @@ spec:
         value = cloudflare_r2_bucket.etcd_backups.name
       }
 
-    varFiles:
-    - source: SecretKey
+    vars:
+    - key: cloudflare_api_token
+      value: ""
       secretKeyRef:
         namespace: crossplane-system
         name: cloudflare-credentials
-        key: credentials.json
+        key: api-token
