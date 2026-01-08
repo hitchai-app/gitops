@@ -86,9 +86,9 @@ spec:
         sensitive = true
       }
 
-    vars:
-    - key: cloudflare_api_token
-      value: ""
+    # Pass secret via TF_VAR_ environment variable (vars field doesn't support secretKeyRef)
+    env:
+    - name: TF_VAR_cloudflare_api_token
       secretKeyRef:
         namespace: crossplane-system
         name: cloudflare-credentials
