@@ -106,8 +106,8 @@ runners:
           BucketLocation = "us-east-1"
           Insecure = true
 
-# Concurrent jobs (reduced from 4 to 2 to lower ephemeral storage pressure)
-concurrent: 2
+# Concurrent jobs
+concurrent: 4
 
 # Check interval for new jobs (seconds)
 checkInterval: 10
