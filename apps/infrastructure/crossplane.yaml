@@ -1,0 +1,47 @@
+# Crossplane - Kubernetes-native infrastructure provisioning
+#
+# Crossplane extends Kubernetes to manage external infrastructure (cloud resources)
+# using the same declarative approach as native K8s resources.
+#
+# Docs: https://docs.crossplane.io/latest/
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.crossplane.io/stable
+    chart: crossplane
+    targetRevision: 2.1.3
+    helm:
+      valuesObject:
+        # Resource limits for Crossplane core
+        resourcesCrossplane:
+          requests:
+            cpu: 50m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+        # Resource limits for RBAC manager
+        resourcesRBACManager:
+          requests:
+            cpu: 25m
+            memory: 64Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

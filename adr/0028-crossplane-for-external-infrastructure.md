@@ -1,35 +1,99 @@
 # 0028. Crossplane for External Infrastructure
 
-**Status**: Proposed
+**Status**: Accepted
 
 **Date**: 2025-12-11
 
+**Updated**: 2026-01-08
+
 ## Context
 
-Future need for external cloud resources (R2 backups, AWS S3, DNS). Current GitOps approach doesn't cover external provisioning, leading to split tooling (ArgoCD + Terraform/manual).
+Need for external cloud resources (R2 backups, AWS S3, DNS). Current GitOps approach doesn't cover external provisioning, leading to split tooling (ArgoCD + Terraform/manual).
 
 ## Decision
 
-**Proposed**: Adopt Crossplane for external infrastructure, keeping everything in GitOps.
+Adopt Crossplane with provider-terraform for external infrastructure, keeping everything in GitOps.
 
-Crossplane provisions cloud resources via K8s CRDs:
+### Provider Choice: provider-terraform
+
+Use `provider-terraform` (Upbound) instead of native Cloudflare provider:
+- Leverages existing Terraform modules and providers
+- Better documentation and community support
+- `cloudflare_api_token` resource for programmatic R2 credentials
+
+### Auto-Provisioning Secrets
+
+**Key pattern**: Use `writeConnectionSecretToRef` to automatically create Kubernetes secrets from Terraform outputs.
+
 ```yaml
-apiVersion: s3.aws.upbound.io/v1beta1
-kind: Bucket
+apiVersion: tf.upbound.io/v1beta1
+kind: Workspace
 metadata:
-  name: longhorn-backups
+  name: r2-etcd-backups
 spec:
+  # Terraform outputs automatically become secret data
+  writeConnectionSecretToRef:
+    namespace: kube-system
+    name: etcd-backup-r2-credentials
+
   forProvider:
-    region: eu-central-1
+    source: Inline
+    module: |
+      # Create R2 bucket
+      resource "cloudflare_r2_bucket" "backups" { ... }
+
+      # Create scoped API token
+      resource "cloudflare_api_token" "backup" { ... }
+
+      # Outputs become secret keys
+      output "access-key-id" {
+        value     = cloudflare_api_token.backup.id
+        sensitive = true
+      }
+      output "secret-access-key" {
+        value     = sha256(cloudflare_api_token.backup.value)
+        sensitive = true
+      }
+```
+
+This eliminates manual secret sealing - Crossplane handles the entire flow:
+1. Creates external resource (R2 bucket)
+2. Creates credentials (API token)
+3. Provisions Kubernetes secret automatically
+
+### R2 S3-Compatible Credentials
+
+Cloudflare R2 uses derived S3 credentials:
+- **Access Key ID** = API token ID
+- **Secret Access Key** = SHA-256 hash of API token value
+
+The `cloudflare_api_token` resource can be scoped to specific buckets:
+```hcl
+data "cloudflare_api_token_permission_groups" "all" {}
+
+resource "cloudflare_api_token" "backup" {
+  name = "etcd-backup-r2"
+  policies = [{
+    permission_groups = [
+      { id = data.cloudflare_api_token_permission_groups.all.r2["Workers R2 Storage Bucket Item Write"] }
+    ]
+    resources = {
+      "com.cloudflare.edge.r2.bucket.${account_id}_default_${bucket_name}" = "*"
+    }
+  }]
+}
 ```
 
 ## Alternatives Considered
 
-### Terraform
+### Terraform (standalone)
 Rejected: State file management, no continuous reconciliation, breaks GitOps model.
 
-### Manual Provisioning
-Rejected: Not reproducible, no audit trail.
+### Manual Provisioning + Sealed Secrets
+Rejected: Requires manual steps after resource creation.
+
+### Crossplane Kubernetes Provider for Secrets
+Considered: Would require additional provider and RBAC. `writeConnectionSecretToRef` is native to provider-terraform.
 
 ### Cloud-Specific Operators (ACK, etc.)
 Rejected: Different operator per cloud, inconsistent APIs.
@@ -41,6 +105,7 @@ Rejected: Different operator per cloud, inconsistent APIs.
 | K8s workloads/operators | ArgoCD |
 | Internal storage (MinIO) | ArgoCD + Operator |
 | External storage (R2/S3) | ArgoCD + Crossplane |
+| External credentials | Crossplane (auto-provisioned) |
 | K8s cluster itself | Terraform (bootstrap) |
 
 ## Consequences
@@ -48,18 +113,25 @@ Rejected: Different operator per cloud, inconsistent APIs.
 **Positive:**
 - Unified GitOps (all infra in Git)
 - Continuous reconciliation
-- No state file
+- No state file concerns (managed by Crossplane)
+- Zero manual steps for credentials
+- Scoped permissions (principle of least privilege)
 
 **Negative:**
-- Another operator
-- Provider maturity varies
+- Another operator to maintain
+- Terraform state stored in K8s secrets
+- Provider-terraform timeout limits (20m default)
 
-## When to Implement
+## Implementation Notes
 
-**Trigger**: First external cloud resource needed (R2 backup bucket).
+- Crossplane credentials (master token) sealed via ADR 0009
+- Child tokens created automatically with minimal scope
+- Use `data.cloudflare_api_token_permission_groups` to look up permission IDs dynamically
 
 ## References
 
 - [Crossplane Docs](https://docs.crossplane.io/)
-- [Upbound Providers](https://marketplace.upbound.io/providers)
+- [provider-terraform](https://github.com/crossplane-contrib/provider-terraform)
+- [Cloudflare R2 API Tokens](https://developers.cloudflare.com/r2/api/tokens/)
+- ADR 0009: Secrets Management Strategy
 - ADR 0027: Shared MinIO Tenant

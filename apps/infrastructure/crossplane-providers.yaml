@@ -1,0 +1,30 @@
+# Crossplane Providers and Cloudflare Resources
+#
+# Manages external infrastructure via Terraform provider:
+# - Cloudflare R2 buckets
+# - Cloudflare Load Balancers (future)
+# - Cloudflare DNS (future)
+#
+# Depends on: crossplane (operator must be running first)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-providers
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops.git
+    targetRevision: HEAD
+    path: infrastructure/crossplane-providers
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true

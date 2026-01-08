@@ -1,0 +1,88 @@
+# R2 Bucket and Credentials for etcd Backups
+#
+# Creates Cloudflare R2 bucket and API token using Terraform provider.
+# Automatically provisions S3-compatible credentials as Kubernetes secret.
+#
+# Docs: https://developers.cloudflare.com/r2/api/tokens/
+apiVersion: tf.upbound.io/v1beta1
+kind: Workspace
+metadata:
+  name: r2-etcd-backups
+spec:
+  providerConfigRef:
+    name: cloudflare
+
+  # Terraform outputs automatically become secret data
+  writeConnectionSecretToRef:
+    namespace: kube-system
+    name: etcd-backup-r2-credentials
+
+  forProvider:
+    source: Inline
+    module: |
+      terraform {
+        required_providers {
+          cloudflare = {
+            source  = "cloudflare/cloudflare"
+            version = "~> 5.0"
+          }
+        }
+      }
+
+      variable "cloudflare_api_token" {
+        type      = string
+        sensitive = true
+      }
+
+      variable "account_id" {
+        type    = string
+        default = "7c6222bba0337fbbad7876ad40c9ef59"
+      }
+
+      provider "cloudflare" {
+        api_token = var.cloudflare_api_token
+      }
+
+      # R2 bucket for etcd snapshots
+      resource "cloudflare_r2_bucket" "etcd_backups" {
+        account_id = var.account_id
+        name       = "etcd-backups"
+        location   = "weur"
+      }
+
+      # Look up R2 permission group IDs dynamically
+      data "cloudflare_api_token_permission_groups" "all" {}
+
+      # API token with R2 write access for etcd backup CronJob
+      resource "cloudflare_api_token" "etcd_backup" {
+        name = "etcd-backup-r2"
+
+        policies = [{
+          effect = "allow"
+          permission_groups = [
+            { id = data.cloudflare_api_token_permission_groups.all.r2["Workers R2 Storage Bucket Item Write"] }
+          ]
+          resources = {
+            "com.cloudflare.edge.r2.bucket.${var.account_id}_default_${cloudflare_r2_bucket.etcd_backups.name}" = "*"
+          }
+        }]
+      }
+
+      # Outputs become secret keys via writeConnectionSecretToRef
+      output "access-key-id" {
+        value     = cloudflare_api_token.etcd_backup.id
+        sensitive = true
+      }
+
+      output "secret-access-key" {
+        value     = sha256(cloudflare_api_token.etcd_backup.value)
+        sensitive = true
+      }
+
+    vars:
+    - key: cloudflare_api_token
+      value: ""
+      secretKeyRef:
+        namespace: crossplane-system
+        name: cloudflare-credentials
+        key: api-token

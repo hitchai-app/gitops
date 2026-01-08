@@ -1,0 +1,117 @@
+# etcd Backup CronJob
+#
+# Automated etcd snapshots to Cloudflare R2 for disaster recovery.
+# Runs every 6 hours on the control plane node.
+#
+# Recovery: Use `etcdctl snapshot restore` with the downloaded snapshot.
+# Docs: https://etcd.io/docs/v3.5/op-guide/recovery/
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: etcd-backup
+  namespace: kube-system
+spec:
+  # Every 6 hours
+  schedule: "0 */6 * * *"
+  # Keep last 3 job runs for debugging
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      # Auto-cleanup after 1 hour
+      ttlSecondsAfterFinished: 3600
+      template:
+        spec:
+          # Must run on control plane to access etcd
+          hostNetwork: true
+          nodeSelector:
+            node-role.kubernetes.io/control-plane: ""
+          tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+          - key: node-role.kubernetes.io/master
+            operator: Exists
+            effect: NoSchedule
+
+          containers:
+          - name: backup
+            # Alpine with etcdctl and aws-cli
+            image: alpine:3.21
+            command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+
+              echo "Installing dependencies..."
+              apk add --no-cache aws-cli curl
+
+              # Download etcdctl
+              ETCD_VERSION="v3.5.17"
+              curl -sL https://github.com/etcd-io/etcd/releases/download/${ETCD_VERSION}/etcd-${ETCD_VERSION}-linux-amd64.tar.gz | \
+                tar -xzf - --strip-components=1 -C /usr/local/bin etcd-${ETCD_VERSION}-linux-amd64/etcdctl
+
+              echo "Creating etcd snapshot..."
+              SNAPSHOT_FILE="/tmp/etcd-snapshot-$(date +%Y%m%d-%H%M%S).db"
+
+              # Use healthcheck-client cert (has clientAuth), not server cert (serverAuth only)
+              ETCDCTL_API=3 etcdctl snapshot save "${SNAPSHOT_FILE}" \
+                --endpoints=https://127.0.0.1:2379 \
+                --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+                --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+                --key=/etc/kubernetes/pki/etcd/healthcheck-client.key
+
+              # Verify snapshot
+              ETCDCTL_API=3 etcdctl snapshot status "${SNAPSHOT_FILE}" --write-out=table
+
+              echo "Uploading to R2..."
+              aws s3 cp "${SNAPSHOT_FILE}" \
+                "s3://etcd-backups/$(basename ${SNAPSHOT_FILE})" \
+                --endpoint-url="${R2_ENDPOINT}"
+
+              echo "Cleaning up old backups (keep last 30)..."
+              aws s3 ls "s3://etcd-backups/" --endpoint-url="${R2_ENDPOINT}" | \
+                sort | head -n -30 | \
+                awk '{print $4}' | \
+                xargs -I {} aws s3 rm "s3://etcd-backups/{}" --endpoint-url="${R2_ENDPOINT}" || true
+
+              echo "Backup complete: $(basename ${SNAPSHOT_FILE})"
+
+            env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: etcd-backup-r2-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: etcd-backup-r2-credentials
+                  key: secret-access-key
+            - name: R2_ENDPOINT
+              value: "https://7c6222bba0337fbbad7876ad40c9ef59.r2.cloudflarestorage.com"
+            - name: AWS_DEFAULT_REGION
+              value: "auto"
+
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 500m
+                memory: 256Mi
+
+            volumeMounts:
+            - name: etcd-certs
+              mountPath: /etc/kubernetes/pki/etcd
+              readOnly: true
+
+          volumes:
+          - name: etcd-certs
+            hostPath:
+              path: /etc/kubernetes/pki/etcd
+              type: Directory
+
+          restartPolicy: OnFailure

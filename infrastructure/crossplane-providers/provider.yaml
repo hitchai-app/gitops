@@ -1,0 +1,35 @@
+# Crossplane Terraform Provider
+#
+# Enables managing Terraform resources via Crossplane.
+# Used for Cloudflare R2 since no native Crossplane provider exists.
+#
+# Docs: https://github.com/crossplane-contrib/provider-terraform
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-terraform
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/provider-terraform:v1.0.5
+  # Controller config for resource limits
+  runtimeConfigRef:
+    name: provider-terraform-config
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: DeploymentRuntimeConfig
+metadata:
+  name: provider-terraform-config
+spec:
+  deploymentTemplate:
+    spec:
+      selector: {}
+      template:
+        spec:
+          containers:
+          - name: package-runtime
+            resources:
+              requests:
+                cpu: 50m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 512Mi

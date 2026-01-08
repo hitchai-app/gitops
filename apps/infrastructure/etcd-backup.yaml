@@ -1,0 +1,26 @@
+# etcd Backup CronJob
+#
+# Automated etcd snapshots to Cloudflare R2 every 6 hours.
+# Stores snapshots for disaster recovery.
+#
+# Depends on: R2 bucket created by crossplane-providers
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: etcd-backup
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops.git
+    targetRevision: HEAD
+    path: infrastructure/etcd-backup
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
