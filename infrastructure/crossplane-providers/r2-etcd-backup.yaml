@@ -29,6 +29,12 @@ spec:
             version = "~> 5.0"
           }
         }
+        # Persist state in Kubernetes secret (provider filesystem is ephemeral)
+        backend "kubernetes" {
+          secret_suffix     = "r2-etcd-backups"
+          namespace         = "crossplane-system"
+          in_cluster_config = true
+        }
       }
 
       variable "cloudflare_api_token" {
