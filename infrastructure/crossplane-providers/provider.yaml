@@ -4,20 +4,12 @@
 # Used for Cloudflare R2 since no native Crossplane provider exists.
 #
 # Docs: https://github.com/crossplane-contrib/provider-terraform
-apiVersion: pkg.crossplane.io/v1
-kind: Provider
-metadata:
-  name: provider-terraform
-spec:
-  package: xpkg.upbound.io/crossplane-contrib/provider-terraform:v1.0.5
-  # Controller config for resource limits
-  runtimeConfigRef:
-    name: provider-terraform-config
----
 apiVersion: pkg.crossplane.io/v1beta1
 kind: DeploymentRuntimeConfig
 metadata:
   name: provider-terraform-config
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
 spec:
   deploymentTemplate:
     spec:
@@ -33,3 +25,14 @@ spec:
               limits:
                 cpu: 200m
                 memory: 512Mi
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-terraform
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  package: xpkg.upbound.io/crossplane-contrib/provider-terraform:v1.0.5
+  runtimeConfigRef:
+    name: provider-terraform-config

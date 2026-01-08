@@ -8,6 +8,8 @@ apiVersion: tf.upbound.io/v1beta1
 kind: Workspace
 metadata:
   name: r2-etcd-backups
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   providerConfigRef:
     name: cloudflare
