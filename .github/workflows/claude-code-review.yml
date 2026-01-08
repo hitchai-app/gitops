@@ -128,6 +128,11 @@ jobs:
             - Security vulnerabilities
             - Missing validations or error handling
             - Untested edge cases
+            - **SYNC WAVES** (commonly forgotten/misplaced):
+              - Check if new CRDs need sync waves for bootstrap ordering
+              - Operators/Providers must sync BEFORE resources that depend on their CRDs
+              - Pattern: Wave 0 (secrets) → Wave 1 (operators/CRDs) → Wave 2 (configs) → Wave 3 (resources)
+              - If SkipDryRunOnMissingResource is used, sync waves are REQUIRED for correct ordering
 
             Be skeptical and critical. If something looks wrong, it probably is.
 

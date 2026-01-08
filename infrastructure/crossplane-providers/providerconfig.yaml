@@ -1,12 +1,9 @@
 # Terraform Provider Configuration
 #
-# Configures the Terraform provider with Cloudflare credentials.
-# Credentials stored in sealed secret: cloudflare-credentials
+# Configures the Terraform provider for Cloudflare resources.
+# Uses Kubernetes backend for state storage (default).
 #
-# Required secret keys:
-# - api-token: Cloudflare API token with R2:Edit permission
-#
-# Account ID is hardcoded in workspace YAMLs (not sensitive)
+# Credentials passed via Workspace vars (not global ProviderConfig).
 apiVersion: tf.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:
@@ -14,5 +11,6 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
+  # Use Kubernetes backend (state stored as secrets)
   # No global credentials - each Workspace references secrets via vars
-  configuration: Remote
+  {}
