@@ -72,9 +72,10 @@ spec:
           permission_groups = [
             { id = local.r2_write_permission_id }
           ]
-          resources = {
+          # v5.13+ requires jsonencode() for resources
+          resources = jsonencode({
             "com.cloudflare.edge.r2.bucket.${var.account_id}_default_${cloudflare_r2_bucket.etcd_backups.name}" = "*"
-          }
+          })
         }]
       }
 
