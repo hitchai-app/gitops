@@ -52,8 +52,13 @@ spec:
         location   = "weur"
       }
 
-      # Look up R2 permission group IDs dynamically
-      data "cloudflare_api_token_permission_groups" "all" {}
+      # Look up R2 permission group IDs (v5 uses _list suffix)
+      data "cloudflare_api_token_permission_groups_list" "all" {}
+
+      locals {
+        # Build permission name -> ID map from list result
+        permissions = { for p in data.cloudflare_api_token_permission_groups_list.all.result : p.name => p.id }
+      }
 
       # API token with R2 write access for etcd backup CronJob
       resource "cloudflare_api_token" "etcd_backup" {
@@ -62,7 +67,7 @@ spec:
         policies = [{
           effect = "allow"
           permission_groups = [
-            { id = data.cloudflare_api_token_permission_groups.all.r2["Workers R2 Storage Bucket Item Write"] }
+            { id = local.permissions["Workers R2 Storage Bucket Item Write"] }
           ]
           resources = {
             "com.cloudflare.edge.r2.bucket.${var.account_id}_default_${cloudflare_r2_bucket.etcd_backups.name}" = "*"
