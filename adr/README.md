@@ -113,6 +113,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0033](0033-crossplane-external-infrastructure.md) | Crossplane External Infrastructure | Accepted | 2026-01-08 |
 | [0034](0034-node-naming-convention.md) | Node Naming Convention | Accepted | 2026-01-09 |
 | [0035](0035-cluster-target-architecture.md) | Cluster Target Architecture | Accepted | 2026-01-09 |
+| [0036](0036-hetzner-vswitch-internal-network.md) | Hetzner vSwitch Internal Network | Accepted | 2026-01-09 |
 
 ## When to Create an ADR
 
