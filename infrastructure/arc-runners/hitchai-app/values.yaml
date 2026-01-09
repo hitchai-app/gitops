@@ -15,13 +15,11 @@ githubConfigSecret: "hitchai-app-github-app"
 # Defaults to Helm release name (hitchai-app-runners)
 runnerScaleSetName: "hitchai-app-runners"
 
-# Scaling (reduced from 4 to 1 to lower ephemeral storage pressure)
-# Overcommit strategy: Low requests (512Mi) allow many pods to schedule
-# ResourceQuota (50Gi limits.memory) caps total namespace usage to prevent node exhaustion
-# CRITICAL: ResourceQuota enforces at limits level, not actual usage
-# Current: 12Gi container limit × 1 runner = 12Gi (fits in 50Gi quota)
-# To increase runners: Must increase ResourceQuota first
-maxRunners: 1
+# Scaling: Increased for multi-node cluster (k8s-mn + k8s-02)
+# k8s-02 has 64GB RAM + 1.5TB NVMe - can handle heavy DinD workloads
+# Per pod: ~18Gi (12Gi runner + 6Gi dind)
+# 3 runners × 18Gi = 54Gi (fits on k8s-02 with headroom)
+maxRunners: 3
 
 # Runner pod template
 # Documentation: https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners-with-actions-runner-controller/deploying-runner-scale-sets-with-actions-runner-controller

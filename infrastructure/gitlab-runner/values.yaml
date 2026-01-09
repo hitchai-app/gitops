@@ -106,8 +106,9 @@ runners:
           BucketLocation = "us-east-1"
           Insecure = true
 
-# Concurrent jobs
-concurrent: 4
+# Concurrent jobs - increased for multi-node cluster (k8s-mn + k8s-02)
+# k8s-02 has 64GB RAM, can handle more parallel jobs
+concurrent: 8
 
 # Check interval for new jobs (seconds)
 checkInterval: 10

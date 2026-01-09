@@ -84,8 +84,10 @@ See @adr/README.md for ADR format guidelines.
 ## Cluster Specifications
 
 - Provider: Hetzner
-- Resources: 12 CPU / 128GB RAM / 280GB SSD
-- Nodes: 1 (single node) → scaling to multi-node
+- Nodes: 2
+  - k8s-mn (control-plane): 12 CPU / 128GB RAM / 280GB SSD
+  - k8s-02 (worker): 8 CPU / 64GB RAM / 2x 954GB NVMe
+- Total resources: 20 CPU / 192GB RAM / ~2TB storage
 - Target availability: 99%
 - Domain: `*.ops.last-try.org` (internal infrastructure services)
 
