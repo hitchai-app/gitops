@@ -68,10 +68,11 @@ jobs:
             3. **Verify against official source documentation FIRST** (MANDATORY - see below)
             4. **Verify cluster state** using kubectl if reviewing infrastructure changes
             5. Analyze changes against review criteria
-            6. **Submit clean formal review WITHOUT duplicate content:**
-               - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve` (no --body to avoid duplicates)
-               - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes`
-               - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment`
+            6. **Submit formal review with summary:**
+               - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve --body "Concise summary here"`
+               - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Summary of issues"`
+               - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment --body "Summary"`
+            **Always include review body** - empty reviews are not helpful
 
             **USE SUGGESTION BLOCKS** for actionable fixes (one-click apply):
             ```suggestion
