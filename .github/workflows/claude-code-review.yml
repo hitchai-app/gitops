@@ -49,27 +49,10 @@ jobs:
 
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-
-          # Allow all bots to trigger the review
-          allowed_bots: "*"
-
-          # Use sticky comments for consistent review updates
-          use_sticky_comment: true
-
-          # Allow gh CLI, kubectl, and web tools for PR reviews
-          # kubectl: RBAC enforces read-only access at cluster level (ServiceAccount: github-actions-reviewer)
-          # WebSearch/WebFetch: For verifying against official documentation
-          allowed_tools: |
-            Bash(gh pr:*)
-            Bash(kubectl:*)
-            WebSearch
-            WebFetch
-
-          # Direct prompt for automated review (no @claude mention needed)
-          direct_prompt: |
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
             You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
             CLUSTER ACCESS:
@@ -142,3 +125,7 @@ jobs:
             - COMMENT: For minor suggestions only
 
             CRITICAL: Submit formal review with `gh pr review` - do NOT just post a comment!
+
+          claude_args: '--allowed-tools "Bash(gh pr:*),Bash(kubectl:*),Bash(gh api:*),WebSearch,WebFetch(*)"'
+        env:
+          ANTHROPIC_BASE_URL: ${{ vars.ANTHROPIC_BASE_URL || 'https://api.z.ai/api/anthropic' }}
