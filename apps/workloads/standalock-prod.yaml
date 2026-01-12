@@ -13,7 +13,7 @@ spec:
     path: deploy/overlays/prod
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: standalock
   syncPolicy:
     automated:
       prune: true
