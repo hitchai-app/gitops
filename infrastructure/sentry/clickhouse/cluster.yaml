@@ -11,16 +11,16 @@ spec:
           replicasCount: 1
         settings:
           max_memory_usage: 4000000000
-    # Pin ClickHouse version to avoid schema propagation bug
-    # See: https://github.com/ClickHouse/ClickHouse/issues/89693
-    # Bug affects ClickHouse 25.8.10+, use 25.8.9 or earlier
-    clickhouseVersion: 25.8.9
   templates:
     podTemplates:
       - name: clickhouse
         spec:
           containers:
             - name: clickhouse
+              # Pin ClickHouse version to avoid schema propagation bug
+              # See: https://github.com/ClickHouse/ClickHouse/issues/89693
+              # Bug affects ClickHouse 25.8.10+, use 25.8.9 or earlier
+              image: clickhouse/clickhouse-server:25.8.9
               resources:
                 requests:
                   cpu: 500m
