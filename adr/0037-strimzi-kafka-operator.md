@@ -45,6 +45,12 @@ Deploy **Strimzi Kafka operator** (CNCF incubating).
 
 ## Implementation Notes
 
+**KRaft mode** (Kafka Raft metadata mode):
+- Eliminates ZooKeeper dependency (simpler architecture)
+- Reduced resource overhead (no separate ZooKeeper cluster)
+- Default in Strimzi 0.49+ (our chosen version)
+- Ideal for Sentry's event streaming use case
+
 **TLS Authentication:** Strimzi has excellent native TLS support via operator certificates:
 - Self-signed CA via cert-manager (ClusterIssuer)
 - Operator-managed broker certificates with automatic rotation
