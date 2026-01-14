@@ -1,0 +1,39 @@
+apiVersion: clickhouse.altinity.com/v1
+kind: ClickHouseInstallation
+metadata:
+  name: sentry
+  namespace: sentry-system
+spec:
+  configuration:
+    clusters:
+      - name: sentry
+        layout:
+          replicasCount: 1
+        settings:
+          max_memory_usage: 4000000000
+    # Pin ClickHouse version to avoid schema propagation bug
+    # See: https://github.com/Altinity/clickhouse-operator/issues/898
+    # Bug affects ClickHouse 25.8.10+, use 25.8.9 or earlier
+    clickhouseVersion: 25.8.9
+  templates:
+    podTemplates:
+      - name: clickhouse
+        spec:
+          containers:
+            - name: clickhouse
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 2Gi
+                limits:
+                  cpu: 1000m
+                  memory: 4Gi
+    volumeClaimTemplates:
+      - name: data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: single-replica
+          resources:
+            requests:
+              storage: 50Gi

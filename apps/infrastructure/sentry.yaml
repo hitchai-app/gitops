@@ -1,0 +1,37 @@
+# Sentry self-hosted error tracking
+# Full-featured Sentry with external operators for all stateful services
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sentry
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  sources:
+    # Helm chart from sentry-kubernetes community repo
+    - repoURL: https://sentry-kubernetes.github.io/charts
+      chart: sentry
+      targetRevision: 25.1.0
+      helm:
+        releaseName: sentry
+        valueFiles:
+          - $values/infrastructure/sentry/values.yaml
+
+    # Git repository with values
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      ref: values
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sentry-system
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

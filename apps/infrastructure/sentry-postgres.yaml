@@ -1,0 +1,25 @@
+# CloudNativePG cluster for Sentry
+# PostgreSQL database for Sentry metadata (users, projects, events)
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sentry-postgres
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-20"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops
+    targetRevision: master
+    path: infrastructure/sentry/postgres
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sentry-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

@@ -1,0 +1,31 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: sentry-postgres
+  namespace: sentry-system
+spec:
+  instances: 1
+
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
+
+  bootstrap:
+    initdb:
+      database: sentry
+      owner: sentry
+
+  storage:
+    size: 20Gi
+    storageClass: single-replica
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      memory: 1Gi
+
+  # Backup disabled - Sentry event data is non-critical
+  # Can re-enable backups when cloudnativepg-backup-creds secret available
