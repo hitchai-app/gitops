@@ -2,6 +2,11 @@
 # Uses external databases managed by operators
 hostname: sentry.ops.last-try.org
 
+# Use existing Secret managed by SealedSecret instead of Helm hook
+# This prevents conflict between Helm-created Secret and SealedSecret controller
+sentry:
+  existingSecret: sentry-sentry-secret
+
 # Disable bundled services - using external operators
 clickhouse:
   enabled: false
