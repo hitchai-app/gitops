@@ -1,10 +1,10 @@
 # 0021. Sentry Error Tracking Platform
 
-**Status**: Superseded by [ADR 0022](0022-glitchtip-error-tracking.md)
+**Status**: Proposed
 
 **Date**: 2025-12-04
 
-**Superseded**: 2025-12-04 - Sentry's resource footprint (57 pods, ~6.5GB RAM, Kafka, ClickHouse) proved too heavy for single-node cluster. Replaced with GlitchTip.
+**Updated**: 2026-01-14 - Operator-based approach for all stateful services
 
 ## Context
 
@@ -23,44 +23,31 @@ Team context:
 
 ## Decision
 
-Deploy **Sentry self-hosted** via the community Helm chart (`sentry-kubernetes/charts`) with:
+Deploy **Sentry self-hosted** via community Helm chart (`sentry-kubernetes/charts`) with **external operators for all stateful services**:
 
-1. **External PostgreSQL** via CloudNativePG (dedicated cluster)
-2. **External Valkey** via SAP Valkey Operator (dedicated instance)
-3. **Bundled ClickHouse, Kafka, RabbitMQ** (Sentry-managed)
-4. **Dex OIDC integration** via `sentry-auth-oidc` plugin
+1. **PostgreSQL** via CloudNativePG (dedicated cluster)
+2. **Valkey** via SAP Valkey Operator (dedicated instance)
+3. **ClickHouse** via Altinity operator (dedicated cluster)
+4. **Kafka** via Strimzi operator (KRaft mode, dedicated cluster)
+5. **Dex OIDC integration** via `sentry-auth-oidc` plugin
 
-### Service Integration Strategy
-
-| Service | External? | Rationale |
-|---------|-----------|-----------|
-| PostgreSQL | Yes | Benefits from CloudNativePG (PITR backups, declarative management, proven pattern) |
-| Valkey | Yes | Simple cache, follows existing SAP Valkey Operator pattern |
-| ClickHouse | No | Tight Sentry/Snuba coupling, schema migrations managed by chart, version lock-in |
-| Kafka | No | Sentry-specific Kraft config, topic/consumer coupling, low-volume doesn't justify Strimzi |
-| RabbitMQ | No | Internal task queue only, minimal operational benefit from operator |
+**Rationale**: ADR 0003 - operators for stateful services. Avoid painful migration later.
 
 ## Alternatives Considered
 
-### 1. Managed Sentry (sentry.io)
-- **Pros**: Zero ops, always up-to-date, professional support
-- **Cons**: Data outside cluster, ongoing cost, less control
-- **Why not chosen**: Prefer self-hosted for data locality and cost
+| Option | Decision | Reason |
+|--------|----------|--------|
+| Managed Sentry (sentry.io) | Avoid | Data outside cluster, ongoing cost |
+| GlitchTip | Current | Lighter, but fewer features |
+| Sentry + bundled services | Avoid | Painful migration to operators later |
 
-### 2. External ClickHouse Operator (Altinity)
-- **Pros**: Better backup/restore, monitoring, rolling updates
-- **Cons**: Tight version coupling with Sentry/Snuba, risk of schema mismatch
-- **Why not chosen**: Sentry chart manages schema migrations atomically
+## Why Operators Over Bundled?
 
-### 3. External Kafka Operator (Strimzi)
-- **Pros**: Mature CNCF project, could share Kafka for other workloads
-- **Cons**: Sentry requires specific Kraft configuration, topic coupling
-- **Why not chosen**: Low-volume use case doesn't justify complexity
-
-### 4. GlitchTip (Sentry-compatible alternative)
-- **Pros**: Lighter weight, simpler deployment
-- **Cons**: Fewer features, smaller community, less mature
-- **Why not chosen**: Sentry has better ecosystem and features
+Bundled services (ClickHouse, Kafka in Helm chart) seem simpler initially, but:
+- No independent backups/monitoring
+- Can't share services with other workloads
+- Migrating to operators later = days of downtime
+- Violates ADR 0003 principle
 
 ## Consequences
 

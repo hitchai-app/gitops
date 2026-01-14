@@ -1,0 +1,18 @@
+apiVersion: cache.cs.sap.com/v1alpha1
+kind: Valkey
+metadata:
+  name: sentry
+  namespace: sentry-system
+spec:
+  replicas: 1
+  persistence:
+    enabled: false
+  # TLS configuration
+  tls:
+    secret: sentry-valkey-server-tls
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      memory: 256Mi

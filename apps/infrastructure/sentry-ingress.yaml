@@ -1,0 +1,25 @@
+# Traefik ingress for Sentry
+# Exposes Sentry at sentry.ops.last-try.org
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sentry-ingress
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops
+    targetRevision: master
+    path: infrastructure/sentry/ingress
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: sentry-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

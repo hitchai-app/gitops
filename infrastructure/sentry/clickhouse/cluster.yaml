@@ -1,0 +1,74 @@
+apiVersion: clickhouse.altinity.com/v1
+kind: ClickHouseInstallation
+metadata:
+  name: sentry
+  namespace: sentry-system
+spec:
+  configuration:
+    clusters:
+      - name: sentry
+        layout:
+          replicasCount: 1
+        settings:
+          max_memory_usage: 4000000000
+    # Pin ClickHouse version to avoid schema propagation bug
+    # See: https://github.com/ClickHouse/ClickHouse/issues/89693
+    # Bug affects ClickHouse 25.8.10+, use 25.8.9 or earlier
+    clickhouseVersion: 25.8.9
+  templates:
+    podTemplates:
+      - name: clickhouse
+        spec:
+          containers:
+            - name: clickhouse
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 2Gi
+                limits:
+                  cpu: 1000m
+                  memory: 4Gi
+              # Mount TLS certificates
+              volumeMounts:
+                - name: tls-certs
+                  mountPath: /etc/clickhouse-server/tls/server.crt
+                  subPath: server.crt
+                  readOnly: true
+                - name: tls-certs
+                  mountPath: /etc/clickhouse-server/tls/server.key
+                  subPath: server.key
+                  readOnly: true
+                - name: ca-cert
+                  mountPath: /etc/clickhouse-server/tls/ca.crt
+                  subPath: ca.crt
+                  readOnly: true
+                - name: tls-config
+                  mountPath: /etc/clickhouse-server/config.d
+                  readOnly: true
+          volumes:
+            - name: tls-certs
+              secret:
+                secretName: sentry-clickhouse-server-tls
+                items:
+                  - key: tls.crt
+                    path: server.crt
+                  - key: tls.key
+                    path: server.key
+            - name: ca-cert
+              secret:
+                secretName: sentry-ca-tls
+                items:
+                  - key: ca.crt
+                    path: ca.crt
+            - name: tls-config
+              configMap:
+                name: sentry-clickhouse-tls-config
+    volumeClaimTemplates:
+      - name: data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: single-replica
+          resources:
+            requests:
+              storage: 50Gi
