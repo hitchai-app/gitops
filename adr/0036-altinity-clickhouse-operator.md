@@ -44,7 +44,7 @@ Deploy **Altinity Kubernetes Operator for ClickHouse**.
 
 ## Implementation Notes
 
-**ClickHouse version pin:** Use 25.8.9 or earlier due to schema propagation regression in 25.8.10+ (Altinity issue #898).
+**ClickHouse version pin:** Use 25.8.9 or earlier due to schema propagation regression in 25.8.10+ (upstream ClickHouse issue #89693).
 
 **TLS Authentication:** ClickHouse has NO default authentication and requires TLS for production use. Implementation:
 - Self-signed CA via cert-manager (ClusterIssuer)
@@ -56,5 +56,5 @@ Deploy **Altinity Kubernetes Operator for ClickHouse**.
 ## References
 
 - [Altinity operator](https://github.com/Altinity/clickhouse-operator)
-- [Altinity issue #898 - schema propagation bug](https://github.com/Altinity/clickhouse-operator/issues/898)
+- [Upstream ClickHouse issue #89693 - schema propagation bug](https://github.com/ClickHouse/ClickHouse/issues/89693)
 - ADR 0003: Operators over StatefulSets
