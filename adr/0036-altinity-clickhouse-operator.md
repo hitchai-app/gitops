@@ -46,6 +46,13 @@ Deploy **Altinity Kubernetes Operator for ClickHouse**.
 
 **ClickHouse version pin:** Use 25.8.9 or earlier due to schema propagation regression in 25.8.10+ (Altinity issue #898).
 
+**TLS Authentication:** ClickHouse has NO default authentication and requires TLS for production use. Implementation:
+- Self-signed CA via cert-manager (ClusterIssuer)
+- Server certificate for ClickHouse pods
+- Client certificates for applications
+- ConfigMap for TLS XML configuration (operator lacks native TLS support)
+- Certificates auto-rotate via cert-manager (30 days before expiry)
+
 ## References
 
 - [Altinity operator](https://github.com/Altinity/clickhouse-operator)

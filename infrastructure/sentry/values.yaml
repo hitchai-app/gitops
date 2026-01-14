@@ -1,30 +1,60 @@
 # Sentry self-hosted Helm values
-# Uses external databases managed by operators
+# Uses external databases managed by operators with TLS authentication
 hostname: sentry.ops.last-try.org
 
-# External databases (managed by operators)
+# External databases (managed by operators with TLS)
 clickhouse:
   host: sentry-clickhouse-sentry-0.sentry-system.svc.cluster.local
   port: 9000
-  # ClickHouse managed by Altinity operator
+  # ClickHouse managed by Altinity operator with TLS
+  # TLS connection settings
+  tls:
+    enabled: true
+    # Client certificate authentication
+    clientCert:
+      # Mount from secret
+      existingSecret: sentry-client-tls
+    # CA certificate for server verification
+    caCert:
+      existingSecret: sentry-ca-tls
 
 kafka:
-  # Bootstrap servers for Strimzi Kafka
+  # Bootstrap servers for Strimzi Kafka with TLS
   bootstrapServers:
-    - "sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local:9092"
-  # Kafka managed by Strimzi operator
+    - "sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local:9093"
+  # Kafka managed by Strimzi operator with TLS
+  # TLS connection settings
+  tls:
+    enabled: true
+    # Client certificate authentication
+    clientCert:
+      existingSecret: sentry-client-tls
+    # CA certificate
+    caCert:
+      existingSecret: sentry-ca-tls
 
 postgres:
   host: sentry-postgres-rw.sentry-system.svc.cluster.local
   port: 5432
   database: sentry
   user: sentry
-  # PostgreSQL managed by CloudNativePG
+  # PostgreSQL managed by CloudNativePG with TLS
+  # TLS connection settings
+  sslmode: verify-full
+  # Client certificate authentication
+  sslcert: /etc/sentry/tls/client.crt
+  sslkey: /etc/sentry/tls/client.key
+  sslrootcert: /etc/sentry/tls/ca.crt
 
 redis:
   host: sentry-valkey-master.sentry-system.svc.cluster.local
   port: 6379
-  # Valkey managed by SAP operator
+  # Valkey managed by SAP operator with TLS
+  tls: true
+  # Client certificate authentication
+  sslCert: /etc/sentry/tls/client.crt
+  sslKey: /etc/sentry/tls/client.key
+  sslCaCert: /etc/sentry/tls/ca.crt
 
 # Disable user registration, require SSO
 auth:
@@ -38,6 +68,20 @@ resources:
   limits:
     cpu: 2000m
     memory: 4Gi
+
+# Mount TLS client certificates into Sentry pods
+extraVolumeMounts:
+  - name: client-certs
+    mountPath: /etc/sentry/tls
+    readOnly: true
+
+extraVolumes:
+  - name: client-certs
+    secret:
+      secretName: sentry-client-tls
+  - name: ca-cert
+    secret:
+      secretName: sentry-ca-tls
 
 # Enable metrics for Prometheus
 serviceMonitor:

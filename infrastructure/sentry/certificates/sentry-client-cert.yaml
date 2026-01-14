@@ -1,0 +1,20 @@
+# Sentry client certificate (for connecting to databases)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sentry-client
+  namespace: sentry-system
+spec:
+  commonName: sentry-client
+  usages:
+    - client auth
+  secretName: sentry-client-tls
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: sentry-ca
+    kind: Certificate
+    group: cert-manager.io
+  duration: 8760h  # 1 year
+  renewBefore: 720h  # 30 days before expiry

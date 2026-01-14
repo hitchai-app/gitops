@@ -43,6 +43,15 @@ Deploy **Strimzi Kafka operator** (CNCF incubating).
 - Strimzi abandoned (unlikely - CNCF project)
 - Need managed cloud Kafka
 
+## Implementation Notes
+
+**TLS Authentication:** Strimzi has excellent native TLS support via operator certificates:
+- Self-signed CA via cert-manager (ClusterIssuer)
+- Operator-managed broker certificates with automatic rotation
+- TLS listener on port 9093 (mTLS authentication required)
+- Client certificates for applications
+- Certificate auto-renewal (30 days before 1-year expiry)
+
 ## References
 
 - [Strimzi operator](https://github.com/strimzi/strimzi-kafka-operator)

@@ -8,10 +8,23 @@ spec:
     version: 3.8.0
     replicas: 1
     listeners:
-      - name: plain
-        port: 9092
+      - name: tls
+        port: 9093
         type: internal
-        tls: false
+        tls: true
+        authentication:
+          type: tls
+    # TLS certificates
+    certificates:
+      broker:
+        generateCertificateAuthority: false
+        certificateAuthority:
+          secretName: sentry-ca-tls
+          key: ca.key
+          certificate: ca.crt
+        secretName: sentry-kafka-broker
+        validityDays: 365
+        renewalDays: 30
     storage:
       type: jbod
       volumes:

@@ -7,6 +7,9 @@ spec:
   replicas: 1
   persistence:
     enabled: false
+  # TLS configuration
+  tls:
+    secret: sentry-valkey-server-tls
   resources:
     requests:
       cpu: 100m
