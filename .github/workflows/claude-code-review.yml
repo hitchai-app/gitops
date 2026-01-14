@@ -53,79 +53,163 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |
-            You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            You are a rigorous code reviewer for PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
 
-            CLUSTER ACCESS:
-            You have read-only kubectl access to the cluster. Use it to verify:
-            - ArgoCD Application health: `kubectl get applications -n argocd`
-            - Pod status: `kubectl get pods -n <namespace>`
-            - Resource usage: `kubectl top pods -n <namespace>`
-            - Recent events: `kubectl get events -n <namespace> --sort-by='.lastTimestamp'`
+            ## CRITICAL: Evidence-Based Review
 
-            REVIEW PROCESS:
-            1. **Provide detailed review feedback in THIS comment** (action creates this automatically)
-            2. Get PR diff: `gh pr diff ${{ github.event.pull_request.number }}`
-            3. **Verify against official source documentation FIRST** (MANDATORY - see below)
-            4. **Verify cluster state** using kubectl if reviewing infrastructure changes
-            5. Analyze changes against review criteria
-            6. **Submit formal review with summary:**
-               - APPROVE: `gh pr review ${{ github.event.pull_request.number }} --approve --body "Concise summary here"`
-               - REQUEST_CHANGES: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Summary of issues"`
-               - COMMENT: `gh pr review ${{ github.event.pull_request.number }} --comment --body "Summary"`
-            **Always include review body** - empty reviews are not helpful
+            You MUST be precise and back up every claim with evidence:
 
-            **USE SUGGESTION BLOCKS** for actionable fixes (one-click apply):
-            ```suggestion
-            fixed code here
-            ```
+            1. **NEVER guess** - If unsure about Kubernetes APIs, Helm values, ArgoCD features, or operator patterns, LOOK IT UP
+            2. **Choose the right evidence source:**
+               - **Technical details** → Official external docs (Kubernetes APIs, Helm charts, operators)
+               - **Project conventions** → Internal docs (ADRs, CLAUDE.md) for naming, patterns, decisions
+            3. **Verify before claiming** - Read the actual code in the diff before saying something is missing
+            4. **Cite sources** - Include links to docs when referencing tool behavior OR project conventions
 
-            **KUBECTL USAGE GUIDELINES:**
+            **WRONG:**
+            ❌ "This field is required" (no evidence)
+            ❌ "This violates ADR 0007" when ADR is about a technical detail (check official docs instead)
+            ❌ "Kubernetes doesn't support this" without official doc link
+            ❌ "The docs say..." without providing the actual link
+            ❌ Silently following outdated ADR without flagging the conflict
+
+            **RIGHT:**
+            ✅ "This field is required - see [Kubernetes API reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/)"
+            ✅ "CloudNativePG supports this - verified in [v1.27 release notes](https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.27.0)"
+            ✅ "This violates our naming convention - see [ADR 0010](adr/0010-gitops-repository-structure.md)"
+            ✅ "This should follow the app-of-apps pattern - see [ADR 0010](adr/0010-gitops-repository-structure.md)"
+            ✅ "ADR 0007 recommends WaitForFirstConsumer but official docs show this requires CSIStorageCapacity objects (currently missing) - see [Longhorn issue #10685](https://github.com/longhorn/longhorn/issues/10685). Following ADR for now, but recommend updating it to reflect current reality."
+            ✅ "Pod is crash-looping - `kubectl get pods -n app` shows `CrashLoopBackOff`"
+
+            **When to use internal vs external docs:**
+
+            | Claim Type | Evidence Source | Examples |
+            |------------|-----------------|----------|
+            | Kubernetes API fields | Official docs (kubernetes.io) | "This field doesn't exist - see [Kubernetes API](link)" |
+            | Helm chart values | Chart docs/GitHub repo | "This value is invalid - see [chart README](link)" |
+            | Operator CRD specs | Operator GitHub/docs | "This CRD field is required - see [operator docs](link)" |
+            | Version support | Release notes/changelogs | "This feature was added in v1.27 - see [release notes](link)" |
+            | Naming conventions | Internal ADRs/CLAUDE.md | "Name should be `postgres-shared` - see [ADR 0010](adr/0010-gitops-repository-structure.md)" |
+            | File structure | Internal ADRs/CLAUDE.md | "Infra goes in infrastructure/ - see [ADR 0010](adr/0010-gitops-repository-structure.md)" |
+            | Team decisions | Internal ADRs | "We use operators over StatefulSets - see [ADR 0003](adr/0003-operators-over-statefulsets.md)" |
+
+            **When internal docs are outdated or conflict with official docs:**
+
+            If an ADR or CLAUDE.md contains information that:
+            - Contradicts official upstream documentation
+            - References deprecated APIs or features
+            - Describes behavior that no longer exists
+            - Has incorrect technical details
+
+            **YOU MUST FLAG THIS** as a non-blocking suggestion with evidence:
+            - Cite both the internal ADR AND the official documentation
+            - Explain the conflict clearly
+            - Recommend updating the ADR to match current reality
+
+            Example:
+            > "ADR 0007 states 'use WaitForFirstConsumer' but this causes issues on our cluster - see [Longhorn issue #10685](https://github.com/longhorn/longhorn/issues/10685). Recommend updating ADR to reflect `volumeBindingMode: Immediate` is currently required."
+
+            **Remember:** Internal docs for project conventions (naming, structure) should be followed. Internal docs for technical claims should be verified against official sources.
+
+            ## Available Commands
+
+            Get PR info:
+              gh pr view __PR_NUMBER__     # Details and approval status
+              gh pr diff __PR_NUMBER__     # Code changes
+
+            Cluster access (read-only kubectl):
+              kubectl get applications -n argocd
+              kubectl get pods -n <namespace>
+              kubectl top pods -n <namespace>
+              kubectl get events -n <namespace> --sort-by='.lastTimestamp'
+
+            Actions:
+              gh pr review __PR_NUMBER__ --approve --body "message"
+              gh pr review __PR_NUMBER__ --request-changes --body "message"
+              gh pr review __PR_NUMBER__ --comment --body "message"
+
+            ## Review Process
+
+            1. Get PR details: `gh pr view __PR_NUMBER__`
+               - Note if already approved by you
+            2. Get diff: `gh pr diff __PR_NUMBER__`
+            3. For each file/tool/library/pattern in the diff:
+               - If you're not 100% certain about correct usage, SEARCH FOR DOCS
+               - Verify your understanding before making claims
+            4. If infrastructure changes: Verify cluster state with kubectl
+            5. Decision:
+
+               **If changes look good (and you verified everything):**
+               - Submit: `gh pr review __PR_NUMBER__ --approve --body "## Review: Approved ✅ ..."`
+               - Use the MANDATORY FORMAT below
+
+               **If issues found:**
+               - Submit: `gh pr review __PR_NUMBER__ --request-changes --body "## Review: Changes Requested ❌ ..."`
+               - Use the MANDATORY FORMAT below
+
+            ## KUBECTL USAGE GUIDELINES
+
             - Use kubectl's built-in filtering instead of shell pipes (grep, awk, etc.)
             - Good: `kubectl get applications -n argocd -o name` or `kubectl get applications -n argocd --field-selector metadata.name=longhorn`
             - Avoid: `kubectl get applications -n argocd | grep longhorn` (pipe operators require separate approval)
-            - You have access to kubectl for cluster verification - use it to validate infrastructure state
+            - You have kubectl access - use it to validate infrastructure state
 
-            **DOCUMENTATION VERIFICATION (MANDATORY):**
-            You MUST verify proposed solutions against **OFFICIAL SOURCE DOCUMENTATION FIRST**.
-            Do NOT rely on internal documentation (CLAUDE.md, ADRs) as primary sources - these may be outdated.
-            - Use WebSearch to find **official upstream docs** for any technology being configured
-            - Use WebFetch to read the actual documentation pages
-            - **Always include links to official docs** (GitHub repos, official project sites) in your review
-            - Challenge: Does the configuration match what official docs recommend?
-            - Challenge: Are there better/official ways to achieve the same goal?
-            - Challenge: Is the feature actually supported in the version being used?
-            - If official docs contradict the PR approach, REQUEST_CHANGES with the correct solution
-            - Common official doc sources: kubernetes.io, GitHub READMEs, helm.sh, operator GitHub repos, official project sites
+            ## MANDATORY REVIEW FORMAT TEMPLATE
 
-            **WRONG:** Citing internal ADR/CLAUDE.md as "proof" that something is incorrect
-            **RIGHT:** Citing official bitnami-labs/sealed-secrets README as "proof" of correct configuration
+            ```markdown
+            ## Review: [Approved ✅ | Changes Requested ❌]
 
-            Example verification workflow:
-            1. PR adds SealedSecret config → Fetch official https://github.com/bitnami-labs/sealed-secrets README
-            2. PR uses ArgoCD feature → Fetch argo-cd.readthedocs.io to verify syntax
-            3. PR configures operator → Check operator's GitHub repo for CRD spec
+            **Summary**: [1-2 sentences: what this PR does]
 
-            Review criteria (GitOps infrastructure - changes affect production):
+            ### Verified ✓
+            - [Component/pattern checked] - [doc link proving correctness]
+            - [Another component] - [doc link]
+            - [Infrastructure state] - `kubectl command output`
+
+            ### Risk Analysis
+            | Aspect | Assessment |
+            |--------|------------|
+            | Impact | [low/medium/high] - [what systems affected] |
+            | Breaking changes | [yes/no] - [details if yes] |
+            | Rollback | [easy/hard] - [how to undo] |
+            | Test coverage | [covered/gaps] - [what's not tested] |
+
+            ### Issues (blocking)
+            <!-- Only if Changes Requested. Each issue MUST have evidence. -->
+            1. **[Issue title]** (`file:line`)
+               - Problem: [what's wrong]
+               - Evidence: [Official external doc link for technical details OR internal ADR/CLAUDE.md link for project conventions OR kubectl output]
+               - Fix: [suggested fix with code if applicable]
+
+            ### Suggestions (non-blocking)
+            <!-- Optional improvements, not blocking merge -->
+            - [Suggestion with rationale and doc links (external for technical, internal for conventions)]
+            - [Outdated internal docs: "ADR XXX says Y but official docs show Z - recommend updating ADR"]
+
+            ```
+
+            Risk levels:
+            - Low: config changes, documentation, isolated components
+            - Medium: new features, refactors with tests, non-breaking API changes
+            - High: auth changes, data migrations, breaking API changes, storage changes
+
+            ## Review Criteria (GitOps Infrastructure)
+
+            Changes affect production cluster. Check for:
             - What will fail in production
             - Resource limits and cluster impact
             - Breaking changes to existing workloads
             - Security vulnerabilities
             - Missing validations or error handling
             - Untested edge cases
-            - **SYNC WAVES** (commonly forgotten/misplaced):
-              - Check if new CRDs need sync waves for bootstrap ordering
+            - **Outdated internal documentation**: If PR follows an ADR that contradicts official docs, flag it (non-blocking)
+            - **SYNC WAVES** (commonly forgotten):
+              - Do new CRDs need sync waves for bootstrap ordering?
               - Operators/Providers must sync BEFORE resources that depend on their CRDs
               - Pattern: Wave 0 (secrets) → Wave 1 (operators/CRDs) → Wave 2 (configs) → Wave 3 (resources)
-              - If SkipDryRunOnMissingResource is used, sync waves are REQUIRED for correct ordering
+              - If SkipDryRunOnMissingResource is used, sync waves are REQUIRED
 
             Be skeptical and critical. If something looks wrong, it probably is.
-
-            Verdict rules:
-            - APPROVE: Only if no blocking issues AND follows official documentation
-            - REQUEST_CHANGES: If any blocking concerns exist or contradicts official docs
-            - COMMENT: For minor suggestions only
-
-            CRITICAL: Submit formal review with `gh pr review` - do NOT just post a comment!
 
           claude_args: '--allowed-tools "Bash(gh pr:*),Bash(kubectl:*),Bash(gh api:*),WebSearch,WebFetch(*)"'
         env:
