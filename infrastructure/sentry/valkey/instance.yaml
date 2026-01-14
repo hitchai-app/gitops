@@ -7,9 +7,13 @@ spec:
   replicas: 1
   persistence:
     enabled: false
-  # TLS configuration
+  # TLS configuration - cert-manager integration
   tls:
-    secret: sentry-valkey-server-tls
+    enabled: true
+    certManager:
+      issuer:
+        name: sentry-ca
+        kind: Certificate
   resources:
     requests:
       cpu: 100m

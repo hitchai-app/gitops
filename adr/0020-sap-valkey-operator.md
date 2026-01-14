@@ -50,12 +50,11 @@ Adopt **SAP valkey-operator** to manage Valkey instances.
 
 ## Implementation Notes
 
-**TLS Authentication:** The SAP valkey-operator supports TLS via secret mounting. For production deployments requiring authentication:
-- Enable TLS in Valkey CR with `tls.secret` field
-- Use cert-manager for certificate management (self-signed CA for internal services)
-- Server certificate for Valkey pods
-- Client certificates for applications (mTLS)
-- Operator mounts certificates automatically
+**TLS Authentication:** The SAP valkey-operator supports TLS via cert-manager integration (not secret mounting). For production deployments requiring authentication:
+- Enable TLS in Valkey CR with `tls.enabled: true`
+- Configure cert-manager issuer: `tls.certManager.issuer.name`
+- Operator automatically generates and mounts server certificates
+- Client certificates for applications (mTLS) via cert-manager
 
 **Previous posture:** ADR 0005 deferred TLS for internal single-node use. For production or cross-namespace access, enable TLS via operator.
 
