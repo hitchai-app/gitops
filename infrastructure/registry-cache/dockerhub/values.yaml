@@ -54,6 +54,21 @@ service:
   type: ClusterIP
   port: 5000
 
+# Pod scheduling configuration
+# Prefer garbage collector pods to co-locate with main registry pod
+# Required for RWO PVC access: both pods must be on same node
+# Uses preferred (not required) to avoid chicken-and-egg scheduling deadlock
+# With replicaCount: 1, first registry pod can start anywhere, then GC pods co-locate
+affinity:
+  podAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchLabels:
+            app: docker-registry
+        topologyKey: kubernetes.io/hostname
+
 # No external access needed
 ingress:
   enabled: false
