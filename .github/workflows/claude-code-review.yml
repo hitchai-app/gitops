@@ -71,12 +71,14 @@ jobs:
             ❌ "This violates ADR 0007" when ADR is about a technical detail (check official docs instead)
             ❌ "Kubernetes doesn't support this" without official doc link
             ❌ "The docs say..." without providing the actual link
+            ❌ Silently following outdated ADR without flagging the conflict
 
             **RIGHT:**
             ✅ "This field is required - see [Kubernetes API reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/)"
             ✅ "CloudNativePG supports this - verified in [v1.27 release notes](https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.27.0)"
             ✅ "This violates our naming convention - see [ADR 0010](adr/0010-gitops-repository-structure.md)"
             ✅ "This should follow the app-of-apps pattern - see [ADR 0010](adr/0010-gitops-repository-structure.md)"
+            ✅ "ADR 0007 recommends WaitForFirstConsumer but official docs show this requires CSIStorageCapacity objects (currently missing) - see [Longhorn issue #10685](https://github.com/longhorn/longhorn/issues/10685). Following ADR for now, but recommend updating it to reflect current reality."
             ✅ "Pod is crash-looping - `kubectl get pods -n app` shows `CrashLoopBackOff`"
 
             **When to use internal vs external docs:**
@@ -90,6 +92,24 @@ jobs:
             | Naming conventions | Internal ADRs/CLAUDE.md | "Name should be `postgres-shared` - see [ADR 0010](adr/0010-gitops-repository-structure.md)" |
             | File structure | Internal ADRs/CLAUDE.md | "Infra goes in infrastructure/ - see [ADR 0010](adr/0010-gitops-repository-structure.md)" |
             | Team decisions | Internal ADRs | "We use operators over StatefulSets - see [ADR 0003](adr/0003-operators-over-statefulsets.md)" |
+
+            **When internal docs are outdated or conflict with official docs:**
+
+            If an ADR or CLAUDE.md contains information that:
+            - Contradicts official upstream documentation
+            - References deprecated APIs or features
+            - Describes behavior that no longer exists
+            - Has incorrect technical details
+
+            **YOU MUST FLAG THIS** as a non-blocking suggestion with evidence:
+            - Cite both the internal ADR AND the official documentation
+            - Explain the conflict clearly
+            - Recommend updating the ADR to match current reality
+
+            Example:
+            > "ADR 0007 states 'use WaitForFirstConsumer' but this causes issues on our cluster - see [Longhorn issue #10685](https://github.com/longhorn/longhorn/issues/10685). Recommend updating ADR to reflect `volumeBindingMode: Immediate` is currently required."
+
+            **Remember:** Internal docs for project conventions (naming, structure) should be followed. Internal docs for technical claims should be verified against official sources.
 
             ## Available Commands
 
@@ -164,6 +184,8 @@ jobs:
             ### Suggestions (non-blocking)
             <!-- Optional improvements, not blocking merge -->
             - [Suggestion with rationale and doc links (external for technical, internal for conventions)]
+            - [Outdated internal docs: "ADR XXX says Y but official docs show Z - recommend updating ADR"]
+
             ```
 
             Risk levels:
@@ -180,6 +202,7 @@ jobs:
             - Security vulnerabilities
             - Missing validations or error handling
             - Untested edge cases
+            - **Outdated internal documentation**: If PR follows an ADR that contradicts official docs, flag it (non-blocking)
             - **SYNC WAVES** (commonly forgotten):
               - Do new CRDs need sync waves for bootstrap ordering?
               - Operators/Providers must sync BEFORE resources that depend on their CRDs
