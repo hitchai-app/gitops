@@ -60,20 +60,36 @@ jobs:
             You MUST be precise and back up every claim with evidence:
 
             1. **NEVER guess** - If unsure about Kubernetes APIs, Helm values, ArgoCD features, or operator patterns, LOOK IT UP
-            2. **Read actual docs** - Use WebSearch/WebFetch to find official documentation
+            2. **Choose the right evidence source:**
+               - **Technical details** → Official external docs (Kubernetes APIs, Helm charts, operators)
+               - **Project conventions** → Internal docs (ADRs, CLAUDE.md) for naming, patterns, decisions
             3. **Verify before claiming** - Read the actual code in the diff before saying something is missing
-            4. **Cite sources** - Include links to docs when referencing tool behavior
-            5. **If solution seems uncommon** - Search for common patterns and suggest with links
+            4. **Cite sources** - Include links to docs when referencing tool behavior OR project conventions
 
             **WRONG:**
             ❌ "This field is required" (no evidence)
-            ❌ "According to ADR 0007..." (internal doc as primary source)
+            ❌ "This violates ADR 0007" when ADR is about a technical detail (check official docs instead)
+            ❌ "Kubernetes doesn't support this" without official doc link
             ❌ "The docs say..." without providing the actual link
 
             **RIGHT:**
             ✅ "This field is required - see [Kubernetes API reference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.30/)"
             ✅ "CloudNativePG supports this - verified in [v1.27 release notes](https://github.com/cloudnative-pg/cloudnative-pg/releases/tag/v1.27.0)"
+            ✅ "This violates our naming convention - see [ADR 0010](adr/0010-gitops-repository-structure.md)"
+            ✅ "This should follow the app-of-apps pattern - see [ADR 0010](adr/0010-gitops-repository-structure.md)"
             ✅ "Pod is crash-looping - `kubectl get pods -n app` shows `CrashLoopBackOff`"
+
+            **When to use internal vs external docs:**
+
+            | Claim Type | Evidence Source | Examples |
+            |------------|-----------------|----------|
+            | Kubernetes API fields | Official docs (kubernetes.io) | "This field doesn't exist - see [Kubernetes API](link)" |
+            | Helm chart values | Chart docs/GitHub repo | "This value is invalid - see [chart README](link)" |
+            | Operator CRD specs | Operator GitHub/docs | "This CRD field is required - see [operator docs](link)" |
+            | Version support | Release notes/changelogs | "This feature was added in v1.27 - see [release notes](link)" |
+            | Naming conventions | Internal ADRs/CLAUDE.md | "Name should be `postgres-shared` - see [ADR 0010](adr/0010-gitops-repository-structure.md)" |
+            | File structure | Internal ADRs/CLAUDE.md | "Infra goes in infrastructure/ - see [ADR 0010](adr/0010-gitops-repository-structure.md)" |
+            | Team decisions | Internal ADRs | "We use operators over StatefulSets - see [ADR 0003](adr/0003-operators-over-statefulsets.md)" |
 
             ## Available Commands
 
@@ -142,12 +158,12 @@ jobs:
             <!-- Only if Changes Requested. Each issue MUST have evidence. -->
             1. **[Issue title]** (`file:line`)
                - Problem: [what's wrong]
-               - Evidence: [doc link proving it's wrong OR kubectl output]
+               - Evidence: [Official external doc link for technical details OR internal ADR/CLAUDE.md link for project conventions OR kubectl output]
                - Fix: [suggested fix with code if applicable]
 
             ### Suggestions (non-blocking)
             <!-- Optional improvements, not blocking merge -->
-            - [Suggestion with rationale and doc links]
+            - [Suggestion with rationale and doc links (external for technical, internal for conventions)]
             ```
 
             Risk levels:
