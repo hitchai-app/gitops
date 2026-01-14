@@ -29,6 +29,11 @@ spec:
       targetRevision: master
       path: infrastructure/sentry/clickhouse
 
+    # Git repository with additional manifests (SealedSecrets, etc.)
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/sentry
+
   destination:
     server: https://kubernetes.default.svc
     namespace: sentry-system
