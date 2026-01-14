@@ -12,8 +12,8 @@ spec:
     enabled: true
     certManager:
       issuer:
-        name: sentry-ca
-        kind: Certificate
+        name: sentry-internal-ca
+        kind: ClusterIssuer
   resources:
     requests:
       cpu: 100m
