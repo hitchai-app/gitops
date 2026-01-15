@@ -113,6 +113,8 @@ ADRs are numbered sequentially with zero-padding:
 | [0033](0033-crossplane-external-infrastructure.md) | Crossplane External Infrastructure | Accepted | 2026-01-08 |
 | [0034](0034-node-naming-convention.md) | Node Naming Convention | Accepted | 2026-01-09 |
 | [0035](0035-cluster-target-architecture.md) | Cluster Target Architecture | Accepted | 2026-01-09 |
+| [0036](0036-altinity-clickhouse-operator.md) | Altinity ClickHouse Operator | Superseded | 2026-01-14 |
+| [0037](0037-strimzi-kafka-operator.md) | Strimzi Kafka Operator | Superseded | 2026-01-14 |
 | [0039](0039-cnpg-managed-tls-for-sentry-postgres.md) | CNPG-Managed TLS and Password Auth for Sentry Postgres | Accepted | 2026-01-15 |
 | [0040](0040-sentry-bundled-stateful-services.md) | Sentry Bundled Stateful Services | Accepted | 2026-01-15 |
 
