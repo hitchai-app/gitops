@@ -2,6 +2,17 @@
 # Bundled Kafka/Redis/ClickHouse, external Postgres via CNPG
 hostname: sentry.ops.last-try.org
 
+# Use embedded ingress (Traefik) with cert-manager TLS
+nginx:
+  ingress:
+    enabled: true
+    hostname: sentry.ops.last-try.org
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      kubernetes.io/ingress.class: traefik
+    tls: true
+
 # Use existing Secret managed by SealedSecret instead of Helm hook
 # This prevents conflict between Helm-created Secret and SealedSecret controller
 sentry:
