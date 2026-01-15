@@ -48,7 +48,7 @@ externalClickhouse:
 externalKafka:
   cluster:
     - host: sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local
-      port: 9093  # TLS port with mTLS
+      port: 9092
 
 # External Redis/Valkey (SAP operator with TLS)
 externalRedis:
@@ -86,7 +86,15 @@ extraVolumes:
   - name: ca-cert
     secret:
       secretName: sentry-ca-tls
+      items:
+        - key: tls.crt
+          path: ca.crt
 
 # Enable metrics for Prometheus
 serviceMonitor:
   enabled: true
+
+# Extend sentry.conf.py with Redis TLS CA config
+config:
+  sentryConfPy: |
+    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_ca_certs"] = "/etc/sentry/ca/ca.crt"
