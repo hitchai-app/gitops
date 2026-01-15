@@ -1,4 +1,4 @@
-apiVersion: kafka.strimzi.io/v1beta2
+apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: sentry-kafka
@@ -6,46 +6,18 @@ metadata:
 spec:
   kafka:
     version: 3.8.0
-    replicas: 1
     listeners:
-      - name: tls
-        port: 9093
+      - name: plain
+        port: 9092
         type: internal
-        tls: true
-        authentication:
-          type: tls
-    # TLS certificates
-    certificates:
-      broker:
-        generateCertificateAuthority: false
-        # Use sentry-ca Certificate for CA trust
-        # Note: sentry-ca creates tls.key/tls.crt (cert-manager standard naming)
-        # Strimzi expects key/certificate fields to reference these actual secret keys
-        certificateAuthority:
-          secretName: sentry-ca-tls
-          key: tls.key
-          certificate: tls.crt
-        secretName: sentry-kafka-broker
-        validityDays: 365
-        renewalDays: 30
-    storage:
-      type: jbod
-      volumes:
-        - id: 0
-          type: persistent-claim
-          size: 20Gi
-          storageClass: single-replica
-    resources:
-      requests:
-        cpu: 500m
-        memory: 1Gi
-      limits:
-        cpu: 1000m
-        memory: 2Gi
+        tls: false
     config:
       offsets.topic.replication.factor: 1
       transaction.state.log.replication.factor: 1
       default.replication.factor: 1
       min.insync.replicas: 1
+  entityOperator:
+    topicOperator: {}
+    userOperator: {}
   # KRaft mode enabled by default in Strimzi 0.49+
   # No Zookeeper needed

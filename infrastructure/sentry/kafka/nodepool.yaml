@@ -1,0 +1,24 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaNodePool
+metadata:
+  name: sentry-kafka
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  replicas: 1
+  roles:
+    - controller
+    - broker
+  storage:
+    type: persistent-claim
+    size: 20Gi
+    class: single-replica
+    kraftMetadata: shared
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
