@@ -10,8 +10,8 @@ spec:
     - sentry-valkey-master.sentry-system.svc.cluster.local
     - sentry-valkey-master
     - sentry-valkey
-    - *.sentry-valkey-master
-    - *.sentry-valkey
+    - "*.sentry-valkey-master"
+    - "*.sentry-valkey"
   ipAddresses:
     - 127.0.0.1
   secretName: sentry-valkey-server-tls
