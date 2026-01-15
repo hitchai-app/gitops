@@ -15,7 +15,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://strimzi.github.io/helm-charts
+    repoURL: https://strimzi.io/charts/
     chart: strimzi-kafka-operator
     targetRevision: 0.49.1
     helm:

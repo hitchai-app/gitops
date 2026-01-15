@@ -10,8 +10,8 @@ spec:
     - sentry-clickhouse-sentry-0.sentry-system.svc.cluster.local
     - sentry-clickhouse-sentry-0
     - sentry-clickhouse-sentry
-    - *.sentry-clickhouse-sentry-0
-    - *.sentry-clickhouse-sentry
+    - "*.sentry-clickhouse-sentry-0"
+    - "*.sentry-clickhouse-sentry"
   ipAddresses:
     - 127.0.0.1
   secretName: sentry-clickhouse-server-tls
