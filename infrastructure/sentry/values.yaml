@@ -6,6 +6,43 @@ hostname: sentry.ops.last-try.org
 # This prevents conflict between Helm-created Secret and SealedSecret controller
 sentry:
   existingSecret: sentry-sentry-secret
+  # Mount Valkey CA into Sentry pods for Redis TLS verification
+  web:
+    volumeMounts:
+      - name: redis-ca
+        mountPath: /etc/sentry/ca
+        readOnly: true
+    volumes:
+      - name: redis-ca
+        secret:
+          secretName: valkey-sentry-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
+  worker:
+    volumeMounts:
+      - name: redis-ca
+        mountPath: /etc/sentry/ca
+        readOnly: true
+    volumes:
+      - name: redis-ca
+        secret:
+          secretName: valkey-sentry-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
+  cron:
+    volumeMounts:
+      - name: redis-ca
+        mountPath: /etc/sentry/ca
+        readOnly: true
+    volumes:
+      - name: redis-ca
+        secret:
+          secretName: valkey-sentry-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
 
 # Disable bundled services - using external operators
 clickhouse:
@@ -37,12 +74,12 @@ externalPostgresql:
 
 # External ClickHouse (Altinity operator with TLS cert auth)
 externalClickhouse:
-  host: sentry-clickhouse-sentry-0.sentry-system.svc.cluster.local
+  host: clickhouse-sentry.sentry-system.svc.cluster.local
   httpPort: 8123
   tcpPort: 9000
   database: default
   username: default
-  # No password - using TLS client certificate authentication
+  # No password - TLS enabled
 
 # External Kafka (Strimzi operator with mTLS)
 externalKafka:
@@ -54,7 +91,7 @@ externalKafka:
 externalRedis:
   host: valkey-sentry-primary.sentry-system.svc.cluster.local
   port: 6379
-  # No password - using TLS client certificate authentication
+  # No password - TLS enabled
   ssl: true
 
 # Disable user registration, require SSO
@@ -70,26 +107,6 @@ resources:
     cpu: 2000m
     memory: 4Gi
 
-# Mount TLS client certificates into Sentry pods
-extraVolumeMounts:
-  - name: client-certs
-    mountPath: /etc/sentry/tls
-    readOnly: true
-  - name: ca-cert
-    mountPath: /etc/sentry/ca
-    readOnly: true
-
-extraVolumes:
-  - name: client-certs
-    secret:
-      secretName: sentry-client-tls
-  - name: ca-cert
-    secret:
-      secretName: sentry-ca-tls
-      items:
-        - key: tls.crt
-          path: ca.crt
-
 # Enable metrics for Prometheus
 serviceMonitor:
   enabled: true
@@ -100,3 +117,19 @@ config:
     SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_options"] = {
         "ca_certs": "/etc/sentry/ca/ca.crt",
     }
+  snubaSettingsPy: |
+    REDIS_SSL_CA_CERTS = env("REDIS_SSL_CA_CERTS", "/etc/sentry/ca/ca.crt")
+
+snuba:
+  api:
+    volumeMounts:
+      - name: redis-ca
+        mountPath: /etc/sentry/ca
+        readOnly: true
+    volumes:
+      - name: redis-ca
+        secret:
+          secretName: valkey-sentry-tls
+          items:
+            - key: ca.crt
+              path: ca.crt
