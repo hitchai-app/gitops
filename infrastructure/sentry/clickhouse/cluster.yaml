@@ -9,6 +9,10 @@ spec:
       - name: sentry
         layout:
           replicasCount: 1
+    users:
+      default:
+        networks:
+          host_regexp: ".*\\.sentry-system\\.svc\\.cluster\\.local$"
   templates:
     podTemplates:
       - name: clickhouse
