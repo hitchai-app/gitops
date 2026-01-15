@@ -21,7 +21,7 @@ redis:
   enabled: true
 
 zookeeper:
-  enabled: false
+  enabled: true
 
 # External PostgreSQL (CloudNativePG with TLS cert auth)
 externalPostgresql:
