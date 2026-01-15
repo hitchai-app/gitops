@@ -91,7 +91,9 @@ externalKafka:
 externalRedis:
   host: valkey-sentry-primary.sentry-system.svc.cluster.local
   port: 6379
-  # No password - TLS enabled
+  existingSecret: valkey-sentry
+  existingSecretKey: valkey-password
+  # TLS enabled
   ssl: true
 
 # Disable user registration, require SSO
