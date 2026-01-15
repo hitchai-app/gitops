@@ -20,8 +20,8 @@ spec:
     algorithm: RSA
     size: 2048
   issuerRef:
-    name: sentry-ca
-    kind: Certificate
+    name: internal-ca-issuer
+    kind: ClusterIssuer
     group: cert-manager.io
   duration: 8760h  # 1 year
   renewBefore: 720h  # 30 days before expiry
