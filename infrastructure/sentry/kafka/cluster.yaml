@@ -18,10 +18,13 @@ spec:
     certificates:
       broker:
         generateCertificateAuthority: false
+        # Use sentry-ca Certificate for CA trust
+        # Note: sentry-ca creates tls.key/tls.crt (cert-manager standard naming)
+        # Strimzi expects key/certificate fields to reference these actual secret keys
         certificateAuthority:
           secretName: sentry-ca-tls
-          key: ca.key
-          certificate: ca.crt
+          key: tls.key
+          certificate: tls.crt
         secretName: sentry-kafka-broker
         validityDays: 365
         renewalDays: 30
