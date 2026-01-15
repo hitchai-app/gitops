@@ -22,7 +22,8 @@ spec:
       releaseName: strimzi-operator
       valuesObject:
         # Watch all namespaces for Kafka resources
-        watchNamespaces: ["*"]
+        watchAnyNamespace: true
+        watchNamespaces: []
 
         # Single replica sufficient for single-node cluster
         replicas: 1
@@ -34,9 +35,6 @@ spec:
           limits:
             cpu: 500m
             memory: 512Mi
-
-        # Disable image pulling to avoid rate limiting
-        imageRegistry: null
 
         # Labels applied to all resources
         labels:

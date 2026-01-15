@@ -113,6 +113,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0033](0033-crossplane-external-infrastructure.md) | Crossplane External Infrastructure | Accepted | 2026-01-08 |
 | [0034](0034-node-naming-convention.md) | Node Naming Convention | Accepted | 2026-01-09 |
 | [0035](0035-cluster-target-architecture.md) | Cluster Target Architecture | Accepted | 2026-01-09 |
+| [0039](0039-cnpg-managed-tls-for-sentry-postgres.md) | CNPG-Managed TLS and Password Auth for Sentry Postgres | Accepted | 2026-01-15 |
 
 ## When to Create an ADR
 

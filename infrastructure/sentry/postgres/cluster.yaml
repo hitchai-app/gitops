@@ -20,13 +20,6 @@ spec:
     size: 20Gi
     storageClass: single-replica
 
-  # Enable TLS with operator-managed certificates
-  certificates:
-    serverTLSSecret: sentry-postgres-server-tls
-    serverCASecret: sentry-ca-tls
-    # Require client certificate authentication
-    clientCASecret: sentry-ca-tls
-
   resources:
     requests:
       cpu: 250m

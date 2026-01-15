@@ -29,8 +29,11 @@ externalPostgresql:
   port: 5432
   database: sentry
   username: sentry
-  # No password - using TLS client certificate authentication
-  sslMode: verify-full
+  existingSecret: sentry-postgres-app
+  existingSecretKeys:
+    password: password
+  # CNPG-managed TLS; use password auth
+  sslMode: require
 
 # External ClickHouse (Altinity operator with TLS cert auth)
 externalClickhouse:
@@ -49,7 +52,7 @@ externalKafka:
 
 # External Redis/Valkey (SAP operator with TLS)
 externalRedis:
-  host: sentry-valkey-master.sentry-system.svc.cluster.local
+  host: valkey-sentry-primary.sentry-system.svc.cluster.local
   port: 6379
   # No password - using TLS client certificate authentication
   ssl: true
@@ -71,6 +74,9 @@ resources:
 extraVolumeMounts:
   - name: client-certs
     mountPath: /etc/sentry/tls
+    readOnly: true
+  - name: ca-cert
+    mountPath: /etc/sentry/ca
     readOnly: true
 
 extraVolumes:
