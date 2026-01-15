@@ -9,8 +9,6 @@ spec:
       - name: sentry
         layout:
           replicasCount: 1
-        settings:
-          max_memory_usage: 4000000000
   templates:
     podTemplates:
       - name: clickhouse
