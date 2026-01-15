@@ -11,8 +11,8 @@ spec:
     - sentry-postgres-ro.sentry-system.svc.cluster.local
     - sentry-postgres-rw
     - sentry-postgres-ro
-    - *.sentry-postgres-rw
-    - *.sentry-postgres-ro
+    - "*.sentry-postgres-rw"
+    - "*.sentry-postgres-ro"
   ipAddresses:
     - 127.0.0.1
   secretName: sentry-postgres-server-tls
