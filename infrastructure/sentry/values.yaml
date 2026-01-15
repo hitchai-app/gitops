@@ -1,61 +1,24 @@
 # Sentry self-hosted Helm values
-# Uses external databases managed by operators
+# Bundled Kafka/Redis/ClickHouse, external Postgres via CNPG
 hostname: sentry.ops.last-try.org
 
 # Use existing Secret managed by SealedSecret instead of Helm hook
 # This prevents conflict between Helm-created Secret and SealedSecret controller
 sentry:
   existingSecret: sentry-sentry-secret
-  # Mount Valkey CA into Sentry pods for Redis TLS verification
-  web:
-    volumeMounts:
-      - name: redis-ca
-        mountPath: /etc/sentry/ca
-        readOnly: true
-    volumes:
-      - name: redis-ca
-        secret:
-          secretName: valkey-sentry-tls
-          items:
-            - key: ca.crt
-              path: ca.crt
-  worker:
-    volumeMounts:
-      - name: redis-ca
-        mountPath: /etc/sentry/ca
-        readOnly: true
-    volumes:
-      - name: redis-ca
-        secret:
-          secretName: valkey-sentry-tls
-          items:
-            - key: ca.crt
-              path: ca.crt
-  cron:
-    volumeMounts:
-      - name: redis-ca
-        mountPath: /etc/sentry/ca
-        readOnly: true
-    volumes:
-      - name: redis-ca
-        secret:
-          secretName: valkey-sentry-tls
-          items:
-            - key: ca.crt
-              path: ca.crt
 
-# Disable bundled services - using external operators
+# Enable bundled services
 clickhouse:
-  enabled: false
+  enabled: true
 
 kafka:
-  enabled: false
+  enabled: true
 
 postgresql:
   enabled: false
 
 redis:
-  enabled: false
+  enabled: true
 
 zookeeper:
   enabled: false
@@ -71,32 +34,6 @@ externalPostgresql:
     password: password
   # CNPG-managed TLS; use password auth
   sslMode: require
-
-# External ClickHouse (Altinity operator with TLS cert auth)
-externalClickhouse:
-  host: clickhouse-sentry.sentry-system.svc.cluster.local
-  httpPort: 8123
-  tcpPort: 9000
-  database: default
-  username: sentry
-  existingSecret: sentry-clickhouse-auth
-  existingSecretKey: clickhouse-password
-  # TLS enabled
-
-# External Kafka (Strimzi operator with mTLS)
-externalKafka:
-  cluster:
-    - host: sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local
-      port: 9092
-
-# External Redis/Valkey (SAP operator with TLS)
-externalRedis:
-  host: valkey-sentry-primary.sentry-system.svc.cluster.local
-  port: 6379
-  existingSecret: valkey-sentry
-  existingSecretKey: valkey-password
-  # TLS enabled
-  ssl: true
 
 # Disable user registration, require SSO
 auth:
@@ -114,24 +51,3 @@ resources:
 # Enable metrics for Prometheus
 serviceMonitor:
   enabled: true
-
-# Extend sentry.conf.py with Redis TLS CA config
-config:
-  sentryConfPy: |
-    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_ca_certs"] = "/etc/sentry/ca/ca.crt"
-  snubaSettingsPy: |
-    REDIS_SSL_CA_CERTS = env("REDIS_SSL_CA_CERTS", "/etc/sentry/ca/ca.crt")
-
-snuba:
-  api:
-    volumeMounts:
-      - name: redis-ca
-        mountPath: /etc/sentry/ca
-        readOnly: true
-    volumes:
-      - name: redis-ca
-        secret:
-          secretName: valkey-sentry-tls
-          items:
-            - key: ca.crt
-              path: ca.crt

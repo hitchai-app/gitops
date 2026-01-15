@@ -1,5 +1,5 @@
 # Sentry self-hosted error tracking
-# Full-featured Sentry with external operators for all stateful services
+# Bundled Kafka/Redis/ClickHouse with external Postgres (CNPG)
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
