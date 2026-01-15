@@ -118,6 +118,39 @@ Dex OIDC integration via `sentry-auth-oidc` plugin:
 - JIT provisioning creates Sentry accounts on first login
 - Single Sign-On with other platform services
 
+### TLS Architecture
+
+**Decision**: Use namespace-local CA certificate for Sentry services
+
+**Certificate chain:**
+```
+selfsigned-root (ClusterIssuer)
+    ↓
+internal-ca (cluster-wide CA in cert-manager ns)
+    ↓
+sentry-ca (namespace CA in sentry-system, isCA: true)
+    ↓
+Server certificates (postgres, clickhouse, kafka, valkey, client)
+```
+
+**Rationale:**
+- **Native cert-manager pattern**: Certificate resources create secrets in their namespace
+- **No cross-namespace dependencies**: All certificates and CA in sentry-system
+- **GitOps-friendly**: Managed by ArgoCD like other certificates
+- **Simple debugging**: Single namespace for all TLS resources
+
+**Alternatives considered:**
+- **kubernetes-replicator**: Copy cluster CA to sentry-system
+  - Rejected: Adds external dependency, less native to cert-manager
+- **Direct cluster CA reference**: Services mount cert-manager namespace secret
+  - Rejected: Cross-namespace secret access not allowed by Kubernetes
+
+**Implementation:**
+- `sentry-ca` Certificate creates `sentry-ca-tls` secret
+- Server certificates issued by `internal-ca-issuer` (ClusterIssuer)
+- Services mount `sentry-ca-tls` for CA trust
+- mTLS between Sentry and databases (client + server certificates)
+
 ## When to Reconsider
 
 **Migrate to external ClickHouse/Kafka operators if:**

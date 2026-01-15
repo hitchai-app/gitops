@@ -1,0 +1,20 @@
+# Sentry CA certificate (namespace-local, signed by cluster-wide CA)
+# Used by Kafka, Postgres, ClickHouse for TLS trust
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sentry-ca
+  namespace: sentry-system
+spec:
+  isCA: true
+  commonName: sentry-ca
+  secretName: sentry-ca-tls
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: internal-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  duration: 87600h  # 10 years
+  renewBefore: 8760h  # 1 year
