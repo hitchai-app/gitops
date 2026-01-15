@@ -4,6 +4,7 @@ metadata:
   name: sentry
   namespace: sentry-system
 spec:
+  taskID: "2026-01-15-1308"
   configuration:
     clusters:
       - name: sentry

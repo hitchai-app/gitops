@@ -8,6 +8,9 @@ sentry:
   existingSecret: sentry-sentry-secret
   # Mount Valkey CA into Sentry pods for Redis TLS verification
   web:
+    env:
+      - name: SSL_CERT_FILE
+        value: /etc/sentry/ca/ca.crt
     volumeMounts:
       - name: redis-ca
         mountPath: /etc/sentry/ca
@@ -20,6 +23,9 @@ sentry:
             - key: ca.crt
               path: ca.crt
   worker:
+    env:
+      - name: SSL_CERT_FILE
+        value: /etc/sentry/ca/ca.crt
     volumeMounts:
       - name: redis-ca
         mountPath: /etc/sentry/ca
@@ -32,6 +38,9 @@ sentry:
             - key: ca.crt
               path: ca.crt
   cron:
+    env:
+      - name: SSL_CERT_FILE
+        value: /etc/sentry/ca/ca.crt
     volumeMounts:
       - name: redis-ca
         mountPath: /etc/sentry/ca
@@ -117,13 +126,16 @@ serviceMonitor:
 
 # Extend sentry.conf.py with Redis TLS CA config
 config:
-  sentryConfPy: |
-    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_ca_certs"] = "/etc/sentry/ca/ca.crt"
   snubaSettingsPy: |
     REDIS_SSL_CA_CERTS = env("REDIS_SSL_CA_CERTS", "/etc/sentry/ca/ca.crt")
 
 snuba:
   api:
+    env:
+      - name: SSL_CERT_FILE
+        value: /etc/sentry/ca/ca.crt
+      - name: REDIS_SSL_CA_CERTS
+        value: /etc/sentry/ca/ca.crt
     volumeMounts:
       - name: redis-ca
         mountPath: /etc/sentry/ca
