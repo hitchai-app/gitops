@@ -12,7 +12,17 @@ spec:
     users:
       default:
         networks:
+          ip:
+            - 127.0.0.1
+            - "::1"
+      sentry:
+        networks:
           host_regexp: ".*\\.sentry-system\\.svc\\.cluster\\.local$"
+        password_sha256_hex:
+          valueFrom:
+            secretKeyRef:
+              name: sentry-clickhouse-auth
+              key: clickhouse-password-sha256
   templates:
     podTemplates:
       - name: clickhouse

@@ -78,8 +78,10 @@ externalClickhouse:
   httpPort: 8123
   tcpPort: 9000
   database: default
-  username: default
-  # No password - TLS enabled
+  username: sentry
+  existingSecret: sentry-clickhouse-auth
+  existingSecretKey: clickhouse-password
+  # TLS enabled
 
 # External Kafka (Strimzi operator with mTLS)
 externalKafka:
@@ -116,9 +118,7 @@ serviceMonitor:
 # Extend sentry.conf.py with Redis TLS CA config
 config:
   sentryConfPy: |
-    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_options"] = {
-        "ca_certs": "/etc/sentry/ca/ca.crt",
-    }
+    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_ca_certs"] = "/etc/sentry/ca/ca.crt"
   snubaSettingsPy: |
     REDIS_SSL_CA_CERTS = env("REDIS_SSL_CA_CERTS", "/etc/sentry/ca/ca.crt")
 
