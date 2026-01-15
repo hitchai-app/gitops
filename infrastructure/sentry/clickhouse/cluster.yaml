@@ -54,11 +54,14 @@ spec:
                     path: server.crt
                   - key: tls.key
                     path: server.key
+            # Mount CA certificate for TLS verification
+            # Note: sentry-ca Certificate creates tls.key/tls.crt (cert-manager standard)
+            # We mount tls.crt as ca.crt so ClickHouse can verify server certificates
             - name: ca-cert
               secret:
                 secretName: sentry-ca-tls
                 items:
-                  - key: ca.crt
+                  - key: tls.crt
                     path: ca.crt
             - name: tls-config
               configMap:
