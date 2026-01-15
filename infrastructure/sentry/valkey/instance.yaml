@@ -8,11 +8,12 @@ spec:
   persistence:
     enabled: false
   # TLS configuration - cert-manager integration
+  # Note: Valkey operator automatically creates Certificate using this issuer
   tls:
     enabled: true
     certManager:
       issuer:
-        name: sentry-internal-ca
+        name: internal-ca-issuer
         kind: ClusterIssuer
   resources:
     requests:
