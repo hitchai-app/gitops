@@ -20,6 +20,12 @@ spec:
     helm:
       releaseName: clickhouse-operator
       valuesObject:
+        configs:
+          files:
+            config.yaml:
+              watch:
+                namespaces:
+                  - sentry-system
         operator:
           resources:
             requests:

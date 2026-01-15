@@ -97,4 +97,6 @@ serviceMonitor:
 # Extend sentry.conf.py with Redis TLS CA config
 config:
   sentryConfPy: |
-    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_ca_certs"] = "/etc/sentry/ca/ca.crt"
+    SENTRY_OPTIONS["redis.clusters"]["default"]["hosts"][0]["ssl_options"] = {
+        "ca_certs": "/etc/sentry/ca/ca.crt",
+    }
