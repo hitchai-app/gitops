@@ -1,6 +1,6 @@
 # 0037. Strimzi Kafka Operator
 
-**Status**: Proposed
+**Status**: Superseded by ADR 0040
 
 **Date**: 2026-01-14
 
