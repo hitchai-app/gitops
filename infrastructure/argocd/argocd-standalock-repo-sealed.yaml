@@ -8,8 +8,12 @@ metadata:
   namespace: argocd
 spec:
   encryptedData:
-    password: AgBuuQFIbNlv5H23vRewqt3GU1v2w/r1mn+PjRUX03wBrBrBrzir6zGeG5OyVlW85f7U4/tU7oc0LXJHSt8LiT0+wO5sBJVn90RjWFXZcuclBkVCLgIX7f6iUga4cxEnI8K30tcAEWw6ieKifyNBVFjrr+CESfosMlMBiDojQbo0cOToBoulCRZLJ4XWC7+DgnVB1vCB1m3n5Xy2yqb+nGgNqbdRb8yM8cSqynlkZej7V8jdsBEE+naUWnWnEXp51zopmZ9pqIHblz/sQ2e3ArZI/uiDZfoMxTxizxWSO/d08PhXEt8yZ0LCFP1pvPq+RbNB76FBsWELqPXxEjzNRO+0YlKXn9XuuDJburIDTbaHt6nKM2RgGTvUWyISxpjQNovCdDbZPLEtEd8kulrMWdhpoKN3zYej5zfNQYeQ2gQX32vhij17aaUuTXipeM87MLjXgYm7/yot/vYVI2knpmLCatIapwELV2OQjpmJ1S/wE2E9d7PKvay/CiNcMC06nsr6ulEdavMloElg2BiAF8INXZgm1O5W66P2i2tro0sEvIjOU0APo/UF1Q+oOmuVi2Ld2MAQggoIdHy4OJjHqE+wBozJtohJP9IBUFow9jPZh5SXNtX+v0HVVe/ckutD3J0IPUmxxgSUcX5/RIVGENNiY45I/ooPUbDuRDWFRsQuRKiJXmdkRWw+ZJz8fb1wVYuwRW7v6vBZB6l4OvkI7thNYA8T4f9qX1kO
+    password: AgAMblUt2fQjV73X9ybZbl3kPqjaZBLAX6iskMx07ECwrV2ZtMetfw58xHuFcptsyZyIt2J1HP52I6dnoKvOCoSrMIHpih7kQDQcaorvj4xE8xmcEhlZOT2JTM7IhviCVziHWduy1+p9S27FDNQvCtEj2L/FpZXlsu/M9y+8kEfVHUR+evmig/Zi63ZbAKGkrlm0iqD7Hgkl6MtX2e5WnlJLZMqj6XABzyTcXaNhi0DHdtMAZIuzw/hbQ/jBeCNPOYMUNj6SdOiZHCC59Q3kGAnRMxnSJsMiJje0TCNvzEOlw0h1UH+3hJ1f6MtufqaJS36ACg7peQJgGC2nQiVfqtaVhM3XLleJbxrT5Nln3O1Qs1n3f7mok02hupqIS7OsBFQRDBlkDn5EwX+KmuVU7qftkXpLfuMVKDqkYCTHsN88btRqQ5XX2NRUCr1qVPNme6DzHjv78C+MIBTYh6bubfB7XNnJoyFadELOw3EmS+q9nn7FQAYXh/qn1gDp7MRHmHIQTBFVzZg4Dzt5IExDKhpGlmCnNv3B2Jv3lfOM0psbNfuYzZTn2eAzdNaU4dlbvcO4CmhKn7+l5gECsANo/KdAcVCmHsQpOnTRXHAfD0nypeVvaI6bX9b2Mz8O3SWxVZ72FcYmHcWTwqtoZALXBxPrTa59NsHAkwLobb8NRNwZrOSRHSIOLXZ+/pyOpiAo1eKlLs0Di5udHEPDfDDvu5Hf6Wsr5JhNk8Sh
   template:
+    data:
+      type: git
+      url: https://gitlab.ops.last-try.org/Flawless/standalock.git
+      username: gitlab+deploy-token-15
     metadata:
       annotations:
         sealedsecrets.bitnami.com/namespace-wide: "true"
@@ -18,7 +22,3 @@ spec:
       name: argocd-standalock-repo
       namespace: argocd
     type: Opaque
-    data:
-      type: git
-      url: https://gitlab.ops.last-try.org/Flawless/standalock.git
-      username: gitlab+deploy-token-15
