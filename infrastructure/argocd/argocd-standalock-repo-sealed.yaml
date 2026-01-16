@@ -1,0 +1,17 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/namespace-wide: "true"
+  name: argocd-standalock-repo
+  namespace: argocd
+spec:
+  encryptedData:
+    creds: AgAkv+fjDI5ImXR619xHCf0xkPgtD1owmmx7jGORZq1lTeEjYwr1KUk7K9s02zIoUmWw5CqVk+dqGjk54u56Fa1tBcHuUU0IYU5QvAnP3oy/OQlBmFU27EjlDxrnbHhX+hjC6OeT0m4ItkeQBwSM0MD4jDZMwAQ3ET/f1/aLfbyrtmxGEajGeEC0bJbj0fJ5X7AllFbkVk/NARFNvNpcH4trgKzKaE84nYp73zI8ASwlo+jZ1IoRM7BgTXgZFsoyJnHoNycZKVn5kcVABjxr1RH30EiXcOqOml3F4JEnPhVNA9qD8YHdiSyKjw4YzZVjtAzaHrolOEE/WO6DsFBoUlD1kzP1Jc/GsmRjZ/prM85BvEVmULSMv/j3FIs7q0SpAe5/HukNccDnaz5ngGNIphDovCidxs5KNjZmx0C5E4PmUp+sH7YzO3mp37CNV6HtolYvd+v8LAZDziEgKx1hKuLfrO0SDqPxuJvB+PZPnQzx61EhE3+5wIasMk8EvKT2XbOJ9YihWo7sanVAXznstRwz78tw9Py3sfxW3pgAAj83rQgDA2sf3k5NeYerYertrnJ1aOJcK4Tny/HcWUKOWFNEIF/h+CzETqmF28Gf3fUrMuJRRgUEHjIEi8paDQpGF7sy7ExDD5HXQyyNCxgGSGwySdW1RNSvb9FwBlD2Cqvb/cm5j4Gqp9hEVT+NWqm7BwDP8S4/QpR6jdSkMBxBxPaBCF0eHzT7BhoV4ne3Vq/m/eVIXsLWlXmJYyj/16e4mI=
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/namespace-wide: "true"
+      name: argocd-standalock-repo
+      namespace: argocd
