@@ -1,0 +1,17 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/namespace-wide: "true"
+  name: gitlab-registry-creds
+  namespace: argocd
+spec:
+  encryptedData:
+    creds: AgBI1ERK7w8lXbTQeiVQVSjgB2Ow2Rm3bDt1wZELc7lGzvcdKU6/AbJ6YC1M2pNrBL9zxDEhTHostTIV3hklUlMbdrws2HYB3soKAqIuusQgELXWbV/qGQvb94Af8oHvS3ojjFkpKe9bHo7NIGN3rVi6Ioe8g3eonzh7O0oT/vsqln7hvpGp9y/W/87U9ErhwoGLUfF/eDBAv0qnZXPx5whgHhZ3J3I7yhfpIoaPWhxJUed87qWF+hik+5j5PCW9IiWoe5oe3OtnbbPd0pE/s/VHFosW6LT8sqWqo+fuxZT24DQWl0jv2zkEiD08Ts0CjWUtc3wONh9ZxX0/Df5LJpAhIJAAGK8x7XxIHBRMSKzD2ZgXbPM7kQQGnz6t5acQIyn9jynVoJ1+uYLEpFm5HJeA2pgCQSzMswc0s1IgwygWd0YPhCukSHaKT3QjF39E0+D7dyeOer9tWvPimdyhsI9bqZj3d8M/rN6rFbk3OMzJcMDI7NMx5N8kvx5ugL92VWFKqTDz3JoGWNZLhkOZUG9UxNxXschmTUdlNS9BO6umIC4YcXZJ2rU3wJgs0TMFQCny9HkIS1x0Ssl3qNXV8SKkYIXbI7qd0cU/DXmFIH7EyZEpH967pa7tYGPH3O9aTnFKtCghiB8s0UD7kRxlLCNqeu/XDUONVIaxt0JUdyFZJRKGP5i3xqo4mJeMYqPi0VKQkqw59fsqeDBsql0nEJjO19ecR3l5X2E2cDEBdZaRunU3B/0AW/P1QbhH8Guwe2PjHxua7+Vh89H8
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/namespace-wide: "true"
+      name: gitlab-registry-creds
+      namespace: argocd

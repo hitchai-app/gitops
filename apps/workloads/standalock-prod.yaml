@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: standalock-prod
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: standalock=registry.ops.last-try.org/flawless/standalock
+    argocd-image-updater.argoproj.io/standalock.update-strategy: name
+    argocd-image-updater.argoproj.io/standalock.allow-tags: regexp:^[a-f0-9]{8}$
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://gitlab.ops.last-try.org/Flawless/standalock.git
+    targetRevision: main
+    path: deploy/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: standalock
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
