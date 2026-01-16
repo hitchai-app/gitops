@@ -3,6 +3,10 @@ kind: Application
 metadata:
   name: standalock-prod
   namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: standalock=registry.ops.last-try.org/flawless/standalock
+    argocd-image-updater.argoproj.io/standalock.update-strategy: name
+    argocd-image-updater.argoproj.io/standalock.allow-tags: regexp:^[a-f0-9]{8}$
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -18,3 +22,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
