@@ -8,10 +8,17 @@ metadata:
   namespace: argocd
 spec:
   encryptedData:
-    creds: AgAkv+fjDI5ImXR619xHCf0xkPgtD1owmmx7jGORZq1lTeEjYwr1KUk7K9s02zIoUmWw5CqVk+dqGjk54u56Fa1tBcHuUU0IYU5QvAnP3oy/OQlBmFU27EjlDxrnbHhX+hjC6OeT0m4ItkeQBwSM0MD4jDZMwAQ3ET/f1/aLfbyrtmxGEajGeEC0bJbj0fJ5X7AllFbkVk/NARFNvNpcH4trgKzKaE84nYp73zI8ASwlo+jZ1IoRM7BgTXgZFsoyJnHoNycZKVn5kcVABjxr1RH30EiXcOqOml3F4JEnPhVNA9qD8YHdiSyKjw4YzZVjtAzaHrolOEE/WO6DsFBoUlD1kzP1Jc/GsmRjZ/prM85BvEVmULSMv/j3FIs7q0SpAe5/HukNccDnaz5ngGNIphDovCidxs5KNjZmx0C5E4PmUp+sH7YzO3mp37CNV6HtolYvd+v8LAZDziEgKx1hKuLfrO0SDqPxuJvB+PZPnQzx61EhE3+5wIasMk8EvKT2XbOJ9YihWo7sanVAXznstRwz78tw9Py3sfxW3pgAAj83rQgDA2sf3k5NeYerYertrnJ1aOJcK4Tny/HcWUKOWFNEIF/h+CzETqmF28Gf3fUrMuJRRgUEHjIEi8paDQpGF7sy7ExDD5HXQyyNCxgGSGwySdW1RNSvb9FwBlD2Cqvb/cm5j4Gqp9hEVT+NWqm7BwDP8S4/QpR6jdSkMBxBxPaBCF0eHzT7BhoV4ne3Vq/m/eVIXsLWlXmJYyj/16e4mI=
+    password: AgBuuQFIbNlv5H23vRewqt3GU1v2w/r1mn+PjRUX03wBrBrBrzir6zGeG5OyVlW85f7U4/tU7oc0LXJHSt8LiT0+wO5sBJVn90RjWFXZcuclBkVCLgIX7f6iUga4cxEnI8K30tcAEWw6ieKifyNBVFjrr+CESfosMlMBiDojQbo0cOToBoulCRZLJ4XWC7+DgnVB1vCB1m3n5Xy2yqb+nGgNqbdRb8yM8cSqynlkZej7V8jdsBEE+naUWnWnEXp51zopmZ9pqIHblz/sQ2e3ArZI/uiDZfoMxTxizxWSO/d08PhXEt8yZ0LCFP1pvPq+RbNB76FBsWELqPXxEjzNRO+0YlKXn9XuuDJburIDTbaHt6nKM2RgGTvUWyISxpjQNovCdDbZPLEtEd8kulrMWdhpoKN3zYej5zfNQYeQ2gQX32vhij17aaUuTXipeM87MLjXgYm7/yot/vYVI2knpmLCatIapwELV2OQjpmJ1S/wE2E9d7PKvay/CiNcMC06nsr6ulEdavMloElg2BiAF8INXZgm1O5W66P2i2tro0sEvIjOU0APo/UF1Q+oOmuVi2Ld2MAQggoIdHy4OJjHqE+wBozJtohJP9IBUFow9jPZh5SXNtX+v0HVVe/ckutD3J0IPUmxxgSUcX5/RIVGENNiY45I/ooPUbDuRDWFRsQuRKiJXmdkRWw+ZJz8fb1wVYuwRW7v6vBZB6l4OvkI7thNYA8T4f9qX1kO
   template:
     metadata:
       annotations:
         sealedsecrets.bitnami.com/namespace-wide: "true"
+      labels:
+        argocd.argoproj.io/secret-type: repository
       name: argocd-standalock-repo
       namespace: argocd
+    type: Opaque
+    data:
+      type: git
+      url: https://gitlab.ops.last-try.org/Flawless/standalock.git
+      username: gitlab+deploy-token-15
