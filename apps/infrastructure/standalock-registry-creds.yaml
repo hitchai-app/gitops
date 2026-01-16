@@ -1,0 +1,18 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  annotations:
+    sealedsecrets.bitnami.com/namespace-wide: "true"
+  name: standalock-registry-creds
+  namespace: standalock
+spec:
+  encryptedData:
+    .dockerconfigjson: AgC0ZiFRs96ICTrAvnO7eMuQ/WS8s4yopx+nBlxxpg0EQBn8w2LBuStQM2uaPT79yoD3Xv+3aDWbK/CfCMbEpBijVDOw5c3VDm/w1OASgFTrer4zSu1M/1LLIj6Rks+3VQ6pL7oYyGdtKPUvJrDc2bENI5s2egj4BHLhqi75Ht0jCVcmjaTlZipy7rTbvsNY2MQTKiafQuLU+51+4m2MGXNOCVVzBDT53RAdRmkJewGZp/J804W8Qnh/VXoH7auS68dJ0qS/SXiVOcIWC47sE7M9K8MDpT40tvbWNqhadArFqG5SUX2D7SaTsxqXqa2f3WSS1wpHsGDSmcwixDoEVTiZz39pgi5LRMpt1XSDDXO+POqwfQ6e1m6oPXjjRwzgtdwjCLz9Yb2lzoOK3aCTRNmNLDQZdh8BY8BGPXAd913sLdm8LCg/2aYNgycB1Ia81AuzJ6e9r6KciaOjvTY4euQu1+fMtloG1aqgnwKMMQ45CU1ZRTKS+jwfQxH2KU0ZPOsn8JrIBu7G5uagWonZGbtBwQiEXjTBioMB/fKXDSEsHoyglHwcShjtXAtB3VeyFEPfwnGtGWQxXccC8s/MjjUNFQvbCAP3lgIAP44cOYZXw6qzKk0zA6n/+O64qBEcd6GLz0aIs5FMXks+r3ugC0+6bAildrMEops4M6Se158Fd9mM1/guq21NXMuiLk8kjkGWkmMVwygbN0elzNBFI8HxvZM7DsvXkkOnq2asp/VD1H94pGWRIgEARZjoxYtffkWwYO+5pfBDzY4nt3refIpqOdWN2djdHWgMuadl3DqT46k2r6j0lh0Mka2s+kCw+xzvRAToexg/LLp1/jQfabTxtfYptvm8a3Ib1wXccLqcU1kLvkB4/YDJ3h0babfMCMUkt3G0FrRY+MG+Uz5zK6F3T/3/I6J5lIN5io29SWG9QSmyUdFrpIpjyH6qBDN5SaM+H12coxrjB7ASjGCaQfQcMU+awuRXbxc=
+  template:
+    metadata:
+      annotations:
+        sealedsecrets.bitnami.com/namespace-wide: "true"
+      name: standalock-registry-creds
+      namespace: standalock
+    type: kubernetes.io/dockerconfigjson
