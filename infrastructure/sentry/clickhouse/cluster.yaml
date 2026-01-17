@@ -4,12 +4,15 @@ metadata:
   name: sentry
   namespace: sentry-system
 spec:
-  taskID: "2026-01-17-1710"
+  taskID: "2026-01-17-1820"
   configuration:
     clusters:
       - name: sentry
         layout:
           replicasCount: 1
+        templates:
+          podTemplate: clickhouse
+          volumeClaimTemplate: data
     users:
       default:
         networks:
@@ -32,10 +35,8 @@ spec:
         spec:
           containers:
             - name: clickhouse
-              # Pin ClickHouse version to avoid schema propagation bug
-              # See: https://github.com/ClickHouse/ClickHouse/issues/89693
-              # Bug affects ClickHouse 25.8.10+, use 25.8.9 or earlier
-              image: clickhouse/clickhouse-server:25.8.9
+              # Pin ClickHouse to a Snuba-tested version to avoid migration errors.
+              image: clickhouse/clickhouse-server:25.3.6.10034
               resources:
                 requests:
                   cpu: 500m
