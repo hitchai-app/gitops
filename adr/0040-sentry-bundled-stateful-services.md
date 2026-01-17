@@ -1,6 +1,6 @@
 # 0040. Sentry Bundled Stateful Services
 
-**Status**: Accepted
+**Status**: Superseded by ADR 0041
 
 **Date**: 2026-01-15
 
