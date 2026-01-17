@@ -24,6 +24,8 @@ For architectural context and onboarding narrative, read [`CLAUDE.md`](CLAUDE.md
 
 **Public Certificate:** `.sealed-secrets-pub.pem` (repository root)
 
+**Rule:** Never edit sealed secrets manually. Use the `sealed-secrets` skill guide at `~/.claude/skills/sealed-secrets/SKILL.md` and `kubeseal --merge-into` for updates.
+
 **Create new sealed secret:**
 ```bash
 kubeseal --cert .sealed-secrets-pub.pem --format yaml < plaintext-secret.yaml > sealed-secret.yaml

@@ -57,6 +57,11 @@ Current: Single-node Hetzner server → Future: Multi-node cluster
 
 See @adr/0010-gitops-repository-structure.md for detailed bootstrap workflow.
 
+## Sealed Secrets Handling
+
+- **Never edit sealed secrets manually.** Use the `sealed-secrets` skill guide at `~/.claude/skills/sealed-secrets/SKILL.md`.
+- Prefer `kubeseal --merge-into` for updates to preserve existing keys and avoid plaintext exposure.
+
 ## Architecture Decisions
 
 All major architectural decisions are documented in `adr/`:
