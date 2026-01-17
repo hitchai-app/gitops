@@ -36,8 +36,8 @@ jobs:
         run: |
           CHART_VERSION=$(
             awk '
-              $1=="chart:" && $2=="sentry" {in=1}
-              in && $1=="targetRevision:" {print $2; exit}
+              $1=="chart:" && $2=="sentry" {found=1}
+              found && $1=="targetRevision:" {print $2; exit}
             ' apps/infrastructure/sentry.yaml
           )
 
