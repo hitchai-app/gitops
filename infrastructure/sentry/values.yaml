@@ -75,7 +75,6 @@ config:
   configYml:
     system.url-prefix: "https://sentry.ops.last-try.org"
   sentryConfPy: |-
-    from sentry.conf.server import *  # noqa
     OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID")
     OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET")
     OIDC_SCOPE = os.environ.get("OIDC_SCOPE", "openid profile email")
