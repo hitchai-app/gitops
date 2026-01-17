@@ -1,6 +1,6 @@
 name: Build sentry-oidc image
 
-on:
+"on":
   push:
     branches: [master]
     paths:
