@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: hitchai-app-runners
     steps:
       - name: Checkout
         uses: actions/checkout@v4
