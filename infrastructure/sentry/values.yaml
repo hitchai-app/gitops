@@ -16,7 +16,8 @@ ingress:
 # Custom Sentry image with OIDC plugin (sentry-auth-oidc)
 images:
   sentry:
-    # Update this tag after rebuilding the custom image
+    # Tag must match Sentry chart appVersion (from apps/infrastructure/sentry.yaml).
+    # Workflow derives appVersion from chart and builds ${appVersion}-oidc.
     repository: ghcr.io/hitchai-app/sentry-oidc
     tag: 25.12.1-oidc
 
