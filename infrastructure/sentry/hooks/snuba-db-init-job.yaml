@@ -30,7 +30,7 @@ spec:
             - name: SNUBA_SETTINGS
               value: /etc/snuba/settings.py
             - name: DEFAULT_BROKERS
-              value: sentry-kafka:9092
+              value: sentry-kafka-kafka-bootstrap:9092
             - name: KAFKA_SECURITY_PROTOCOL
               value: PLAINTEXT
             - name: CLICKHOUSE_MAX_CONNECTIONS
