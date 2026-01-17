@@ -39,8 +39,8 @@ config:
         redirectURI: https://auth.ops.last-try.org/callback
         orgs:
           - name: hitchai-app
-            # No teams specified = fetch all teams user is member of
-            # Groups will be returned as: hitchai-app:<team-slug>
+          # No teams specified = fetch all teams user is member of
+          # Groups will be returned as: hitchai-app:<team-slug>
 
   staticClients:
     # Grafana (native OIDC)
@@ -100,6 +100,13 @@ config:
         - 'https://glitchtip.ops.last-try.org/accounts/oidc/dex/login/callback/'
       name: 'GlitchTip'
       secretEnv: DEX_CLIENT_SECRET_GLITCHTIP
+
+    # Sentry (OIDC via sentry-auth-oidc)
+    - id: sentry
+      redirectURIs:
+        - 'https://sentry.ops.last-try.org/auth/sso/'
+      name: 'Sentry'
+      secretEnv: DEX_CLIENT_SECRET_SENTRY
 
     # OAuth2 Proxy for Green Admin (shared across stage/prod/PRs)
     # Single callback URL - oauth2-proxy handles redirect back to original URL
@@ -189,6 +196,11 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: glitchtip-client-secret
+  - name: DEX_CLIENT_SECRET_SENTRY
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: sentry-client-secret
   - name: DEX_CLIENT_SECRET_GREEN_ADMIN
     valueFrom:
       secretKeyRef:
