@@ -25,6 +25,7 @@ images:
 # Custom Sentry image with OIDC plugin (sentry-auth-oidc)
 images:
   sentry:
+    # Update this tag after rebuilding the custom image in infrastructure/sentry/oidc
     repository: ghcr.io/hitchai-app/sentry-oidc
     tag: 25.9.0-oidc
 
