@@ -81,9 +81,12 @@ config:
     OIDC_SCOPE = os.environ.get("OIDC_SCOPE", "openid profile email")
     OIDC_DOMAIN = os.environ.get("OIDC_DOMAIN")
     OIDC_ISSUER = os.environ.get("OIDC_ISSUER")
-    AUTH_PROVIDERS = AUTH_PROVIDERS + (
-      ("sentry_auth_oidc", {"name": "OIDC"}),
-    )
+    if isinstance(AUTH_PROVIDERS, dict):
+      AUTH_PROVIDERS["sentry_auth_oidc"] = {"name": "OIDC"}
+    else:
+      AUTH_PROVIDERS = AUTH_PROVIDERS + (
+        ("sentry_auth_oidc", {"name": "OIDC"}),
+      )
     CSRF_TRUSTED_ORIGINS = ["https://sentry.ops.last-try.org"]
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
