@@ -111,8 +111,7 @@ externalClickhouse:
   port: 9000
   username: sentry
   existingSecret: sentry-clickhouse-auth
-  existingSecretKeys:
-    password: clickhouse-password
+  existingSecretKey: clickhouse-password
 
 # Ensure Snuba uses the ClickHouse user configured above.
 snuba:
