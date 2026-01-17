@@ -114,6 +114,12 @@ externalClickhouse:
   existingSecretKeys:
     password: clickhouse-password
 
+# Ensure Snuba uses the ClickHouse user configured above.
+snuba:
+  env:
+    - name: CLICKHOUSE_USER
+      value: sentry
+
 # External Kafka (operator-managed)
 externalKafka:
   host: sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local
