@@ -19,8 +19,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Read image tag
-        run: echo "IMAGE_TAG=$(cat infrastructure/sentry/oidc/image-tag.txt)" >> "$GITHUB_ENV"
+      - name: Resolve Sentry version
+        run: |
+          CHART_VERSION=$(
+            awk '
+              $1=="chart:" && $2=="sentry" {in=1}
+              in && $1=="targetRevision:" {print $2; exit}
+            ' apps/infrastructure/sentry.yaml
+          )
+
+          APP_VERSION=$(
+            curl -fsSL \
+              "https://raw.githubusercontent.com/sentry-kubernetes/charts/sentry-v${CHART_VERSION}/charts/sentry/Chart.yaml" \
+            | awk -F': ' '/^appVersion:/{print $2; exit}' \
+            | tr -d '"'
+          )
+
+          if [ -z "${APP_VERSION}" ]; then
+            APP_VERSION=$(cat infrastructure/sentry/oidc/image-tag.txt)
+          fi
+
+          echo "SENTRY_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${APP_VERSION}-oidc" >> "$GITHUB_ENV"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -38,6 +58,8 @@ jobs:
           context: infrastructure/sentry/oidc
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/sentry-oidc:${{ env.IMAGE_TAG }}
+          build-args: |
+            SENTRY_VERSION=${{ env.SENTRY_VERSION }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}

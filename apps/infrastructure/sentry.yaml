@@ -13,7 +13,7 @@ spec:
     # Helm chart from sentry-kubernetes community repo
     - repoURL: https://sentry-kubernetes.github.io/charts
       chart: sentry
-      targetRevision: 27.11.0
+      targetRevision: 28.0.2
       helm:
         releaseName: sentry
         valueFiles:

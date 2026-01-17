@@ -20,7 +20,7 @@ images:
   sentry:
     # Update this tag (and infrastructure/sentry/oidc/image-tag.txt) after rebuilding the custom image
     repository: ghcr.io/hitchai-app/sentry-oidc
-    tag: 27.11.0-oidc
+    tag: 25.12.1-oidc
 
 # Use existing Secret managed by SealedSecret instead of Helm hook
 # This prevents conflict between Helm-created Secret and SealedSecret controller
