@@ -69,3 +69,27 @@ spec:
       name: sentry-zookeeper-clickhouse
       jsonPointers:
         - /spec/volumeClaimTemplates
+    - group: apps
+      kind: StatefulSet
+      name: sentry-taskbroker-default
+      jsonPointers:
+        - /spec/volumeClaimTemplates
+        - /spec/template/metadata/annotations
+    - group: apps
+      kind: StatefulSet
+      name: sentry-taskbroker-ingest
+      jsonPointers:
+        - /spec/volumeClaimTemplates
+        - /spec/template/metadata/annotations
+    - group: apps
+      kind: StatefulSet
+      name: sentry-taskbroker-long
+      jsonPointers:
+        - /spec/volumeClaimTemplates
+        - /spec/template/metadata/annotations
+    - group: apps
+      kind: StatefulSet
+      name: sentry-taskbroker-products
+      jsonPointers:
+        - /spec/volumeClaimTemplates
+        - /spec/template/metadata/annotations
