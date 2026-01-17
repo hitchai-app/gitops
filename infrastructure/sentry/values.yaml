@@ -116,6 +116,8 @@ externalClickhouse:
 
 # External Kafka (operator-managed)
 externalKafka:
+  host: sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local
+  port: 9092
   bootstrapServers: sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local:9092
 
 # External PostgreSQL (CloudNativePG with TLS cert auth)
