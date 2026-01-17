@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: strimzi-operator
+  namespace: strimzi-system
+spec:
+  selector:
+    matchLabels:
+      app: strimzi
+      name: strimzi-cluster-operator
+  namespaceSelector:
+    matchNames:
+      - strimzi-system
+  podMetricsEndpoints:
+    - port: http
+      interval: 30s
