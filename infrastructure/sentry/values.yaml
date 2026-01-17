@@ -72,7 +72,7 @@ sentry:
         value: https://dex.ops.last-try.org
 
 config:
-  configYml: |-
+  configYml:
     system.url-prefix: "https://sentry.ops.last-try.org"
   sentryConfPy: |-
     from sentry.conf.server import *  # noqa
