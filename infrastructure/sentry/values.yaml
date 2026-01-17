@@ -107,7 +107,7 @@ zookeeper:
 
 # External ClickHouse (operator-managed)
 externalClickhouse:
-  host: chi-sentry-sentry-0-0.sentry-system.svc.cluster.local
+  host: clickhouse-sentry
   port: 9000
   username: sentry
   existingSecret: sentry-clickhouse-auth
@@ -116,6 +116,8 @@ externalClickhouse:
 # Ensure Snuba uses the ClickHouse user configured above.
 snuba:
   env:
+    - name: CLICKHOUSE_HOST
+      value: clickhouse-sentry
     - name: CLICKHOUSE_USER
       value: sentry
     - name: CLICKHOUSE_PASSWORD
