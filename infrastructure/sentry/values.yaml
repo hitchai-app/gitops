@@ -37,9 +37,9 @@ sentry:
       - name: OIDC_SCOPE
         value: "openid profile email"
       - name: OIDC_DOMAIN
-        value: https://dex.ops.last-try.org
+        value: https://auth.ops.last-try.org
       - name: OIDC_ISSUER
-        value: https://dex.ops.last-try.org
+        value: https://auth.ops.last-try.org
   worker:
     env:
       - name: OIDC_CLIENT_ID
@@ -52,9 +52,9 @@ sentry:
       - name: OIDC_SCOPE
         value: "openid profile email"
       - name: OIDC_DOMAIN
-        value: https://dex.ops.last-try.org
+        value: https://auth.ops.last-try.org
       - name: OIDC_ISSUER
-        value: https://dex.ops.last-try.org
+        value: https://auth.ops.last-try.org
   cron:
     env:
       - name: OIDC_CLIENT_ID
@@ -67,9 +67,9 @@ sentry:
       - name: OIDC_SCOPE
         value: "openid profile email"
       - name: OIDC_DOMAIN
-        value: https://dex.ops.last-try.org
+        value: https://auth.ops.last-try.org
       - name: OIDC_ISSUER
-        value: https://dex.ops.last-try.org
+        value: https://auth.ops.last-try.org
 
 config:
   configYml:
