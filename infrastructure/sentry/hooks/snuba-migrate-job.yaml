@@ -1,0 +1,45 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sentry-snuba-migrate
+  namespace: sentry-system
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      annotations:
+        sentry.ops.last-try.org/job: snuba-migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: snuba-migrate
+          # Keep in sync with Sentry chart appVersion.
+          image: ghcr.io/getsentry/snuba:25.12.1
+          imagePullPolicy: IfNotPresent
+          command: ["snuba", "migrations", "migrate", "--force"]
+          env:
+            - name: SNUBA_SETTINGS
+              value: /etc/snuba/settings.py
+            - name: DEFAULT_BROKERS
+              value: sentry-kafka:9092
+            - name: KAFKA_SECURITY_PROTOCOL
+              value: PLAINTEXT
+            - name: CLICKHOUSE_MAX_CONNECTIONS
+              value: "100"
+            - name: REDIS_PORT
+              value: "6379"
+          envFrom:
+            - secretRef:
+                name: sentry-snuba-env
+          volumeMounts:
+            - name: config
+              mountPath: /etc/snuba
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: sentry-snuba
