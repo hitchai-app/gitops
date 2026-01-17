@@ -1,0 +1,84 @@
+name: Build sentry-oidc image
+
+"on":
+  push:
+    branches: [master]
+    paths:
+      - infrastructure/sentry/oidc/**
+      - apps/infrastructure/sentry.yaml
+      - infrastructure/sentry/values.yaml
+      - .github/workflows/sentry-oidc-image.yml
+  pull_request:
+    paths:
+      - infrastructure/sentry/oidc/**
+      - apps/infrastructure/sentry.yaml
+      - infrastructure/sentry/values.yaml
+      - .github/workflows/sentry-oidc-image.yml
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Override image tag (without -oidc suffix)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: hitchai-app-runners
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve Sentry version
+        run: |
+          CHART_VERSION=$(
+            awk '
+              $1=="chart:" && $2=="sentry" {found=1}
+              found && $1=="targetRevision:" {print $2; exit}
+            ' apps/infrastructure/sentry.yaml
+          )
+
+          APP_VERSION=$(
+            curl -fsSL \
+              "https://raw.githubusercontent.com/sentry-kubernetes/charts/sentry-v${CHART_VERSION}/charts/sentry/Chart.yaml" \
+            | awk -F': ' '/^appVersion:/{print $2; exit}' \
+            | tr -d '"'
+          )
+
+          if [ -n "${{ inputs.image_tag || '' }}" ]; then
+            APP_VERSION="${{ inputs.image_tag }}"
+          fi
+
+          if [ -z "${APP_VERSION}" ]; then
+            echo "appVersion not found" >&2
+            exit 1
+          fi
+
+          echo "SENTRY_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${APP_VERSION}-oidc" >> "$GITHUB_ENV"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: infrastructure/sentry/oidc
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          tags: ghcr.io/${{ github.repository_owner }}/sentry-oidc:${{ env.IMAGE_TAG }}
+          build-args: |
+            SENTRY_VERSION=${{ env.SENTRY_VERSION }}
+          labels: |
+            org.opencontainers.image.source=${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}

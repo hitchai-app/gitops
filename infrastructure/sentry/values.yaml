@@ -3,20 +3,89 @@
 hostname: sentry.ops.last-try.org
 
 # Use embedded ingress (Traefik) with cert-manager TLS
-nginx:
-  ingress:
-    enabled: true
-    hostname: sentry.ops.last-try.org
-    ingressClassName: traefik
-    annotations:
-      cert-manager.io/cluster-issuer: letsencrypt-prod
-      kubernetes.io/ingress.class: traefik
-    tls: true
+ingress:
+  enabled: true
+  regexPathStyle: traefik
+  ingressClassName: traefik
+  hostname: sentry.ops.last-try.org
+  tls:
+    - secretName: sentry.ops.last-try.org-tls
+      hosts:
+        - sentry.ops.last-try.org
+
+# Custom Sentry image with OIDC plugin (sentry-auth-oidc)
+images:
+  sentry:
+    # Tag must match Sentry chart appVersion (from apps/infrastructure/sentry.yaml).
+    # Workflow derives appVersion from chart and builds ${appVersion}-oidc.
+    repository: ghcr.io/hitchai-app/sentry-oidc
+    tag: 25.12.1-oidc
 
 # Use existing Secret managed by SealedSecret instead of Helm hook
 # This prevents conflict between Helm-created Secret and SealedSecret controller
 sentry:
   existingSecret: sentry-sentry-secret
+  web:
+    env:
+      - name: OIDC_CLIENT_ID
+        value: sentry
+      - name: OIDC_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: dex-secrets
+            key: sentry-client-secret
+      - name: OIDC_SCOPE
+        value: "openid profile email"
+      - name: OIDC_DOMAIN
+        value: https://dex.ops.last-try.org
+      - name: OIDC_ISSUER
+        value: https://dex.ops.last-try.org
+  worker:
+    env:
+      - name: OIDC_CLIENT_ID
+        value: sentry
+      - name: OIDC_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: dex-secrets
+            key: sentry-client-secret
+      - name: OIDC_SCOPE
+        value: "openid profile email"
+      - name: OIDC_DOMAIN
+        value: https://dex.ops.last-try.org
+      - name: OIDC_ISSUER
+        value: https://dex.ops.last-try.org
+  cron:
+    env:
+      - name: OIDC_CLIENT_ID
+        value: sentry
+      - name: OIDC_CLIENT_SECRET
+        valueFrom:
+          secretKeyRef:
+            name: dex-secrets
+            key: sentry-client-secret
+      - name: OIDC_SCOPE
+        value: "openid profile email"
+      - name: OIDC_DOMAIN
+        value: https://dex.ops.last-try.org
+      - name: OIDC_ISSUER
+        value: https://dex.ops.last-try.org
+
+config:
+  configYml: |-
+    system.url-prefix: "https://sentry.ops.last-try.org"
+  sentryConfPy: |-
+    from sentry.conf.server import *  # noqa
+    OIDC_CLIENT_ID = os.environ.get("OIDC_CLIENT_ID")
+    OIDC_CLIENT_SECRET = os.environ.get("OIDC_CLIENT_SECRET")
+    OIDC_SCOPE = os.environ.get("OIDC_SCOPE", "openid profile email")
+    OIDC_DOMAIN = os.environ.get("OIDC_DOMAIN")
+    OIDC_ISSUER = os.environ.get("OIDC_ISSUER")
+    AUTH_PROVIDERS = AUTH_PROVIDERS + (
+      ("sentry_auth_oidc", {"name": "OIDC"}),
+    )
+    CSRF_TRUSTED_ORIGINS = ["https://sentry.ops.last-try.org"]
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Enable bundled services
 clickhouse:
