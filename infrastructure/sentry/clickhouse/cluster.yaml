@@ -4,7 +4,7 @@ metadata:
   name: sentry
   namespace: sentry-system
 spec:
-  taskID: "2026-01-17-1820"
+  taskID: "2026-01-17-1840"
   configuration:
     clusters:
       - name: sentry
@@ -35,8 +35,8 @@ spec:
         spec:
           containers:
             - name: clickhouse
-              # Pin ClickHouse to a Snuba-tested version to avoid migration errors.
-              image: clickhouse/clickhouse-server:25.3.6.10034
+              # Pin ClickHouse to a Snuba-tested version (Altinity stable).
+              image: altinity/clickhouse-server:23.8.11.29.altinitystable
               resources:
                 requests:
                   cpu: 500m
