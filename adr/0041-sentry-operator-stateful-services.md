@@ -42,6 +42,18 @@ This supersedes ADR 0040 and re-aligns with ADR 0003 (operators over StatefulSet
 ### Neutral
 - PostgreSQL remains unchanged (CNPG)
 
+## Monitoring
+
+- Enable/verify metrics scraping for ClickHouse and Kafka operators.
+- Add service/pod monitors for operator metrics endpoints.
+- Alert on ClickHouse/Kafka connectivity errors from Sentry pods.
+
+## Post-Deployment Checklist
+
+- Run Sentry migrations hooks and confirm completion.
+- Verify Snuba migrations complete against ClickHouse.
+- Validate event ingestion (Kafka produce/consume) and issue creation.
+
 ## References
 
 - ADR 0003: Operators over StatefulSets

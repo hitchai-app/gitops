@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: clickhouse-operator
+  namespace: clickhouse-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: clickhouse-operator
+      app.kubernetes.io/name: altinity-clickhouse-operator
+  namespaceSelector:
+    matchNames:
+      - clickhouse-system
+  endpoints:
+    - port: ch-metrics
+      interval: 30s
+    - port: op-metrics
+      interval: 30s
