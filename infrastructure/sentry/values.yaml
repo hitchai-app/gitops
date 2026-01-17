@@ -118,6 +118,11 @@ snuba:
   env:
     - name: CLICKHOUSE_USER
       value: sentry
+    - name: CLICKHOUSE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: sentry-clickhouse-auth
+          key: clickhouse-password
 
 # External Kafka (operator-managed)
 externalKafka:
