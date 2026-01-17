@@ -29,11 +29,11 @@ spec:
                 echo "Postgres not ready, sleeping 5s"; sleep 5;
               done
               echo "Checking ClickHouse..."
-              until nc -z sentry-clickhouse 9000; do
+              until nc -z chi-sentry-sentry-0-0.sentry-system.svc.cluster.local 9000; do
                 echo "ClickHouse not ready, sleeping 5s"; sleep 5;
               done
               echo "Checking Kafka..."
-              until nc -z sentry-kafka 9092; do
+              until nc -z sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local 9092; do
                 echo "Kafka not ready, sleeping 5s"; sleep 5;
               done
               echo "All dependencies are reachable."

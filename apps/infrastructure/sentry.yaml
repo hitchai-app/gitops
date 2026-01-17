@@ -29,6 +29,14 @@ spec:
       targetRevision: master
       path: infrastructure/sentry/hooks
 
+    # Operator-managed ClickHouse + Kafka resources for Sentry
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/sentry/clickhouse
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/sentry/kafka
+
   destination:
     server: https://kubernetes.default.svc
     namespace: sentry-system

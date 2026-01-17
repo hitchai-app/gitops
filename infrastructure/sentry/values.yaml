@@ -89,23 +89,12 @@ config:
     CSRF_TRUSTED_ORIGINS = ["https://sentry.ops.last-try.org"]
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
-# Enable bundled services
+# Disable bundled services (using operator-managed ClickHouse and Kafka)
 clickhouse:
-  enabled: true
-  clickhouse:
-    # Latest stable ClickHouse version (update with chart upgrades).
-    imageVersion: "25.12.3.21"
+  enabled: false
 
 kafka:
-  enabled: true
-  provisioning:
-    resources:
-      requests:
-        cpu: 500m
-        memory: 512Mi
-      limits:
-        cpu: "1"
-        memory: 1Gi
+  enabled: false
 
 postgresql:
   enabled: false
@@ -114,7 +103,20 @@ redis:
   enabled: true
 
 zookeeper:
-  enabled: true
+  enabled: false
+
+# External ClickHouse (operator-managed)
+externalClickhouse:
+  host: chi-sentry-sentry-0-0.sentry-system.svc.cluster.local
+  port: 9000
+  username: sentry
+  existingSecret: sentry-clickhouse-auth
+  existingSecretKeys:
+    password: clickhouse-password
+
+# External Kafka (operator-managed)
+externalKafka:
+  bootstrapServers: sentry-kafka-kafka-bootstrap.sentry-system.svc.cluster.local:9092
 
 # External PostgreSQL (CloudNativePG with TLS cert auth)
 externalPostgresql:

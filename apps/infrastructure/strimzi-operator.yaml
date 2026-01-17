@@ -1,0 +1,79 @@
+# Strimzi Kafka Operator
+# Manages Kafka clusters via custom resources (kafka.strimzi.io)
+# CNCF incubating project: https://www.cncf.io/blog/2024/02/08/strimzi-joins-the-cncf-incubator/
+# Docs: https://strimzi.io/docs/operators/latest/deploying
+# Repo: https://github.com/strimzi/strimzi-kafka-operator
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: strimzi-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-30"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://strimzi.io/charts/
+    chart: strimzi-kafka-operator
+    targetRevision: 0.49.1
+    helm:
+      releaseName: strimzi-operator
+      valuesObject:
+        # Watch all namespaces for Kafka resources
+        watchAnyNamespace: true
+        watchNamespaces: []
+
+        # Single replica sufficient for single-node cluster
+        replicas: 1
+
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+
+        # Labels applied to all resources
+        labels:
+          app: strimzi
+
+        # Feature gates for KRaft mode (default in 0.49+)
+        # No additional configuration needed - KRaft is enabled by default
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: strimzi-system
+  # Prevent daily sync oscillation from webhook TLS rotation
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: strimzi-cluster-operator
+      jsonPointers:
+        - /data
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      name: strimzi-cluster-operator
+      jqPathExpressions:
+        - .webhooks[].clientConfig.caBundle
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: strimzi-cluster-operator
+      jqPathExpressions:
+        - .webhooks[].clientConfig.caBundle
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

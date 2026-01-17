@@ -1,6 +1,6 @@
 # 0036. Altinity ClickHouse Operator
 
-**Status**: Superseded by ADR 0040
+**Status**: Accepted
 
 **Date**: 2026-01-14
 
