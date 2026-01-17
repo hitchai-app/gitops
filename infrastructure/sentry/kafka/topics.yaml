@@ -1,0 +1,1798 @@
+# Generated from sentry_kafka_schemas in snuba 25.12.1
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: buffered-segments
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: buffered-segments-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: event-replacements
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "25000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: events-subscription-results
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: generic-metrics-subscription-results
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: group-attributes
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-attachments
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-attachments-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-events-backlog
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-events-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-feedback-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-feedback-events-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-generic-metrics-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-metrics-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-monitors
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-occurrences
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-performance-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-replay-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-replay-recordings
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "15000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-spans
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-spans-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-transactions
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-transactions-backlog
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: ingest-transactions-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: metrics-subscription-results
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: monitors-clock-tasks
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: monitors-clock-tick
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: monitors-incident-occurrences
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: outcomes
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+    segment.bytes: "262144000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: outcomes-billing
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+    segment.bytes: "262144000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: outcomes-billing-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "604800000"
+    segment.bytes: "262144000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: outcomes-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "604800000"
+    segment.bytes: "262144000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: preprod-artifact-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: preprod-artifact-events-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: processed-profiles
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "50000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: profiles
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "52428800"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: profiles-call-tree
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "50000000"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-eap-items
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-generic-metrics-counters
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-generic-metrics-distributions
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-generic-metrics-gauges
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-generic-metrics-sets
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: scheduled-subscriptions-transactions
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: shared-resources-usage
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-generic-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-generic-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-group-attributes
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-items
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-querylog
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "50000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-dead-letter-replays
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-generic-events-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-generic-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-generic-metrics-counters-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-generic-metrics-distributions-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-generic-metrics-gauges-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-generic-metrics-sets-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-items
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-items-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-lw-deletions-eap-items
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "50000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-lw-deletions-generic-events
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "50000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-metrics
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-metrics-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-profile-chunks
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "52428800"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-queries
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "50000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-transactions-commit-log
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    cleanup.policy: "compact,delete"
+    compression.type: "lz4"
+    min.compaction.lag.ms: "3600000"
+    retention.ms: "86400000"
+    segment.bytes: "104857600"
+    segment.ms: "3600000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: snuba-uptime-results
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: subscription-results-eap-items
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-billing
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-billing-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-buffer
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-buffer-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-control
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-control-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-cutover
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-email
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-email-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-attachments
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-attachments-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-errors
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-errors-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-errors-postprocess
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-errors-postprocess-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-profiling
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-profiling-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-transactions
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-ingest-transactions-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-internal
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-internal-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-limited
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-limited-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-long
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-long-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-products
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-products-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-sentryapp
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-sentryapp-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-symbolication
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-symbolication-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-usage
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-usage-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-workflows-engine
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: taskworker-workflows-engine-dlq
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "10000000"
+    retention.ms: "604800000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: transactions
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    max.message.bytes: "25000000"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: transactions-subscription-results
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    retention.ms: "86400000"
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: uptime-results
+  namespace: sentry-system
+  labels:
+    strimzi.io/cluster: sentry-kafka
+spec:
+  partitions: 1
+  replicas: 1
+  config:
+    compression.type: "lz4"
+    message.timestamp.type: "LogAppendTime"
+    retention.ms: "86400000"
