@@ -11,7 +11,7 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt-prod
   hostname: sentry.ops.last-try.org
   tls:
-    - secretName: sentry-ingress-tls
+    - secretName: sentry.ops.last-try.org-tls
       hosts:
         - sentry.ops.last-try.org
 
@@ -20,14 +20,7 @@ images:
   sentry:
     # Update this tag (and infrastructure/sentry/oidc/image-tag.txt) after rebuilding the custom image
     repository: ghcr.io/hitchai-app/sentry-oidc
-    tag: 25.9.0-oidc
-
-# Custom Sentry image with OIDC plugin (sentry-auth-oidc)
-images:
-  sentry:
-    # Update this tag (and infrastructure/sentry/oidc/image-tag.txt) after rebuilding the custom image
-    repository: ghcr.io/hitchai-app/sentry-oidc
-    tag: 25.9.0-oidc
+    tag: 27.11.0-oidc
 
 # Use existing Secret managed by SealedSecret instead of Helm hook
 # This prevents conflict between Helm-created Secret and SealedSecret controller
@@ -90,59 +83,6 @@ config:
     AUTH_PROVIDERS = AUTH_PROVIDERS + (
       ("sentry_auth_oidc", {"name": "OIDC"}),
     )
-  web:
-    env:
-      - name: OIDC_CLIENT_ID
-        value: sentry
-      - name: OIDC_CLIENT_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: dex-secrets
-            key: sentry-client-secret
-      - name: OIDC_SCOPE
-        value: "openid email"
-      - name: OIDC_DOMAIN
-        value: "https://auth.ops.last-try.org"
-      - name: OIDC_ISSUER
-        value: "Dex"
-  worker:
-    env:
-      - name: OIDC_CLIENT_ID
-        value: sentry
-      - name: OIDC_CLIENT_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: dex-secrets
-            key: sentry-client-secret
-      - name: OIDC_SCOPE
-        value: "openid email"
-      - name: OIDC_DOMAIN
-        value: "https://auth.ops.last-try.org"
-      - name: OIDC_ISSUER
-        value: "Dex"
-  cron:
-    env:
-      - name: OIDC_CLIENT_ID
-        value: sentry
-      - name: OIDC_CLIENT_SECRET
-        valueFrom:
-          secretKeyRef:
-            name: dex-secrets
-            key: sentry-client-secret
-      - name: OIDC_SCOPE
-        value: "openid email"
-      - name: OIDC_DOMAIN
-        value: "https://auth.ops.last-try.org"
-      - name: OIDC_ISSUER
-        value: "Dex"
-
-config:
-  sentryConfPy: |
-    OIDC_CLIENT_ID = env("OIDC_CLIENT_ID")
-    OIDC_CLIENT_SECRET = env("OIDC_CLIENT_SECRET")
-    OIDC_SCOPE = env("OIDC_SCOPE", "openid email")
-    OIDC_DOMAIN = env("OIDC_DOMAIN", "https://auth.ops.last-try.org")
-    OIDC_ISSUER = env("OIDC_ISSUER", "Dex")
 
 # Enable bundled services
 clickhouse:
