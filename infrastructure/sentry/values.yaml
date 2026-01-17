@@ -92,9 +92,20 @@ config:
 # Enable bundled services
 clickhouse:
   enabled: true
+  clickhouse:
+    # Latest stable ClickHouse version (update with chart upgrades).
+    imageVersion: "25.12.3.21"
 
 kafka:
   enabled: true
+  provisioning:
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
 
 postgresql:
   enabled: false
@@ -120,6 +131,10 @@ externalPostgresql:
 # Disable user registration, require SSO
 auth:
   register: false
+
+# Disable Helm hook jobs; ArgoCD runs explicit migration hooks instead.
+hooks:
+  enabled: false
 
 # Resource limits for single-node cluster
 resources:

@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sentry-db-upgrade
+  namespace: sentry-system
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      annotations:
+        sentry.ops.last-try.org/job: db-upgrade
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: sentry-upgrade
+          # Keep in sync with Sentry chart appVersion / custom image tag.
+          image: ghcr.io/hitchai-app/sentry-oidc:25.12.1-oidc
+          imagePullPolicy: IfNotPresent
+          command: ["sentry", "upgrade", "--noinput"]
+          env:
+            - name: SENTRY_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-sentry-secret
+                  key: key
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sentry-postgres-app
+                  key: password
+            - name: POSTGRES_USER
+              value: sentry
+            - name: POSTGRES_NAME
+              value: sentry
+            - name: POSTGRES_HOST
+              value: sentry-postgres-rw.sentry-system.svc.cluster.local
+            - name: POSTGRES_PORT
+              value: "5432"
+          volumeMounts:
+            - name: config
+              mountPath: /etc/sentry
+              readOnly: true
+            - name: sentry-data
+              mountPath: /var/lib/sentry/files
+      volumes:
+        - name: config
+          configMap:
+            name: sentry-sentry
+        - name: sentry-data
+          persistentVolumeClaim:
+            claimName: sentry-data
