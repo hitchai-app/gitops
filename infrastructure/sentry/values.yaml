@@ -181,3 +181,15 @@ symbolicator:
       limits:
         cpu: 1000m
         memory: 2Gi
+  # Security context to fix PVC permission issues with Longhorn
+  # Symbolicator container runs as non-root user and needs to write to /data
+  securityContext:
+    fsGroup: 1001
+    runAsUser: 1001
+    runAsGroup: 1001
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: false
