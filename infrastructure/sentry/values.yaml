@@ -164,3 +164,20 @@ resources:
 # Enable metrics for Prometheus
 serviceMonitor:
   enabled: true
+
+# Enable Symbolicator for native crash report symbolication (iOS, Android, macOS, Windows)
+# Required for readable stack traces from native mobile apps
+symbolicator:
+  enabled: true
+  api:
+    replicas: 1
+    persistence:
+      enabled: true
+      size: "10Gi"
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
