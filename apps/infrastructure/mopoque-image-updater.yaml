@@ -1,0 +1,25 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: mopoque-stage
+  namespace: argocd
+spec:
+  namespace: argocd
+  writeBackConfig:
+    method: argocd
+  commonUpdateSettings:
+    updateStrategy: name
+    allowTags: "^[a-f0-9]{8}$"
+  applicationRefs:
+    - namePattern: mopoque-stage
+      images:
+        - alias: backend
+          imageName: registry.ops.last-try.org/lt/mopoque/mopoque/backend
+          manifestTargets:
+            kustomize:
+              name: registry.ops.last-try.org/lt/mopoque/mopoque/backend
+        - alias: frontend
+          imageName: registry.ops.last-try.org/lt/mopoque/mopoque/frontend
+          manifestTargets:
+            kustomize:
+              name: registry.ops.last-try.org/lt/mopoque/mopoque/frontend
