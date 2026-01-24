@@ -8,8 +8,8 @@ spec:
   writeBackConfig:
     method: argocd
   commonUpdateSettings:
-    updateStrategy: name
-    allowTags: "^[a-f0-9]{8}$"
+    updateStrategy: alphabetical
+    allowTags: "regexp:^[a-f0-9]{8}$"
   applicationRefs:
     - namePattern: mopoque-stage
       images:
