@@ -1,0 +1,20 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: lt-repo-creds
+  namespace: argocd
+spec:
+  encryptedData:
+    password: AgB0czgMePpPVISTiWD5hzA0ONeG2i+wap1mCodiIZZAsdeqOM9gbMT94CD2wSsjmmwX9IZ+xsXUMvU3tzZ4+c3Y+t7b0IJwey4PlrrekypuAAUFoN1B++sb7+yTNNzD3K697Soe4Fo8N0x39DdI8TibxhwBL/nvAYCaNRdhcXRjPy+/mSlpez52E1eeARe+aeVe4bsBoPcns8AKD0bErtVzqIk1XH6WxQc+E9MHwUFyscA10LHJ45H+l80d8aFn7d/1bc4ywElNwPVuUSfuu9x97DK8ya9qzMhxKeuUDbLQKcWFb2/4X0LyoNNjlzy71D6u6+O13O2RRekX5e0bd1cOEoq1WtNTI3m1mOp/Sq0ijlzgewK4Lopz0/T7/7/IxdVp2mBkej4H+EJrCsXt9nVLY7ZPCTzA1FIwBgnLSqK7+qe1QW9vfPQcbvc2Fmc7Bob51J7zahme+8F2qGLxPvhaXn+dhaoou7PGf4BooBSGlpT5N6CAzahHphpSppWObktYrZpBEzQBAX6FMIeHBOhUwMPt8P+ZsqWs+a69JltfS0BuwbGOnCdTpJddVONjJmCPzcAI6cSvSV/TxkOMPIQ8cJJARdkIkLvycbb6MQcdwX4IEnIBqeL6Vj9JZOHwRzD4a7u8VP5b16Do0BxgAEJUzGxicwqHQf0nu19kabyoXBlmarvTZKv0dEs9Wo/yoPzIru4FS1dFmKFtS01dXa9zLnF2d0SpT4ED
+  template:
+    metadata:
+      labels:
+        argocd.argoproj.io/secret-type: repo-creds
+      name: lt-repo-creds
+      namespace: argocd
+    type: Opaque
+    data:
+      type: git
+      url: https://gitlab.ops.last-try.org/lt
+      username: gitlab+deploy-token-17
