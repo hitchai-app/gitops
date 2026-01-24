@@ -15,7 +15,7 @@ spec:
   project: default
   source:
     repoURL: https://gitlab.ops.last-try.org/lt/mopoque/mopoque.git
-    targetRevision: dockerize
+    targetRevision: main
     path: deploy/overlays/stage
   destination:
     server: https://kubernetes.default.svc
