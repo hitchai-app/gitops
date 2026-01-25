@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: lt-registry-creds
+  namespace: argocd
+spec:
+  encryptedData:
+    creds: AgBXU/puJj2vsU4p9SgsXJnrjWAX5c6FAE4LZZCatHM+XyP3sXj2nM/aVb7MV8jfMNx8/9h2kD2xe/YKjCa6GoD10cRh63iR8WbVwIB1uG/9VkXs4jk7H3DjVFFy1Jp34jO2+InvC89WeDOrNpl1kc4kc5mFIZ1cSYDWVqNTjO+dDeYFDd5T5mcDBItgx2EvOS1zpIVVJJ2kI0EPN9wBefuUdysR3eB3IXakwvzGOhSvPpvANuSboo+PZ44DWMar9OVifE026YQ93+i0yGA5e+f2IYA94aQ5ETaiZJxhFGqtp54Jzj7u130YrDcPtrwOXlF3z9dbokV9iwsvwxwu6VcLQqMJikxl3BS7zRpgzOgTJ4L/2ZOzPgNpZ0/cttXzy0M+DmoS0DvKqLQZX2cOK3gPGTWcri2+yx8wF4TtnfFkMGzslmRPhpw621+mereGasZYYyTVjDbrTc/vDInGJPlaxgGXVrkYCLevC0Gyu9VnBUa1gb1EpfHHOFNpD725Njm6D8bh36pujISaUdFhFK8FeB4HCQoBW9SAuZ3Ec28KjvieSsXuJo3VjApLDNQz8YQfz4CoFLBMyXAccNvu/iYlroYuJUonxYYnNWl7J9OPfn/Kh5W6yiZhK5mWKJ3vASd9z2OlLjgJUC5EXOxsBPSIEoBHlQogJbi82RwK1TzJhZg9/EqzjFvBFdAcPX0AFu+eAEr2x5XYO16iA9et4xgznKij8nuXvoMrk1pzWhRTfg==
+  template:
+    metadata:
+      name: lt-registry-creds
+      namespace: argocd
