@@ -10,6 +10,7 @@ spec:
   commonUpdateSettings:
     updateStrategy: newest-build
     allowTags: "regexp:^[a-f0-9]{8}$"
+    pullSecret: secret:argocd/lt-registry-creds#creds
   applicationRefs:
     - namePattern: mopoque-stage
       images:
