@@ -9,11 +9,10 @@ allowVolumeExpansion: true
 reclaimPolicy: Retain
 volumeBindingMode: Immediate  # WaitForFirstConsumer requires CSIStorageCapacity (Longhorn v1.12.0+)
 parameters:
-  numberOfReplicas: "2"  # 2 replicas across k8s-mn and k8s-02
+  numberOfReplicas: "2"  # 2 replicas across 3-node cluster (k8s-02, k8s-03, k8s-04)
   staleReplicaTimeout: "30"
   fromBackup: ""
   fsType: "ext4"
   dataLocality: "disabled"  # Spread replicas across nodes for redundancy
   dataEngine: "v1"
   # For applications without built-in replication (Redis, single-instance workloads)
-  # Replicas spread across nodes: k8s-mn + k8s-02

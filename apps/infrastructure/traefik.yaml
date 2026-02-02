@@ -23,16 +23,10 @@ spec:
         service:
           type: ClusterIP
 
-        # Pod antiaffinity - spread across nodes for HA (required with hostNetwork)
+        # Use DaemonSet to run on all nodes automatically
+        # Scales with cluster, ensures LB health checks pass on all targets
         deployment:
-          replicas: 2
-        affinity:
-          podAntiAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              - labelSelector:
-                  matchLabels:
-                    app.kubernetes.io/name: traefik
-                topologyKey: kubernetes.io/hostname
+          kind: DaemonSet
 
         # Port configuration
         ports:
