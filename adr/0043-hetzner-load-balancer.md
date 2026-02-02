@@ -28,8 +28,8 @@ Use a **single Hetzner Cloud Load Balancer** for all external cluster traffic.
 | Service | LB Port | Target Port | Purpose |
 |---------|---------|-------------|---------|
 | kubernetes-api | 6443 | 6443 | HA control-plane endpoint |
-| https-ingress | 443 | 443 | Web traffic (Traefik hostNetwork) |
-| http-ingress | 80 | 80 | HTTP → HTTPS redirect |
+| https-ingress | 443 | 8443 | Web traffic (Traefik hostNetwork default) |
+| http-ingress | 80 | 8000 | HTTP → HTTPS redirect |
 | gitlab-ssh | 22 | 30022 | Git over SSH (NodePort) |
 
 ### Targets
@@ -120,7 +120,7 @@ If LB cost becomes concern, consider:
 
 1. Update `kubeadm-config` ConfigMap with `controlPlaneEndpoint: <LB_IP>:6443`
 2. Regenerate API server certificates to include LB IP as SAN
-3. Update Traefik to `hostNetwork: true` (binds directly to :80/:443)
+3. Update Traefik to `hostNetwork: true` (binds to default :8000/:8443)
 4. Update GitLab Shell to `hostPort: 22`
 
 ### SSH Port Strategy
