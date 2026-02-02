@@ -30,10 +30,12 @@ spec:
 
         # Update strategy for DaemonSet with hostNetwork
         # maxUnavailable must be >= 1 because only one pod can bind to 80/443 per node
+        # maxSurge must be 0 - K8s doesn't allow both to be non-zero for DaemonSets
         updateStrategy:
           type: RollingUpdate
           rollingUpdate:
             maxUnavailable: 1
+            maxSurge: 0
 
         # Port configuration
         ports:
