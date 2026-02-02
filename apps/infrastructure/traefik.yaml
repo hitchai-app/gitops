@@ -34,8 +34,11 @@ spec:
                     app.kubernetes.io/name: traefik
                 topologyKey: kubernetes.io/hostname
 
-        # Global HTTP to HTTPS redirect
+        # Port configuration
         ports:
+          # Change metrics port to avoid conflict with node-exporter (9100)
+          metrics:
+            port: 9101
           web:
             redirections:
               entryPoint:
