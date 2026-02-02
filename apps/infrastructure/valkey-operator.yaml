@@ -18,7 +18,7 @@ spec:
     helm:
       releaseName: valkey-operator
       valuesObject:
-        replicaCount: 2
+        replicaCount: 1
         resources:
           requests:
             cpu: 50m

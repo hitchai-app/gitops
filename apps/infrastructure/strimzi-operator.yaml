@@ -25,8 +25,8 @@ spec:
           watchAnyNamespace: true
           watchNamespaces: []
 
-          # 2 replicas for HA on multi-node cluster
-          replicas: 2
+          # Single replica sufficient for single-node cluster
+          replicas: 1
 
           resources:
             requests:
