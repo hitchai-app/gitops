@@ -1,6 +1,6 @@
 # 0042. Adding New Cluster Nodes
 
-**Status**: In Progress
+**Status**: Accepted
 
 **Date**: 2026-02-02
 
@@ -202,19 +202,21 @@ network:
       link: \${IFACE}
       mtu: 1400
       addresses:
-        - 10.0.0.<NODE_NUMBER>/24
+        - 10.0.X.Y/16
 EOF
   chmod 600 /etc/netplan/60-vswitch.yaml
 "
 ```
 
+**Why /16 subnet?** All nodes on the vSwitch are on the same L2 broadcast domain. Using /16 allows any 10.0.x.y address to communicate directly without routing.
+
 **Node IP assignments:**
 | Node | vSwitch IP |
 |------|------------|
-| k8s-mn | 10.0.0.1 |
-| k8s-02 | 10.0.0.2 |
-| k8s-03 | 10.0.0.3 |
-| k8s-04 | 10.0.0.4 |
+| k8s-mn | 10.0.0.1/16 |
+| k8s-02 | 10.0.0.2/16 |
+| k8s-03 | 10.0.1.3/16 |
+| k8s-04 | 10.0.1.4/16 |
 
 ### Step 3.3: Apply and verify
 
@@ -343,17 +345,100 @@ ssh root@<NEW_NODE_IP> "
 kubectl taint nodes <NODE_NAME> node-role.kubernetes.io/control-plane:NoSchedule-
 ```
 
+### Step 5.4: Configure kubelet to use vSwitch IP
+
+By default, kubelet advertises the first detected IP (often public). Configure it to use the vSwitch IP:
+
+```bash
+ssh root@<NEW_NODE_IP> "
+  echo 'KUBELET_KUBEADM_ARGS=\"--container-runtime-endpoint=unix:///var/run/containerd/containerd.sock --pod-infra-container-image=registry.k8s.io/pause:3.10 --node-ip=10.0.X.Y\"' > /var/lib/kubelet/kubeadm-flags.env
+  systemctl restart kubelet
+"
+```
+
+Verify:
+```bash
+kubectl get nodes -o wide
+# INTERNAL-IP should show vSwitch IP
+```
+
 ---
 
 ## Phase 6: Configure Longhorn Storage
 
-(TODO - not yet executed)
+### Step 6.1: Verify node appears in Longhorn
+
+```bash
+kubectl -n longhorn-system get nodes.longhorn.io
+```
+
+### Step 6.2: Add NVMe disks to Longhorn
+
+```bash
+kubectl -n longhorn-system patch nodes.longhorn.io <NODE_NAME> --type=merge -p '{
+  "spec": {
+    "disks": {
+      "nvme-disk1": {
+        "allowScheduling": true,
+        "path": "/mnt/longhorn-disk1",
+        "storageReserved": 0,
+        "tags": []
+      },
+      "nvme-disk2": {
+        "allowScheduling": true,
+        "path": "/mnt/longhorn-disk2",
+        "storageReserved": 0,
+        "tags": []
+      }
+    }
+  }
+}'
+```
+
+### Step 6.3: Optionally disable default disk
+
+The default disk at `/var/lib/longhorn/` can be disabled if you want storage only on NVMe disks.
 
 ---
 
 ## Phase 7: Verification
 
-(TODO - not yet executed)
+### Step 7.1: Verify all nodes are Ready
+
+```bash
+kubectl get nodes -o wide
+```
+
+All nodes should show `Ready` status with correct vSwitch IPs.
+
+### Step 7.2: Verify etcd cluster
+
+```bash
+kubectl -n kube-system exec etcd-<ANY_CP_NODE> -- etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  member list -w table
+```
+
+Should show 3 etcd members (one per control-plane node).
+
+### Step 7.3: Verify Longhorn storage
+
+```bash
+kubectl -n longhorn-system get nodes.longhorn.io
+```
+
+All nodes should show disks configured.
+
+### Step 7.4: Verify API server via Load Balancer
+
+```bash
+curl -sk https://<LB_IP>:6443/healthz
+```
+
+Should return `ok`.
 
 ---
 
@@ -389,77 +474,21 @@ See **[ADR 0043: Hetzner Load Balancer](0043-hetzner-load-balancer.md)** for ful
 
 ### Quick Reference
 
-| Service | LB Port | Target Port |
-|---------|---------|-------------|
-| kubernetes-api | 6443 | 6443 |
-| https-ingress | 443 | 443 |
-| http-ingress | 80 | 80 |
-| gitlab-ssh | 22 | 22 |
+| Service | LB Port | Target Port | Notes |
+|---------|---------|-------------|-------|
+| kubernetes-api | 6443 | 6443 | Control-plane HA |
+| https-ingress | 443 | 443 | Traefik hostNetwork |
+| http-ingress | 80 | 80 | HTTP → HTTPS redirect |
+| gitlab-ssh | 22 | 30022 | NodePort for git+ssh |
 
 ### Setup Steps
 
 1. Create LB in Hetzner Cloud Console (LB11, ~€5.39/month)
-2. Add all nodes as targets
+2. Add all nodes as targets (public IPs)
 3. Configure 4 services above
 4. Update DNS: `*.ops.last-try.org` → LB IP
 5. Update kubeadm-config with `controlPlaneEndpoint: <LB_IP>:6443`
 6. Regenerate API server certs, restart API server
-
-### Current State
-
-**Blocked:** Cluster lacks `controlPlaneEndpoint`. Must set up LB before joining k8s-03/k8s-04 as control-plane nodes.
-
----
-
-## Execution Log
-
-### k8s-03 (88.99.208.86)
-
-| Phase | Step | Status | Notes |
-|-------|------|--------|-------|
-| 1 | 1.1 Verify Rescue | ✅ | `Welcome to the Hetzner Rescue System` |
-| 1 | 1.2 Check disks | ✅ | 2x 954GB Samsung NVMe |
-| 1 | 1.3 Check images | ✅ | Ubuntu-2404-noble-amd64-base.tar.gz |
-| 1 | 1.4 Create config | ✅ | HOSTNAME=k8s-03 |
-| 1 | 1.5 Run installimage | ✅ | INSTALLATION COMPLETE |
-| 1 | 1.6 Reboot & verify | ✅ | Ubuntu 24.04.3 LTS |
-| 2 | 2.1 Identify disk2 | ✅ | nvme1n1 (empty) |
-| 2 | 2.2 Clean RAID | ✅ | md127 stopped, superblock zeroed |
-| 2 | 2.3 Partition/format | ✅ | ext4 labeled longhorn-disk2 |
-| 2 | 2.4 Mount | ✅ | /mnt/longhorn-disk2 |
-| 2 | 2.5 Verify | ✅ | 642GB + 938GB |
-| 3 | 3.1 Interface | ✅ | eno1 |
-| 3 | 3.2 Netplan config | ✅ | 10.0.0.3/24 |
-| 3 | 3.3 Apply & verify | ✅ | Ping to 10.0.0.1 OK |
-| 4 | 4.1 Kernel modules | ✅ | overlay, br_netfilter, sysctl |
-| 4 | 4.2 containerd | ✅ | v1.7.28, SystemdCgroup enabled |
-| 4 | 4.3 kubeadm/kubelet | ✅ | v1.31.14 |
-| 4 | 4.4 Verify | ✅ | All components ready |
-| 5 | Join as CP | ⏳ | **BLOCKED: No controlPlaneEndpoint** |
-
-### k8s-04 (116.202.39.186)
-
-| Phase | Step | Status | Notes |
-|-------|------|--------|-------|
-| 1 | 1.1 Verify Rescue | ✅ | `Welcome to the Hetzner Rescue System` |
-| 1 | 1.2 Check disks | ✅ | 2x 954GB Samsung NVMe |
-| 1 | 1.3 Check images | ✅ | Ubuntu-2404-noble-amd64-base.tar.gz |
-| 1 | 1.4 Create config | ✅ | HOSTNAME=k8s-04 |
-| 1 | 1.5 Run installimage | ✅ | INSTALLATION COMPLETE |
-| 1 | 1.6 Reboot & verify | ✅ | Ubuntu 24.04.3 LTS |
-| 2 | 2.1 Identify disk2 | ✅ | **nvme0n1** (disk order swapped!) |
-| 2 | 2.2 Clean RAID | ✅ | md127 stopped, superblock zeroed |
-| 2 | 2.3 Partition/format | ✅ | ext4 labeled longhorn-disk2 |
-| 2 | 2.4 Mount | ✅ | /mnt/longhorn-disk2 |
-| 2 | 2.5 Verify | ✅ | 642GB + 938GB |
-| 3 | 3.1 Interface | ✅ | eno1 |
-| 3 | 3.2 Netplan config | ✅ | 10.0.0.4/24 |
-| 3 | 3.3 Apply & verify | ✅ | Ping to 10.0.0.1 and 10.0.0.3 OK |
-| 4 | 4.1 Kernel modules | ✅ | overlay, br_netfilter, sysctl |
-| 4 | 4.2 containerd | ✅ | v1.7.28, SystemdCgroup enabled |
-| 4 | 4.3 kubeadm/kubelet | ✅ | v1.31.14 |
-| 4 | 4.4 Verify | ✅ | All components ready |
-| 5 | Join as CP | ⏳ | **BLOCKED: No controlPlaneEndpoint** |
 
 ---
 

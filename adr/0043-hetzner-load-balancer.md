@@ -1,6 +1,6 @@
 # 0043. Hetzner Load Balancer for Cluster Ingress
 
-**Status**: Proposed
+**Status**: Accepted
 
 **Date**: 2026-02-02
 
@@ -28,9 +28,9 @@ Use a **single Hetzner Cloud Load Balancer** for all external cluster traffic.
 | Service | LB Port | Target Port | Purpose |
 |---------|---------|-------------|---------|
 | kubernetes-api | 6443 | 6443 | HA control-plane endpoint |
-| https-ingress | 443 | 443 | Web traffic (Traefik) |
+| https-ingress | 443 | 443 | Web traffic (Traefik hostNetwork) |
 | http-ingress | 80 | 80 | HTTP → HTTPS redirect |
-| gitlab-ssh | 22 | 22 | Git over SSH |
+| gitlab-ssh | 22 | 30022 | Git over SSH (NodePort) |
 
 ### Targets
 
@@ -126,7 +126,7 @@ If LB cost becomes concern, consider:
 ### SSH Port Strategy
 
 - **Node SSH**: Standard port 22, accessed via node's own IP (direct)
-- **GitLab SSH**: Port 22 via LB IP only (hostPort on GitLab pod)
+- **GitLab SSH**: LB port 22 → NodePort 30022 → GitLab shell pod
 - No conflict because LB IP ≠ Node IPs
 
 ### MetalLB Migration

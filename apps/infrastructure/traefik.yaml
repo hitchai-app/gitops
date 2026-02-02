@@ -16,11 +16,23 @@ spec:
           enabled: true
           isDefaultClass: true
 
-        # Service type - share IP with other LoadBalancer services via MetalLB
+        # Use hostNetwork - Hetzner LB forwards traffic directly to node ports 80/443
+        hostNetwork: true
+
+        # Service type - ClusterIP since we use hostNetwork
         service:
-          type: LoadBalancer
-          annotations:
-            metallb.universe.tf/allow-shared-ip: "default"
+          type: ClusterIP
+
+        # Pod antiaffinity - spread across nodes for HA
+        deployment:
+          replicas: 2
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: traefik
+                topologyKey: kubernetes.io/hostname
 
         # Global HTTP to HTTPS redirect
         ports:
@@ -69,4 +81,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true

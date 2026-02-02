@@ -17,12 +17,13 @@ spec:
           preUpgradeChecker:
             jobEnabled: false
 
-          # Default replica count (single node configuration)
+          # Default replica count (multi-node HA configuration)
           defaultSettings:
-            defaultReplicaCount: "1"
+            defaultReplicaCount: "2"
+            replicaAutoBalance: "best-effort"
             backupTarget: "s3://longhorn-backups@auto/"
             backupTargetCredentialSecret: "longhorn-backup-secret"
-            storageOverProvisioningPercentage: "2000"  # Doubled for experimental cluster
+            storageOverProvisioningPercentage: "200"
             storageMinimalAvailablePercentage: "25"
 
           # Resource limits for Longhorn components
@@ -45,8 +46,7 @@ spec:
                 memory: 64Mi
 
           longhornUI:
-            # Single-node: keep UI at 1 replica; revisit when multi-node.
-            replicas: 1
+            replicas: 2
             resources:
               requests:
                 cpu: 10m
@@ -55,29 +55,27 @@ spec:
                 cpu: 100m
                 memory: 128Mi
 
-          # Webhooks/metrics components run as Deployments; reduce replicas on single node.
-          # TODO: Increase replicas when cluster has multiple nodes.
+          # Webhooks/metrics components - 2 replicas for HA
           longhornAdmissionWebhook:
-            replicas: 1
+            replicas: 2
           longhornConversionWebhook:
-            replicas: 1
+            replicas: 2
           longhornRecoveryBackend:
-            replicas: 1
+            replicas: 2
 
-          # CSI sidecars default to multiple replicas; reduce for single-node capacity.
-          # TODO: Increase replicas when cluster has multiple nodes.
+          # CSI sidecars - 2 replicas for HA
           csi:
-            attacherReplicaCount: 1
-            provisionerReplicaCount: 1
-            resizerReplicaCount: 1
-            snapshotterReplicaCount: 1
+            attacherReplicaCount: 2
+            provisionerReplicaCount: 2
+            resizerReplicaCount: 2
+            snapshotterReplicaCount: 2
 
           # Storage class configuration
           # Note: We create explicit StorageClass manifests in infrastructure/longhorn/
           # This prevents Helm from creating the default "longhorn" StorageClass
           persistence:
             defaultClass: false
-            defaultClassReplicaCount: 1
+            defaultClassReplicaCount: 2
 
     # Additional resources (StorageClasses, OAuth2 Proxy)
     - repoURL: https://github.com/hitchai-app/gitops
@@ -93,4 +91,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
