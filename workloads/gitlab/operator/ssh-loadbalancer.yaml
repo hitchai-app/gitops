@@ -1,18 +1,17 @@
-# GitLab SSH LoadBalancer Service
-# Exposes gitlab-shell externally for git+ssh access on standard port 22
+# GitLab SSH NodePort Service
+# Exposes gitlab-shell via NodePort for Hetzner LB forwarding (22 -> 30022)
 apiVersion: v1
 kind: Service
 metadata:
   name: gitlab-ssh
   namespace: gitlab-system
-  annotations:
-    metallb.universe.tf/allow-shared-ip: default
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
     - name: ssh
       port: 22
       targetPort: 2222
+      nodePort: 30022
       protocol: TCP
   selector:
     app: gitlab-shell

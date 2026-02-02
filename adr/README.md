@@ -118,6 +118,8 @@ ADRs are numbered sequentially with zero-padding:
 | [0039](0039-cnpg-managed-tls-for-sentry-postgres.md) | CNPG-Managed TLS and Password Auth for Sentry Postgres | Accepted | 2026-01-15 |
 | [0040](0040-sentry-bundled-stateful-services.md) | Sentry Bundled Stateful Services | Superseded | 2026-01-15 |
 | [0041](0041-sentry-operator-stateful-services.md) | Sentry Operator-Managed Stateful Services | Accepted | 2026-01-17 |
+| [0042](0042-adding-new-cluster-nodes.md) | Adding New Cluster Nodes | Accepted | 2026-02-02 |
+| [0043](0043-hetzner-load-balancer.md) | Hetzner Load Balancer for Cluster Ingress | Accepted | 2026-02-02 |
 
 ## When to Create an ADR
 
