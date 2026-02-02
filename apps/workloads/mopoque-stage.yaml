@@ -5,10 +5,10 @@ metadata:
   namespace: argocd
   annotations:
     argocd-image-updater.argoproj.io/image-list: backend=registry.ops.last-try.org/lt/mopoque/mopoque/backend,frontend=registry.ops.last-try.org/lt/mopoque/mopoque/frontend
-    argocd-image-updater.argoproj.io/backend.update-strategy: name
-    argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[a-f0-9]{8}$
-    argocd-image-updater.argoproj.io/frontend.update-strategy: name
-    argocd-image-updater.argoproj.io/frontend.allow-tags: regexp:^[a-f0-9]{8}$
+    argocd-image-updater.argoproj.io/backend.update-strategy: latest
+    argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^main-[a-f0-9]{8}$
+    argocd-image-updater.argoproj.io/frontend.update-strategy: latest
+    argocd-image-updater.argoproj.io/frontend.allow-tags: regexp:^main-[a-f0-9]{8}$
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
