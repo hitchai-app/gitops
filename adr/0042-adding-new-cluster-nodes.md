@@ -466,6 +466,38 @@ ip link show vlan4000 | grep mtu
 ### Disk order varies between servers
 Always check `lsblk` to identify which disk has the OS before partitioning the second disk.
 
+### Longhorn volumes fail with "apparently in use by the system"
+
+**Symptom:** Pods stuck in `ContainerCreating` with mount errors:
+```
+mke2fs: /dev/longhorn/pvc-xxx is apparently in use by the system; will not make a filesystem here!
+```
+
+**Cause:** The `multipathd` service grabs Longhorn iSCSI devices, blocking filesystem creation.
+
+**Fix:** Blacklist sd devices in multipath config on ALL nodes:
+
+```bash
+cat > /etc/multipath.conf << 'EOF'
+defaults {
+    user_friendly_names yes
+}
+
+blacklist {
+    devnode "^sd[a-z0-9]+"
+}
+EOF
+
+systemctl restart multipathd
+```
+
+After fixing, restart Longhorn CSI plugins:
+```bash
+kubectl delete pods -n longhorn-system -l app=longhorn-csi-plugin
+```
+
+**Reference:** [Longhorn Multipath Troubleshooting](https://longhorn.io/kb/troubleshooting-volume-with-multipath/)
+
 ---
 
 ## Load Balancer Setup
