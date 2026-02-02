@@ -23,7 +23,7 @@ spec:
         service:
           type: ClusterIP
 
-        # Pod antiaffinity - spread across nodes for HA
+        # Pod antiaffinity - spread across nodes for HA (required with hostNetwork)
         deployment:
           replicas: 2
         affinity:
