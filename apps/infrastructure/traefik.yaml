@@ -28,6 +28,13 @@ spec:
         deployment:
           kind: DaemonSet
 
+        # Update strategy for DaemonSet with hostNetwork
+        # maxUnavailable must be >= 1 because only one pod can bind to 80/443 per node
+        updateStrategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxUnavailable: 1
+
         # Port configuration
         ports:
           # Change metrics port to avoid conflict with node-exporter (9100)
