@@ -34,17 +34,21 @@ spec:
                     app.kubernetes.io/name: traefik
                 topologyKey: kubernetes.io/hostname
 
-        # Port configuration
+        # Port configuration for hostNetwork mode
+        # Hetzner LB forwards to 80/443 on nodes
         ports:
           # Change metrics port to avoid conflict with node-exporter (9100)
           metrics:
             port: 9101
           web:
+            port: 80
             redirections:
               entryPoint:
                 to: websecure
                 scheme: https
                 permanent: true
+          websecure:
+            port: 443
 
         # Resource limits
         resources:
