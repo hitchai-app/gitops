@@ -82,6 +82,8 @@ spec:
         # This allows ArgoCD to detect Ingress health properly
         providers:
           kubernetesIngress:
+            publishedService:
+              enabled: false
             ingressEndpoint:
               ip: "142.132.240.109"
 
