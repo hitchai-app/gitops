@@ -15,4 +15,6 @@ parameters:
   fsType: "ext4"
   dataLocality: "disabled"  # Spread replicas across nodes for redundancy
   dataEngine: "v1"
+  # Enable weekly backups and daily snapshots (both use "default" group)
+  recurringJobSelector: '[{"name":"default","isGroup":true}]'
   # For applications without built-in replication (Redis, single-instance workloads)

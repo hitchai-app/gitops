@@ -6,6 +6,7 @@ metadata:
   namespace: minio-infra
 spec:
   # Single-Node Single-Drive (SNSD) configuration per ADR 0006
+  # Uses ephemeral storage - no backups (cache data only, loss acceptable)
   pools:
     - name: pool-0
       servers: 1
@@ -14,7 +15,7 @@ spec:
         metadata:
           name: data
         spec:
-          storageClassName: single-replica
+          storageClassName: ephemeral
           accessModes:
             - ReadWriteOnce
           resources:

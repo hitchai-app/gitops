@@ -15,5 +15,6 @@ parameters:
   fsType: "ext4"
   dataLocality: "best-effort"
   dataEngine: "v1"
-  # Automatic cleanup on PVC deletion
-  # For non-critical data (temp files, caches, testing)
+  # NO recurringJobSelector = no backups or snapshots
+  # reclaimPolicy: Delete = PVC deletion removes volume
+  # For non-critical data (caches, temp files, CI artifacts)
