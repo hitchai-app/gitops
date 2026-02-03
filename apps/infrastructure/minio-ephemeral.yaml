@@ -2,17 +2,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: minio-infra
+  name: minio-ephemeral
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://github.com/hitchai-app/gitops.git
     targetRevision: HEAD
-    path: infrastructure/minio-infra
+    path: infrastructure/minio-ephemeral
   destination:
     server: https://kubernetes.default.svc
-    namespace: minio-infra
+    namespace: minio-ephemeral
   syncPolicy:
     automated:
       prune: true

@@ -1,0 +1,37 @@
+# MinIO credentials sealed secret
+# TODO: Generate and seal credentials:
+#
+# 1. Generate random credentials:
+#    ACCESS_KEY=$(openssl rand -hex 16)
+#    SECRET_KEY=$(openssl rand -hex 32)
+#
+# 2. Create and seal secret:
+#    kubectl create secret generic minio-ephemeral-config \
+#      --namespace=minio-ephemeral \
+#      --from-literal=accesskey=$ACCESS_KEY \
+#      --from-literal=secretkey=$SECRET_KEY \
+#      --from-literal=config.env="export MINIO_ROOT_USER=$ACCESS_KEY
+#    export MINIO_ROOT_PASSWORD=$SECRET_KEY" \
+#      --dry-run=client -o yaml | \
+#    kubeseal --cert .sealed-secrets-pub.pem --format yaml | \
+#    yq '.spec.template.metadata.annotations["replicator.v1.mittwald.de/replicate-to"] = "gitlab-runner"' \
+#    > infrastructure/minio-ephemeral/config-sealed.yaml
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: minio-ephemeral-config
+  namespace: minio-ephemeral
+spec:
+  encryptedData:
+    # PLACEHOLDER - needs sealing with real credentials
+    accesskey: REPLACE_ME
+    secretkey: REPLACE_ME
+    config.env: REPLACE_ME
+  template:
+    metadata:
+      name: minio-ephemeral-config
+      namespace: minio-ephemeral
+      annotations:
+        replicator.v1.mittwald.de/replicate-to: gitlab-runner
+    type: Opaque

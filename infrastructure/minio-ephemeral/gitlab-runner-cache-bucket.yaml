@@ -5,7 +5,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: create-gitlab-runner-cache-bucket
-  namespace: minio-infra
+  namespace: minio-ephemeral
   annotations:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: HookSucceeded
@@ -25,7 +25,7 @@ spec:
               # Source credentials from config.env
               source /config/config.env
               # Configure mc alias
-              mc alias set infra http://minio.minio-infra.svc.cluster.local:80 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+              mc alias set infra http://minio.minio-ephemeral.svc.cluster.local:80 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
               # Create bucket (ignore if exists)
               mc mb --ignore-existing infra/gitlab-runner-cache
               echo "Bucket gitlab-runner-cache ready"
@@ -43,4 +43,4 @@ spec:
       volumes:
         - name: config
           secret:
-            secretName: minio-infra-config
+            secretName: minio-ephemeral-config
