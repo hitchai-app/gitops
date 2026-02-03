@@ -84,8 +84,10 @@ spec:
           kubernetesIngress:
             publishedService:
               enabled: false
-            ingressEndpoint:
-              ip: "142.132.240.109"
+
+        # Static LB IP for Ingress status (Hetzner LB)
+        additionalArguments:
+          - "--providers.kubernetesingress.ingressendpoint.ip=142.132.240.109"
 
   destination:
     server: https://kubernetes.default.svc
