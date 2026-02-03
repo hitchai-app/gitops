@@ -524,6 +524,43 @@ kubectl delete pods -n longhorn-system -l app=longhorn-csi-plugin
 
 **Reference:** [Longhorn Multipath Troubleshooting](https://longhorn.io/kb/troubleshooting-volume-with-multipath/)
 
+### Pods fail after node reboot with "dial tcp 10.96.0.1:443: i/o timeout"
+
+**Symptom:** After rebooting a node, pods stuck in ContainerCreating. Calico node shows Init:Error with:
+```
+dial tcp 10.96.0.1:443: i/o timeout
+```
+
+**Cause:** kube-proxy ConfigMap still points to removed/old control-plane node IP. kube-proxy can't sync iptables rules, breaking ClusterIP connectivity.
+
+**Diagnosis:**
+```bash
+# Check kube-proxy logs
+kubectl logs -n kube-system -l k8s-app=kube-proxy --tail=20
+
+# Look for: "Failed to retrieve node info" with old IP
+
+# Verify iptables rules missing on affected node
+ssh root@<NODE_IP> 'iptables-save | grep -c KUBE-SERVICES'
+# Should be 100+, if 0 = kube-proxy not syncing
+```
+
+**Fix:**
+```bash
+# Update kube-proxy ConfigMap to use LB or current control-plane IP
+kubectl get configmap -n kube-system kube-proxy -o yaml | \
+  sed 's|https://<OLD_IP>:6443|https://<LB_IP>:6443|g' | \
+  kubectl apply -f -
+
+# Restart kube-proxy on all nodes
+kubectl rollout restart daemonset kube-proxy -n kube-system
+
+# Force delete stuck Calico node
+kubectl delete pod -n calico-system calico-node-<xxx> --force --grace-period=0
+```
+
+**Prevention:** When removing control-plane nodes, always update kube-proxy ConfigMap.
+
 ---
 
 ## Post-Setup: Migrate etcd to vSwitch IPs
