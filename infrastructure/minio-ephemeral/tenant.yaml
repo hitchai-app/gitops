@@ -2,10 +2,11 @@
 apiVersion: minio.min.io/v2
 kind: Tenant
 metadata:
-  name: infra
-  namespace: minio-infra
+  name: ephemeral
+  namespace: minio-ephemeral
 spec:
   # Single-Node Single-Drive (SNSD) configuration per ADR 0006
+  # Uses ephemeral storage - no backups (cache data only, loss acceptable)
   pools:
     - name: pool-0
       servers: 1
@@ -14,7 +15,7 @@ spec:
         metadata:
           name: data
         spec:
-          storageClassName: single-replica
+          storageClassName: ephemeral
           accessModes:
             - ReadWriteOnce
           resources:
@@ -28,9 +29,9 @@ spec:
           cpu: 1000m
           memory: 1Gi
 
-  # Credentials from sealed secret
+  # Credentials from sealed secret (replicated to gitlab-runner)
   configuration:
-    name: minio-infra-config
+    name: minio-ephemeral-config
 
   # Disable TLS for internal-only traffic (per ADR 0006)
   requestAutoCert: false

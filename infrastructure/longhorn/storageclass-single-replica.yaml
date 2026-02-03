@@ -15,5 +15,7 @@ parameters:
   fsType: "ext4"
   dataLocality: "best-effort"
   dataEngine: "v1"
+  # Enable weekly backups and daily snapshots (both use "default" group)
+  recurringJobSelector: '[{"name":"default","isGroup":true}]'
   # Keep replica on same node as pod (minimize latency)
   # For applications with built-in replication (PostgreSQL, MinIO)

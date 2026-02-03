@@ -1,0 +1,108 @@
+# Backblaze B2 Bucket and Credentials for Longhorn Backups
+#
+# Creates B2 bucket and application key using Terraform provider.
+# Outputs S3-compatible credentials as Kubernetes secret.
+#
+# Pricing: $0.006/GB/month (3x cheaper than R2)
+# Docs: https://www.backblaze.com/docs/cloud-storage
+apiVersion: tf.upbound.io/v1beta1
+kind: Workspace
+metadata:
+  name: b2-longhorn-backups
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  providerConfigRef:
+    name: backblaze
+
+  # Terraform outputs become secret data
+  writeConnectionSecretToRef:
+    namespace: longhorn-system
+    name: longhorn-backup-b2-credentials
+
+  forProvider:
+    source: Inline
+    module: |
+      terraform {
+        required_providers {
+          b2 = {
+            source  = "Backblaze/b2"
+            version = "~> 0.9"
+          }
+        }
+        backend "kubernetes" {
+          secret_suffix     = "b2-longhorn-backups"
+          namespace         = "crossplane-system"
+          in_cluster_config = true
+        }
+      }
+
+      variable "b2_application_key_id" {
+        type      = string
+        sensitive = true
+      }
+
+      variable "b2_application_key" {
+        type      = string
+        sensitive = true
+      }
+
+      provider "b2" {
+        application_key_id = var.b2_application_key_id
+        application_key    = var.b2_application_key
+      }
+
+      # B2 bucket for Longhorn backups
+      resource "b2_bucket" "longhorn_backups" {
+        bucket_name = "hitchai-longhorn-backups"
+        bucket_type = "allPrivate"
+
+        lifecycle_rules {
+          file_name_prefix              = ""
+          days_from_hiding_to_deleting  = 1
+          days_from_uploading_to_hiding = 0
+        }
+      }
+
+      # Application key scoped to this bucket
+      resource "b2_application_key" "longhorn_backup" {
+        key_name     = "longhorn-backup"
+        bucket_id    = b2_bucket.longhorn_backups.bucket_id
+        capabilities = ["deleteFiles", "listBuckets", "listFiles", "readBuckets", "readFiles", "writeFiles"]
+      }
+
+      # Outputs for Longhorn (S3-compatible format)
+      # B2 S3 endpoint: s3.<region>.backblazeb2.com
+      output "AWS_ACCESS_KEY_ID" {
+        value     = b2_application_key.longhorn_backup.application_key_id
+        sensitive = true
+      }
+
+      output "AWS_SECRET_ACCESS_KEY" {
+        value     = b2_application_key.longhorn_backup.application_key
+        sensitive = true
+      }
+
+      output "AWS_ENDPOINTS" {
+        value     = "https://s3.${b2_bucket.longhorn_backups.bucket_info.region}.backblazeb2.com"
+        sensitive = false
+      }
+
+      output "BUCKET_NAME" {
+        value     = b2_bucket.longhorn_backups.bucket_name
+        sensitive = false
+      }
+
+    # yamllint disable rule:indentation
+    env:
+      - name: TF_VAR_b2_application_key_id
+        secretKeyRef:
+          namespace: crossplane-system
+          name: backblaze-credentials
+          key: application-key-id
+      - name: TF_VAR_b2_application_key
+        secretKeyRef:
+          namespace: crossplane-system
+          name: backblaze-credentials
+          key: application-key
+    # yamllint enable rule:indentation
