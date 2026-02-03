@@ -84,7 +84,8 @@ spec:
       }
 
       output "AWS_ENDPOINTS" {
-        value     = "https://s3.${b2_bucket.longhorn_backups.bucket_info.region}.backblazeb2.com"
+        # Region is determined by B2 account settings, hardcoded to match Longhorn config
+        value     = "https://s3.us-west-002.backblazeb2.com"
         sensitive = false
       }
 
