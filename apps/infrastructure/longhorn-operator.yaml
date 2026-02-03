@@ -23,7 +23,7 @@ spec:
             replicaAutoBalance: "best-effort"
             # Backup to Backblaze B2 (S3-compatible, $0.006/GB)
             # Credentials managed by Crossplane (infrastructure/crossplane-providers/b2-longhorn-backup.yaml)
-            backupTarget: "s3://hitchai-longhorn-backups@us-west-002/"
+            backupTarget: "s3://hitchai-longhorn-backups@us-east-005/"
             backupTargetCredentialSecret: "longhorn-backup-b2-credentials"
             storageOverProvisioningPercentage: "200"
             storageMinimalAvailablePercentage: "25"
