@@ -11,6 +11,12 @@ spec:
     targetRevision: 5.0.18
     helm:
       valuesObject:
+        operator:
+          # Single replica to avoid reconciliation conflicts between pods
+          # Both replicas try to update tenant StatefulSets simultaneously,
+          # causing race conditions and constant pod restarts
+          replicaCount: 1
+
         # Console disabled until tenant is deployed
         console:
           enabled: false
@@ -33,4 +39,4 @@ spec:
       prune: true
       selfHeal: true
     syncOptions:
-    - CreateNamespace=true
+      - CreateNamespace=true
