@@ -5,7 +5,9 @@ resources:
   - storageclass-single-replica.yaml
   - storageclass-replicated.yaml
   - storageclass-ephemeral.yaml
-  - backup-secret-sealed.yaml
+  - recurring-backup-weekly.yaml
+  # Note: backup-secret-sealed.yaml deprecated - using Crossplane-managed B2 credentials
+  # See infrastructure/crossplane-providers/b2-longhorn-backup.yaml
   - oauth2-proxy/deployment.yaml
   - oauth2-proxy/service.yaml
   - oauth2-proxy/cookie-secret-sealed.yaml

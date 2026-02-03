@@ -1,0 +1,39 @@
+# Weekly backup job for all volumes with the "backup-weekly" label
+#
+# To enable weekly backups on a volume, add label:
+#   recurring-job.longhorn.io/source: enabled
+#   recurring-job.longhorn.io/backup-weekly: enabled
+#
+# Or use recurring-job-group.longhorn.io/default: enabled for all default jobs
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: backup-weekly
+  namespace: longhorn-system
+spec:
+  # Weekly on Sunday at 3 AM
+  cron: "0 3 * * 0"
+  task: backup
+  # Keep 4 backups (4 weeks retention)
+  retain: 4
+  # Run on all volume groups
+  concurrency: 2
+  # Label selector - volumes must have this label
+  groups:
+    - default
+---
+# Snapshot job for faster recovery (daily, keeps 7)
+apiVersion: longhorn.io/v1beta2
+kind: RecurringJob
+metadata:
+  name: snapshot-daily
+  namespace: longhorn-system
+spec:
+  # Daily at 2 AM
+  cron: "0 2 * * *"
+  task: snapshot
+  # Keep 7 snapshots (1 week retention)
+  retain: 7
+  concurrency: 2
+  groups:
+    - default

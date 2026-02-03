@@ -14,3 +14,13 @@ spec:
   # Use Kubernetes backend (state stored as secrets)
   # No global credentials - each Workspace references secrets via vars
   {}
+---
+# Backblaze B2 Provider Configuration
+apiVersion: tf.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: backblaze
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  {}
