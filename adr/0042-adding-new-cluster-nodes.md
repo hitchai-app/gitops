@@ -213,15 +213,41 @@ EOF
 **Node IP assignments:**
 | Node | vSwitch IP |
 |------|------------|
-| k8s-mn | 10.0.0.1/16 |
-| k8s-02 | 10.0.0.2/16 |
+| k8s-02 | 10.0.1.2/16 |
 | k8s-03 | 10.0.1.3/16 |
 | k8s-04 | 10.0.1.4/16 |
 
-### Step 3.3: Apply and verify
+### Step 3.3: Add route for Hetzner Cloud Network (if using Cloud LB)
+
+If using Hetzner Cloud Load Balancer with private networking, add a route to the Cloud subnet:
 
 ```bash
-ssh root@<SERVER_IP> "netplan apply && sleep 2 && ip addr show vlan4000 && ping -c2 10.0.0.1"
+ssh root@<SERVER_IP> "
+  IFACE=eno1  # Adjust based on Step 3.1
+  cat > /etc/netplan/60-vswitch.yaml << EOF
+network:
+  version: 2
+  vlans:
+    vlan4000:
+      id: 4000
+      link: \${IFACE}
+      mtu: 1400
+      addresses:
+        - 10.0.X.Y/16
+      routes:
+        - to: 10.0.2.0/24
+          via: 10.0.1.1
+EOF
+  chmod 600 /etc/netplan/60-vswitch.yaml
+"
+```
+
+**Note:** The route `10.0.2.0/24 via 10.0.1.1` enables communication between dedicated servers and Cloud resources (like Load Balancers) through the vSwitch gateway.
+
+### Step 3.4: Apply and verify
+
+```bash
+ssh root@<SERVER_IP> "netplan apply && sleep 2 && ip addr show vlan4000 && ip route show | grep 10.0"
 ```
 
 ---
@@ -500,6 +526,107 @@ kubectl delete pods -n longhorn-system -l app=longhorn-csi-plugin
 
 ---
 
+## Post-Setup: Migrate etcd to vSwitch IPs
+
+By default, kubeadm configures etcd to use public IPs. For security and performance, migrate etcd peer/client communication to vSwitch IPs.
+
+### Why migrate?
+- **Security**: etcd traffic stays on private network
+- **Performance**: Lower latency than public internet
+- **Cost**: No bandwidth charges for internal traffic
+
+### Migration procedure (one node at a time)
+
+etcd quorum is 2/3, so one node can be migrated at a time without downtime.
+
+**For each node:**
+
+1. **Update member peer URL** (from any healthy etcd node):
+```bash
+# Get member ID
+kubectl -n kube-system exec etcd-k8s-03 -- etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  member list
+
+# Update peer URL (replace MEMBER_ID and NEW_IP)
+kubectl -n kube-system exec etcd-k8s-03 -- etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  member update <MEMBER_ID> --peer-urls=https://10.0.1.X:2380
+```
+
+2. **Regenerate etcd certs with vSwitch IP** (on the node being migrated):
+```bash
+ssh root@<NODE_IP> "
+  # Backup existing certs
+  mkdir -p /etc/kubernetes/pki/etcd/backup
+  cp /etc/kubernetes/pki/etcd/*.crt /etc/kubernetes/pki/etcd/*.key /etc/kubernetes/pki/etcd/backup/
+
+  # Remove old peer/server certs (keep CA)
+  rm -f /etc/kubernetes/pki/etcd/peer.crt /etc/kubernetes/pki/etcd/peer.key
+  rm -f /etc/kubernetes/pki/etcd/server.crt /etc/kubernetes/pki/etcd/server.key
+
+  # Regenerate with vSwitch IP in SANs
+  kubeadm init phase certs etcd-peer --config=/dev/stdin <<EOF
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+etcd:
+  local:
+    serverCertSANs:
+      - localhost
+      - <NODE_NAME>
+      - 10.0.1.X
+      - 127.0.0.1
+    peerCertSANs:
+      - localhost
+      - <NODE_NAME>
+      - 10.0.1.X
+      - 127.0.0.1
+EOF
+
+  kubeadm init phase certs etcd-server --config=/dev/stdin <<EOF
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+etcd:
+  local:
+    serverCertSANs:
+      - localhost
+      - <NODE_NAME>
+      - 10.0.1.X
+      - 127.0.0.1
+    peerCertSANs:
+      - localhost
+      - <NODE_NAME>
+      - 10.0.1.X
+      - 127.0.0.1
+EOF
+"
+```
+
+3. **Update etcd manifest** (on the node being migrated):
+```bash
+ssh root@<NODE_IP> "sed -i 's/<PUBLIC_IP>/10.0.1.X/g' /etc/kubernetes/manifests/etcd.yaml"
+```
+
+4. **Verify cluster health**:
+```bash
+kubectl -n kube-system exec etcd-k8s-03 -- etcdctl \
+  --endpoints=https://127.0.0.1:2379 \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+  --cert=/etc/kubernetes/pki/etcd/peer.crt \
+  --key=/etc/kubernetes/pki/etcd/peer.key \
+  endpoint health --cluster
+```
+
+5. **Repeat for remaining nodes**
+
+---
+
 ## Load Balancer Setup
 
 See **[ADR 0043: Hetzner Load Balancer](0043-hetzner-load-balancer.md)** for full details.
@@ -513,7 +640,7 @@ See **[ADR 0043: Hetzner Load Balancer](0043-hetzner-load-balancer.md)** for ful
 | http-ingress | 80 | 80 | HTTP → HTTPS redirect |
 | gitlab-ssh | 22 | 30022 | NodePort for git+ssh |
 
-### Setup Steps
+### Setup Steps (Public IP Targets)
 
 1. Create LB in Hetzner Cloud Console (LB11, ~€5.39/month)
 2. Add all nodes as targets (public IPs)
@@ -521,6 +648,49 @@ See **[ADR 0043: Hetzner Load Balancer](0043-hetzner-load-balancer.md)** for ful
 4. Update DNS: `*.ops.last-try.org` → LB IP
 5. Update kubeadm-config with `controlPlaneEndpoint: <LB_IP>:6443`
 6. Regenerate API server certs, restart API server
+
+### Private Network Setup (Recommended)
+
+For LB → Node traffic to use private vSwitch network instead of public internet:
+
+**1. Create Cloud Network in Hetzner Cloud Console:**
+- Name: `k8s-private`
+- IP range: `10.0.0.0/8`
+- Network zone: eu-central
+
+**2. Add vSwitch subnet:**
+- Go to Networks → k8s-private → Subnets → Add subnet
+- IP range: `10.0.1.0/24`
+- Enable "dedicated server vSwitch connection"
+- Select your vSwitch (e.g., `k8s-sw-1`)
+- Click "Expose routes" when prompted
+
+**3. Add Cloud subnet (for LB):**
+- Go to Networks → k8s-private → Subnets → Add subnet
+- IP range: `10.0.2.0/24`
+- Do NOT enable vSwitch (this is for Cloud resources)
+
+**4. Attach LB to network:**
+- Go to Load Balancers → your LB → Networking
+- Click "Attach to network" → select `k8s-private`
+- LB gets IP like `10.0.2.1`
+
+**5. Add route on all dedicated servers:**
+```bash
+# Add to /etc/netplan/60-vswitch.yaml under vlan4000:
+routes:
+  - to: 10.0.2.0/24
+    via: 10.0.1.1
+```
+
+**6. Update LB targets to private IPs:**
+- Remove public IP targets (142.x, 88.x, 116.x)
+- Add private IP targets (10.0.1.2, 10.0.1.3, 10.0.1.4)
+
+**Benefits:**
+- LB health checks and traffic stay on private network
+- No public bandwidth usage for internal traffic
+- Better security (traffic not exposed to internet)
 
 ---
 
