@@ -78,6 +78,13 @@ spec:
           access:
             enabled: true
 
+        # Publish Hetzner LB IP to Ingress status
+        # This allows ArgoCD to detect Ingress health properly
+        providers:
+          kubernetesIngress:
+            ingressEndpoint:
+              ip: "142.132.240.109"
+
   destination:
     server: https://kubernetes.default.svc
     namespace: traefik
