@@ -1,0 +1,66 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: longhorn-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: longhorn
+      rules:
+        # Volume degraded - some replicas unavailable but volume still functional
+        - alert: LonghornVolumeDegraded
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is degraded"
+            description: "Volume {{ $labels.volume }} in namespace {{ $labels.namespace }} has degraded robustness. Some replicas may be unavailable."
+          expr: |
+            longhorn_volume_robustness{robustness="degraded"} == 1
+          for: 5m
+          labels:
+            severity: warning
+
+        # Volume faulted - volume is not functional
+        - alert: LonghornVolumeFaulted
+          annotations:
+            summary: "Longhorn volume {{ $labels.volume }} is faulted"
+            description: "Volume {{ $labels.volume }} in namespace {{ $labels.namespace }} is faulted and may not be accessible. Immediate attention required."
+          expr: |
+            longhorn_volume_robustness{robustness="faulted"} == 1
+          for: 1m
+          labels:
+            severity: critical
+
+        # Backup failed - state 4 indicates Error state
+        - alert: LonghornBackupFailed
+          annotations:
+            summary: "Longhorn backup failed for volume {{ $labels.volume }}"
+            description: "Backup for volume {{ $labels.volume }} has failed. Check Longhorn UI for details."
+          expr: |
+            longhorn_backup_state == 4
+          for: 5m
+          labels:
+            severity: critical
+
+        # Node storage high - approaching capacity
+        - alert: LonghornNodeStorageHigh
+          annotations:
+            summary: "Longhorn node {{ $labels.node }} storage usage high"
+            description: "Node {{ $labels.node }} is using {{ printf \"%.1f\" $value }}% of its Longhorn storage capacity."
+          expr: |
+            (longhorn_node_storage_usage_bytes / longhorn_node_storage_capacity_bytes) * 100 > 85
+          for: 10m
+          labels:
+            severity: warning
+
+        # Backup job missing - no successful backup in configured interval
+        # Uses kube_cronjob_status_last_successful_time for CronJob-based backups
+        - alert: LonghornBackupJobMissing
+          annotations:
+            summary: "Longhorn backup CronJob hasn't succeeded in 8+ days"
+            description: "CronJob {{ $labels.cronjob }} in namespace {{ $labels.namespace }} last succeeded {{ $value | humanizeDuration }} ago."
+          expr: |
+            time() - kube_cronjob_status_last_successful_time{cronjob=~".*longhorn.*backup.*"} > 8 * 24 * 60 * 60
+          for: 1h
+          labels:
+            severity: critical

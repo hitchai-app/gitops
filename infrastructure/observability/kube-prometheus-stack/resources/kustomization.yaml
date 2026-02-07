@@ -7,6 +7,7 @@ resources:
   - alertmanager-config.yaml
   - alertmanager-discord-webhook-sealed.yaml
   - disk-alerts.yaml
+  - longhorn-alerts.yaml
   # grafana-oauth-secret removed - now uses replicated dex-secrets
   - oauth2-proxy-alertmanager/deployment.yaml
   - oauth2-proxy-alertmanager/service.yaml
