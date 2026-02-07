@@ -83,6 +83,14 @@ spec:
             defaultClass: false
             defaultClassReplicaCount: 2
 
+          # Prometheus metrics and ServiceMonitor
+          metrics:
+            serviceMonitor:
+              enabled: true
+              additionalLabels:
+                release: kube-prometheus-stack
+              interval: 30s
+
     # Additional resources (StorageClasses, OAuth2 Proxy)
     - repoURL: https://github.com/hitchai-app/gitops
       targetRevision: master
