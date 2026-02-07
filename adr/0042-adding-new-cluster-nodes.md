@@ -275,6 +275,7 @@ EOF
 net.bridge.bridge-nf-call-iptables = 1
 net.bridge.bridge-nf-call-ip6tables = 1
 net.ipv4.ip_forward = 1
+fs.inotify.max_user_instances = 1024
 EOF
   sysctl --system
 "
@@ -523,6 +524,42 @@ kubectl delete pods -n longhorn-system -l app=longhorn-csi-plugin
 ```
 
 **Reference:** [Longhorn Multipath Troubleshooting](https://longhorn.io/kb/troubleshooting-volume-with-multipath/)
+
+### CSI driver not found despite being registered (inotify exhaustion)
+
+**Symptom:** Pods stuck in `ContainerCreating` with:
+```
+MountVolume.MountDevice failed: driver name driver.longhorn.io not found in the list of registered CSI drivers
+```
+
+Despite `kubectl get csinode <node>` showing `driver.longhorn.io` registered, and the longhorn-csi-plugin pod running on the node.
+
+**Cause:** The kubelet's plugin watcher (fsnotify) failed to start due to `fs.inotify.max_user_instances` exhaustion. The default limit (128) is too low for busy Kubernetes nodes running many controllers, CSI drivers, and containerd. Without the plugin watcher, kubelet never detects CSI driver registration sockets.
+
+**Diagnosis:**
+```bash
+# Check kubelet logs for the smoking gun
+journalctl -u kubelet | grep "plugin_manager\|fsWatcher\|too many open files"
+# Look for: "The desired_state_of_world populator (plugin watcher) starts failed!"
+#           "failed to start plugin fsWatcher, err: too many open files"
+
+# Check current limit
+sysctl fs.inotify.max_user_instances
+```
+
+**Fix:**
+```bash
+# Increase limit (persistent)
+sysctl -w fs.inotify.max_user_instances=1024
+echo "fs.inotify.max_user_instances=1024" > /etc/sysctl.d/99-inotify.conf
+
+# Restart kubelet so plugin watcher starts with new limits
+systemctl restart kubelet
+```
+
+**Prevention:** Set `fs.inotify.max_user_instances=1024` in Phase 4 sysctl params during node setup.
+
+**Incident (2026-02-07):** All 3 Sentry StatefulSet pods stuck in ContainerCreating on k8s-04 after force-deleting completed pods. Kubelet restart alone didn't fix it — the inotify limit had to be raised first. Applied preemptively to k8s-02 and k8s-03.
 
 ### Pods fail after node reboot with "dial tcp 10.96.0.1:443: i/o timeout"
 
