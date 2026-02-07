@@ -4,9 +4,6 @@ metadata:
   name: standalock-prod
   namespace: argocd
   annotations:
-    argocd-image-updater.argoproj.io/image-list: standalock=registry.ops.last-try.org/flawless/standalock
-    argocd-image-updater.argoproj.io/standalock.update-strategy: name
-    argocd-image-updater.argoproj.io/standalock.allow-tags: regexp:^[a-f0-9]{8}$
     argocd.argoproj.io/sync-options: Replace=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io

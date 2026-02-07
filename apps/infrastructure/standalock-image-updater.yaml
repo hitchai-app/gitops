@@ -1,0 +1,21 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: standalock-prod
+  namespace: argocd
+spec:
+  namespace: argocd
+  writeBackConfig:
+    method: argocd
+  commonUpdateSettings:
+    updateStrategy: newest-build
+    allowTags: "regexp:^[a-f0-9]{8}$"
+    pullSecret: secret:argocd/gitlab-registry-creds#creds
+  applicationRefs:
+    - namePattern: standalock-prod
+      images:
+        - alias: standalock
+          imageName: registry.ops.last-try.org/flawless/standalock
+          manifestTargets:
+            kustomize:
+              name: registry.ops.last-try.org/flawless/standalock
