@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: argocd-health
+  namespace: argocd
+spec:
+  groups:
+    - name: argocd-health-transitions
+      interval: 30s
+      rules:
+        # Recording rule: numeric health value per app for transition detection
+        - record: argocd:app_health_numeric
+          expr: |
+            (argocd_app_info{health_status="Healthy"} * 0)
+            or
+            (argocd_app_info{health_status="Progressing"} * 1)
+            or
+            (argocd_app_info{health_status="Degraded"} * 2)
+            or
+            (argocd_app_info{health_status="Missing"} * 3)
+            or
+            (argocd_app_info{health_status="Suspended"} * 4)
+            or
+            (argocd_app_info{health_status="Unknown"} * 5)
+        # Alert: app health changed more than twice in 30 minutes (flapping)
+        - alert: ArgocdAppHealthFlapping
+          expr: changes(argocd:app_health_numeric[30m]) > 2
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "ArgoCD app {{ $labels.name }} health is flapping"
+            description: >-
+              Application {{ $labels.name }} changed health status
+              {{ $value }} times in the last 30 minutes.
+              Current health: {{ $labels.health_status }}.
