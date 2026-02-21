@@ -121,6 +121,7 @@ data:
   # Trigger: on successful deployment
   trigger.on-deployed: |
     - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+      oncePer: app.status.operationState.finishedAt
       send: [app-deployed]
 
   # Trigger: on sync failure
