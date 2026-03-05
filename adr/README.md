@@ -120,6 +120,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0041](0041-sentry-operator-stateful-services.md) | Sentry Operator-Managed Stateful Services | Accepted | 2026-01-17 |
 | [0042](0042-adding-new-cluster-nodes.md) | Adding New Cluster Nodes | Accepted | 2026-02-02 |
 | [0043](0043-hetzner-load-balancer.md) | Hetzner Load Balancer for Cluster Ingress | Accepted | 2026-02-02 |
+| [0044](0044-cnpg-backup-and-recovery-strategy.md) | CNPG Backup and Recovery Strategy | Accepted | 2026-02-03 |
 
 ## When to Create an ADR
 
