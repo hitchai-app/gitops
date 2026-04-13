@@ -1,0 +1,41 @@
+# CronJob to ensure MinIO ILM lifecycle rule exists on gitlab-backups bucket.
+# Expires backup objects after 7 days (keeps 1 week of daily backups).
+# GitLab's backup_keep_time only manages local files, not object storage.
+# MinIO Operator Tenant CRD does not support bucket lifecycle policies.
+# See: https://gitlab.com/gitlab-org/charts/gitlab/-/issues/1628
+# See: https://github.com/minio/operator/issues/1010
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: gitlab-minio-backup-lifecycle
+  namespace: gitlab-system
+spec:
+  schedule: "30 3 * * 0"
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mc
+              image: docker.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  . /config/config.env
+                  mc alias set gitlab http://minio.gitlab-system.svc:80 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+                  echo '{"Rules":[{"ID":"backup-retention","Status":"Enabled","Prefix":"","Expiration":{"Days":7},"AbortIncompleteMultipartUpload":{"DaysAfterInitiation":3}}]}' \
+                    | mc ilm rule import gitlab/gitlab-backups
+                  mc ilm rule ls gitlab/gitlab-backups
+              volumeMounts:
+                - name: minio-config
+                  mountPath: /config
+                  readOnly: true
+          restartPolicy: OnFailure
+          volumes:
+            - name: minio-config
+              secret:
+                secretName: gitlab-minio-env
