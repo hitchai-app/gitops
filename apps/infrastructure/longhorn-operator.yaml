@@ -31,7 +31,7 @@ spec:
           defaultBackupStore:
             backupTarget: "s3://hitchai-longhorn-backups@us-east-005/"
             backupTargetCredentialSecret: "longhorn-backup-b2-credentials"
-            pollInterval: "5m"
+            pollInterval: "300"
 
           # Resource limits for Longhorn components
           longhornManager:
