@@ -23,6 +23,7 @@ spec:
             replicaAutoBalance: "best-effort"
             storageOverProvisioningPercentage: "200"
             storageMinimalAvailablePercentage: "25"
+            nodeDownPodDeletionPolicy: "delete-both-statefulset-and-deployment-pod"
 
           # Backup to Backblaze B2 (S3-compatible, $0.006/GB)
           # Credentials managed by Crossplane (infrastructure/crossplane-providers/b2-longhorn-backup.yaml)
