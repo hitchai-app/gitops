@@ -1,8 +1,10 @@
 # 0026. Forgejo Actions with Ephemeral Runners
 
-**Status**: Accepted
+**Status**: Superseded by [ADR 0029](0029-restore-gitlab-platform.md)
 
 **Date**: 2025-12-10
+
+**Superseded**: 2026-04-25 — Forgejo decommissioned alongside the GitLab restore (ADR 0029); Forgejo Actions runners no longer exist on the cluster.
 
 ## Context
 

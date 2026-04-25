@@ -1,8 +1,10 @@
 # 0022. GlitchTip Error Tracking
 
-**Status**: Accepted
+**Status**: Superseded by [ADR 0041](0041-sentry-operator-stateful-services.md)
 
 **Date**: 2025-12-04
+
+**Superseded**: 2026-04-25 — GlitchTip decommissioned after Sentry was successfully restored (ADR 0041) on operator-managed infrastructure that fits the cluster footprint.
 
 ## Context
 

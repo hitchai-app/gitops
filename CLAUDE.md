@@ -185,7 +185,7 @@ spec:
 - ❌ Requires kustomization.yaml files that add unnecessary complexity
 - ❌ Needs `--enable-helm` flag that may not survive parent→child Application sync
 
-**Examples:** `apps/infrastructure/woodpecker.yaml`, `apps/infrastructure/forgejo.yaml`
+**Examples:** `apps/infrastructure/dex.yaml`, `apps/infrastructure/kubernetes-replicator.yaml`
 
 ### Kubernetes Manifests
 
