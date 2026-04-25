@@ -7,6 +7,8 @@ ingress:
   enabled: true
   regexPathStyle: traefik
   ingressClassName: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
   hostname: sentry.ops.last-try.org
   tls:
     - secretName: sentry.ops.last-try.org-tls
