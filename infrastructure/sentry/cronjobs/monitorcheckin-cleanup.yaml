@@ -1,0 +1,75 @@
+# Short-retention cleanup for MonitorCheckIn.
+# Sentry's chart cleanup applies one retention to all models. MonitorCheckIn is
+# the highest-churn table by far (~16k inserts/day from heartbeats); 90 days of
+# heartbeats is overkill. This sibling CronJob keeps it at 14 days while the
+# chart-managed cron handles events/files at 90 days.
+#
+# Image and env mirror the chart's cleanup template (release: sentry).
+# Keep image tag in sync with infrastructure/sentry/values.yaml `images.sentry.tag`.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sentry-cleanup-monitorcheckin
+  namespace: sentry-system
+spec:
+  schedule: "0 */6 * * *"               # every 6h: keeps table small without daily spikes
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 600
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: cleanup-monitorcheckin
+              image: ghcr.io/hitchai-app/sentry-oidc:25.12.1-oidc
+              imagePullPolicy: IfNotPresent
+              command: [sentry]
+              args:
+                - cleanup
+                - -m
+                - MonitorCheckIn
+                - --days
+                - "14"
+                - --concurrency
+                - "4"
+              env:
+                - name: C_FORCE_ROOT
+                  value: "true"
+                - name: SNUBA
+                  value: http://sentry-snuba:1218
+                - name: VROOM
+                  value: http://sentry-vroom:8085
+                - name: SENTRY_SECRET_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: sentry-sentry-secret
+                      key: key
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: sentry-postgres-app
+                      key: password
+                - name: POSTGRES_USER
+                  value: sentry
+                - name: POSTGRES_NAME
+                  value: sentry
+                - name: POSTGRES_HOST
+                  value: sentry-postgres-rw.sentry-system.svc.cluster.local
+                - name: POSTGRES_PORT
+                  value: "5432"
+              volumeMounts:
+                - name: config
+                  mountPath: /etc/sentry
+                  readOnly: true
+                - name: sentry-data
+                  mountPath: /var/lib/sentry/files
+          volumes:
+            - name: config
+              configMap:
+                name: sentry-sentry
+            - name: sentry-data
+              emptyDir: {}
