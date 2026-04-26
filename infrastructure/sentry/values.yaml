@@ -72,6 +72,14 @@ sentry:
         value: https://auth.ops.last-try.org
       - name: OIDC_ISSUER
         value: https://auth.ops.last-try.org
+  # Daily cleanup of events/files/etc. (90-day retention).
+  # MonitorCheckIn is handled separately by the cronjob in infrastructure/sentry/cronjobs/
+  # because the chart only supports one retention value across all models.
+  cleanup:
+    activeDeadlineSeconds: 600        # was 100; measured catch-up runs need >100s
+    failedJobsHistoryLimit: 1         # was 5; alerts stay sticky on old failed Jobs
+    successfulJobsHistoryLimit: 3
+    concurrency: 4                    # was 1; --concurrency uses multiprocess
 
 config:
   configYml:

@@ -37,6 +37,11 @@ spec:
       targetRevision: master
       path: infrastructure/sentry/kafka
 
+    # Custom CronJobs (sibling to chart-managed cleanup)
+    - repoURL: https://github.com/hitchai-app/gitops
+      targetRevision: master
+      path: infrastructure/sentry/cronjobs
+
   destination:
     server: https://kubernetes.default.svc
     namespace: sentry-system
