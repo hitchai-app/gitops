@@ -114,3 +114,9 @@ prometheus:
     serviceMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
     ruleSelectorNilUsesHelmValues: false
+
+# Disable upstream KubeJobFailed; replaced by resources/kube-job-alerts.yaml
+# with a 24h time window so resolved-but-not-deleted failed Jobs age out.
+defaultRules:
+  disabled:
+    KubeJobFailed: true

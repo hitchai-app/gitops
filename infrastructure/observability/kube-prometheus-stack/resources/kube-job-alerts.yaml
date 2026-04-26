@@ -1,0 +1,30 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kube-job-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+    - name: kube-jobs
+      rules:
+        # Replacement for upstream KubeJobFailed (disabled in values.yaml).
+        # Upstream fires forever as long as the failed Job CR exists, which makes
+        # alerts sticky on past failures even after the underlying issue is fixed.
+        # We add a 24h time window: if the Job started >24h ago, the alert clears
+        # whether or not the CR was deleted. Failed Job CRs remain visible via kubectl.
+        - alert: KubeJobFailed
+          annotations:
+            summary: Job failed to complete.
+            description: >-
+              Job {{ $labels.namespace }}/{{ $labels.job_name }} failed to complete.
+              Investigate logs or `kubectl describe job` for details. This alert
+              auto-clears 24h after job start.
+            runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubejobfailed
+          expr: |
+            kube_job_failed{job="kube-state-metrics", condition="true"} == 1
+              and on(namespace, job_name) (time() - kube_job_status_start_time) < 86400
+          for: 15m
+          labels:
+            severity: warning
