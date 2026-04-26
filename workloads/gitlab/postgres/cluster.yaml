@@ -12,10 +12,15 @@ spec:
 
   postgresql:
     parameters:
+      # Tuning per ADR 0046 (mixed OLTP)
       shared_buffers: "256MB"
-      effective_cache_size: "512MB"
+      effective_cache_size: "768MB"
+      maintenance_work_mem: "256MB"
       work_mem: "16MB"
-      maintenance_work_mem: "64MB"
+      autovacuum_vacuum_scale_factor: "0.10"
+      autovacuum_vacuum_insert_scale_factor: "0.10"
+      autovacuum_vacuum_cost_limit: "1000"
+      autovacuum_naptime: "30s"
       max_connections: "200"
       log_statement: "ddl"
       log_min_duration_statement: "1000"
