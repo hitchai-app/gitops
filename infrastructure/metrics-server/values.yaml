@@ -1,0 +1,18 @@
+# metrics-server values
+# Serves the metrics.k8s.io API consumed by `kubectl top`, k9s resource
+# columns, and HPA. Not provided by kube-prometheus-stack.
+
+args:
+  # Bare-metal kubeadm cluster: kubelet serving certs are signed by per-node
+  # self-signed CAs, not the cluster CA, so metrics-server cannot verify them.
+  # Proper fix is serverTLSBootstrap on kubelets + CSR approval (cluster-side,
+  # outside this repo). Until then, skip kubelet cert verification.
+  - --kubelet-insecure-tls
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 200Mi
+  requests:
+    cpu: 50m
+    memory: 100Mi
