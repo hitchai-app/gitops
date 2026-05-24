@@ -4,7 +4,8 @@ metadata:
   name: youtrack
   namespace: youtrack-system
 spec:
-  type: ClusterIP
+  # Headless: this is the StatefulSet's governing service (per spec.serviceName)
+  clusterIP: None
   selector:
     app: youtrack
   ports:
