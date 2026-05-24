@@ -108,6 +108,13 @@ config:
       name: 'StandaLock'
       secretEnv: DEX_CLIENT_SECRET_STANDALOCK
 
+    # YouTrack (native OIDC)
+    - id: youtrack
+      redirectURIs:
+        - 'https://youtrack.ops.last-try.org/hub/api/rest/oauth2/auth'
+      name: 'YouTrack'
+      secretEnv: DEX_CLIENT_SECRET_YOUTRACK
+
   # Static users for local authentication (bcrypt hashed passwords)
   # Generate hash: htpasswd -bnBC 10 "" 'password' | tr -d ':\n' | sed 's/$2y/$2a/'
   # Note: Bcrypt hashes are safe in git (they're already hashed)
@@ -186,6 +193,11 @@ envVars:
       secretKeyRef:
         name: dex-secrets
         key: DEX_CLIENT_SECRET_STANDALOCK
+  - name: DEX_CLIENT_SECRET_YOUTRACK
+    valueFrom:
+      secretKeyRef:
+        name: dex-secrets
+        key: youtrack-client-secret
 
 service:
   type: ClusterIP

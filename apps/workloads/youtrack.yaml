@@ -1,0 +1,31 @@
+# YouTrack Server - task tracker
+# ADR Reference: 0047-youtrack-task-tracker.md
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: youtrack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops.git
+    targetRevision: HEAD
+    path: workloads/youtrack
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: youtrack-system
+  syncPolicy:
+    automated:
+      prune: false  # Stateful workload — manual prune for safety
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
