@@ -121,6 +121,8 @@ ADRs are numbered sequentially with zero-padding:
 | [0042](0042-adding-new-cluster-nodes.md) | Adding New Cluster Nodes | Accepted | 2026-02-02 |
 | [0043](0043-hetzner-load-balancer.md) | Hetzner Load Balancer for Cluster Ingress | Accepted | 2026-02-02 |
 | [0044](0044-cnpg-backup-and-recovery-strategy.md) | CNPG Backup and Recovery Strategy | Accepted | 2026-02-03 |
+| [0046](0046-cnpg-cluster-tuning-baseline.md) | CNPG Cluster Tuning Baseline | Accepted | 2026-02-03 |
+| [0047](0047-youtrack-task-tracker.md) | YouTrack for Task Tracking | Accepted | 2026-05-24 |
 
 ## When to Create an ADR
 

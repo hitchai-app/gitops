@@ -1,0 +1,108 @@
+# YouTrack Server - single-pod StatefulSet
+# ADR Reference: 0047-youtrack-task-tracker.md
+#
+# Embedded HSQL database (no external Postgres). Four PVCs:
+#   data     - issues, attachments, embedded DB
+#   conf     - configuration
+#   logs     - JVM and application logs
+#   backups  - YouTrack's own scheduled backup output
+#
+# First-run setup: token printed to logs, paste into wizard at first visit:
+#   kubectl logs -n youtrack-system youtrack-0 | grep -i 'wizard'
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: youtrack
+  namespace: youtrack-system
+spec:
+  serviceName: youtrack
+  replicas: 1
+  selector:
+    matchLabels:
+      app: youtrack
+  template:
+    metadata:
+      labels:
+        app: youtrack
+    spec:
+      securityContext:
+        runAsUser: 13001
+        runAsGroup: 13001
+        fsGroup: 13001
+      containers:
+        - name: youtrack
+          image: jetbrains/youtrack:2026.1.12351
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: JAVA_OPTS
+              value: >-
+                -Xmx2g
+                -Ddisable.configuration.wizard.on.upgrade=false
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 3Gi
+          volumeMounts:
+            - name: data
+              mountPath: /opt/youtrack/data
+            - name: conf
+              mountPath: /opt/youtrack/conf
+            - name: logs
+              mountPath: /opt/youtrack/logs
+            - name: backups
+              mountPath: /opt/youtrack/backups
+          readinessProbe:
+            httpGet:
+              path: /api/config
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /api/config
+              port: http
+            initialDelaySeconds: 180
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: single-replica
+        resources:
+          requests:
+            storage: 20Gi
+    - metadata:
+        name: conf
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: single-replica
+        resources:
+          requests:
+            storage: 1Gi
+    - metadata:
+        name: logs
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: single-replica
+        resources:
+          requests:
+            storage: 5Gi
+    - metadata:
+        name: backups
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: single-replica
+        resources:
+          requests:
+            storage: 30Gi
