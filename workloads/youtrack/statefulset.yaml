@@ -57,9 +57,12 @@ spec:
               mountPath: /opt/youtrack/logs
             - name: backups
               mountPath: /opt/youtrack/backups
+          # YouTrack serves the setup wizard at `/` (HTTP 200) before configuration,
+          # then 302-redirects to the login page after. Both count as probe success.
+          # `/api/config` returns 404 — observed in 2026.1.12351, not a stable endpoint.
           readinessProbe:
             httpGet:
-              path: /api/config
+              path: /
               port: http
             initialDelaySeconds: 60
             periodSeconds: 10
@@ -67,7 +70,7 @@ spec:
             failureThreshold: 6
           livenessProbe:
             httpGet:
-              path: /api/config
+              path: /
               port: http
             initialDelaySeconds: 180
             periodSeconds: 30
