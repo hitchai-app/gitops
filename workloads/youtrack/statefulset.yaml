@@ -74,11 +74,15 @@ spec:
             timeoutSeconds: 10
             failureThreshold: 5
   volumeClaimTemplates:
+    # Single-instance app, no built-in replication — use `replicated` per ADR 0007
+    # so the pod can reschedule onto another node if the one holding the replica dies.
+    # `backups` stays single-replica: it's already a redundancy layer, and Longhorn
+    # S3 snapshots (ADR 0002) cover off-cluster — replicating it would be 4× storage.
     - metadata:
         name: data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: single-replica
+        storageClassName: replicated
         resources:
           requests:
             storage: 20Gi
@@ -86,7 +90,7 @@ spec:
         name: conf
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: single-replica
+        storageClassName: replicated
         resources:
           requests:
             storage: 1Gi
@@ -94,7 +98,7 @@ spec:
         name: logs
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: single-replica
+        storageClassName: replicated
         resources:
           requests:
             storage: 5Gi
