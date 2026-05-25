@@ -9,20 +9,9 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - youtrack.ops.last-try.org
         - yt.ops.last-try.org
       secretName: youtrack-tls
   rules:
-    - host: youtrack.ops.last-try.org
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: youtrack
-                port:
-                  number: 8080
     - host: yt.ops.last-try.org
       http:
         paths:
