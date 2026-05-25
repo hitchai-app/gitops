@@ -81,7 +81,12 @@ spec:
     # so the pod can reschedule onto another node if the one holding the replica dies.
     # `backups` stays single-replica: it's already a redundancy layer, and Longhorn
     # S3 snapshots (ADR 0002) cover off-cluster — replicating it would be 4× storage.
-    - metadata:
+    #
+    # apiVersion/kind are explicit so ArgoCD's serverSideDiff matches what the
+    # k8s API server persists (it adds these to vct entries on serialization).
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: data
       spec:
         accessModes: ["ReadWriteOnce"]
@@ -89,7 +94,9 @@ spec:
         resources:
           requests:
             storage: 20Gi
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: conf
       spec:
         accessModes: ["ReadWriteOnce"]
@@ -97,7 +104,9 @@ spec:
         resources:
           requests:
             storage: 1Gi
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: logs
       spec:
         accessModes: ["ReadWriteOnce"]
@@ -105,7 +114,9 @@ spec:
         resources:
           requests:
             storage: 5Gi
-    - metadata:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
         name: backups
       spec:
         accessModes: ["ReadWriteOnce"]
