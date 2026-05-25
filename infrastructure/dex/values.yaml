@@ -109,9 +109,12 @@ config:
       secretEnv: DEX_CLIENT_SECRET_STANDALOCK
 
     # YouTrack (native OIDC)
+    # The interactive-login callback path includes the Hub auth-module UUID.
+    # If the auth module is recreated, this UUID changes and the URI here must
+    # be updated to match what YouTrack Hub shows in the OIDC module wizard.
     - id: youtrack
       redirectURIs:
-        - 'https://youtrack.ops.last-try.org/hub/api/rest/oauth2/auth'
+        - 'https://youtrack.ops.last-try.org/hub/api/rest/oauth2/interactive/login/d2f15580-f5c9-4097-beab-105f16e07980/land'
       name: 'YouTrack'
       secretEnv: DEX_CLIENT_SECRET_YOUTRACK
 
