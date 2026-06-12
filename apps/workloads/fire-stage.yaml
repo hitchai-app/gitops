@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: fire-prod
+  name: fire-stage
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,13 +10,11 @@ spec:
   source:
     repoURL: https://gitlab.ops.last-try.org/lt/fire/envs.git
     targetRevision: master
-    path: overlays/prod
+    path: stage/argocd
   destination:
     server: https://kubernetes.default.svc
-    namespace: fire-prod
+    namespace: argocd
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
