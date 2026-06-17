@@ -1,0 +1,30 @@
+# GitLab MinIO data PVC — declarative online expansion (ADR 0048)
+#
+# Why this file exists separately from tenant.yaml:
+#   StatefulSet volumeClaimTemplates are IMMUTABLE, and the MinIO operator
+#   (still running in-cluster, v5.0.x) treats a Tenant volumeClaimTemplate
+#   storage change as POOL expansion → it deletes+recreates the StatefulSet
+#   (downtime + data-loss risk). So we do NOT bump tenant.yaml's template.
+#
+#   Instead, ArgoCD owns the live PVC's size via Server-Side Apply and grows
+#   it in place. Longhorn (allowVolumeExpansion: true) does an online ext4
+#   resize with no pod restart. The STS controller never shrinks an existing
+#   PVC, so the 50Gi template vs 100Gi live PVC mismatch is benign.
+#
+#   Force=true: the PVC's storage field is initially owned by the STS/operator
+#   field manager; SSA needs Force to take ownership of that one field. It only
+#   touches spec.resources.requests.storage — expansion is one-way (no shrink).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data0-gitlab-minio-pool-0-0
+  namespace: gitlab-system
+  annotations:
+    argocd.argoproj.io/sync-options: ServerSideApply=true,Force=true
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: single-replica
+  resources:
+    requests:
+      storage: 100Gi
