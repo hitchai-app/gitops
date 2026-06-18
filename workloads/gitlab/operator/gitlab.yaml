@@ -317,14 +317,15 @@ spec:
             age: 168h
             interval: 24h
             dryRun: false
-        # Registry metadata database (ADR 0048 Phase 1) — unlocks online GC.
+        # Registry metadata database (ADR 0048 Phase 1) — online GC ACTIVE.
         # Reuses the gitlab role/credential (registry DB is owned by `gitlab`);
         # host/port default to global.psql but are set explicitly for clarity.
-        # PREPARE PHASE: configure:true renders DB config + runs schema migrations;
-        # enabled:false keeps object-storage metadata authoritative. The 3-step
-        # import runs out-of-band, then PR C flips enabled:true (IRREVERSIBLE).
+        # ACTIVATED (PR C): Postgres is authoritative for registry metadata and
+        # online GC runs continuously. MERGE ONLY AFTER the 3-step import is
+        # complete AND a Longhorn snapshot of the gitlab-postgres volume is taken
+        # (rollback anchor). Offline `registry garbage-collect` must NEVER run again.
         database:
-          enabled: false
+          enabled: true
           configure: true
           host: gitlab-postgres-rw.gitlab-system.svc.cluster.local
           port: 5432
