@@ -1,0 +1,25 @@
+# Registry metadata database (ADR 0048 Phase 1) — source of truth for the
+# container registry, enabling continuous online garbage collection.
+#
+# Owned by the EXISTING `gitlab` role on purpose: the registry then reuses the
+# CNPG-auto-generated `gitlab-postgres-app` credential instead of a sealed
+# password (ADR 0009 — internal creds are operator-generated, not stored in
+# Git). No separate role, no sealed secret. CNPG creates the database as
+# superuser and assigns ownership, so the `gitlab` role lacking CREATEDB is fine.
+#
+# The registry.database block in workloads/gitlab/operator/gitlab.yaml (same PR)
+# runs schema migrations into this DB but keeps enabled:false, so object-storage
+# metadata stays authoritative until the PR C `enabled:true` flip. Fully
+# reversible (set ensure: absent / remove this file; app prune is disabled so
+# the live DB is not auto-dropped).
+apiVersion: postgresql.cnpg.io/v1
+kind: Database
+metadata:
+  name: registry
+  namespace: gitlab-system
+spec:
+  cluster:
+    name: gitlab-postgres
+  name: registry
+  owner: gitlab
+  ensure: present
