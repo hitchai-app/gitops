@@ -7,10 +7,11 @@
 # Git). No separate role, no sealed secret. CNPG creates the database as
 # superuser and assigns ownership, so the `gitlab` role lacking CREATEDB is fine.
 #
-# Creating an empty database has no effect on the registry until Phase 1 PR B
-# wires spec.chart.values.registry.database in the GitLab CR. Fully reversible
-# (set ensure: absent / remove this file; app prune is disabled so the live DB
-# is not auto-dropped).
+# The registry.database block in workloads/gitlab/operator/gitlab.yaml (same PR)
+# runs schema migrations into this DB but keeps enabled:false, so object-storage
+# metadata stays authoritative until the PR C `enabled:true` flip. Fully
+# reversible (set ensure: absent / remove this file; app prune is disabled so
+# the live DB is not auto-dropped).
 apiVersion: postgresql.cnpg.io/v1
 kind: Database
 metadata:

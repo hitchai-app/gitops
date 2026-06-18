@@ -317,6 +317,25 @@ spec:
             age: 168h
             interval: 24h
             dryRun: false
+        # Registry metadata database (ADR 0048 Phase 1) — unlocks online GC.
+        # Reuses the gitlab role/credential (registry DB is owned by `gitlab`);
+        # host/port default to global.psql but are set explicitly for clarity.
+        # PREPARE PHASE: configure:true renders DB config + runs schema migrations;
+        # enabled:false keeps object-storage metadata authoritative. The 3-step
+        # import runs out-of-band, then PR C flips enabled:true (IRREVERSIBLE).
+        database:
+          enabled: false
+          configure: true
+          host: gitlab-postgres-rw.gitlab-system.svc.cluster.local
+          port: 5432
+          name: registry
+          user: gitlab
+          password:
+            secret: gitlab-postgres-app
+            key: password
+          sslmode: require
+          migrations:
+            enabled: true
 
       # Disable bundled components (using external)
       nginx-ingress:
