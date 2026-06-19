@@ -8,7 +8,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://gitlab.ops.last-try.org/aceplace/aceplace-envs.git
+    repoURL: https://gitlab.ops.last-try.org/lt/aceplace/aceplace-envs.git
     targetRevision: main
     path: argocd
     directory:
