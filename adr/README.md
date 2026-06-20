@@ -123,6 +123,7 @@ ADRs are numbered sequentially with zero-padding:
 | [0044](0044-cnpg-backup-and-recovery-strategy.md) | CNPG Backup and Recovery Strategy | Accepted | 2026-02-03 |
 | [0046](0046-cnpg-cluster-tuning-baseline.md) | CNPG Tuning by Workload Class | Proposed | 2026-04-26 |
 | [0047](0047-youtrack-task-tracker.md) | YouTrack for Task Tracking | Accepted | 2026-05-24 |
+| [0048](0048-gitlab-registry-retention-strategy.md) | GitLab Container Registry Retention Strategy | Accepted | 2026-06-17 |
 
 ## When to Create an ADR
 
