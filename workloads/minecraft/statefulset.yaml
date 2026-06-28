@@ -2,10 +2,9 @@
 # Docs: https://docker-minecraft-server.readthedocs.io/en/latest/
 #
 # BEFORE DEPLOYING:
-#   1. Seal workloads/minecraft/rcon-sealedsecret.yaml (see repo deploy notes)
-#   2. Set CF_PAGE_URL (or swap to the MODRINTH/NEOFORGE block) + match the :javaNN tag and VERSION
-#   3. Deploy infrastructure/minio-infra first (the backup target), create the scoped MinIO user
-#   4. Add the Hetzner LB rule: TCP 25565 -> nodePort 30565 (see service-nodeport.yaml)
+#   1. Set CF_PAGE_URL (or swap to the MODRINTH/NEOFORGE block) + match the :javaNN tag and VERSION
+#   2. Add the Hetzner LB rule: TCP 25565 -> nodePort 30565 (see service-nodeport.yaml)
+# Backups (restic -> the existing shared minio-infra tenant) are a follow-up, not wired here yet.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -32,29 +31,6 @@ spec:
         runAsUser: 1000          # itzg default UID
         runAsGroup: 1000
         fsGroup: 1000
-      initContainers:
-        # Idempotently initialize the restic repo before the sidecar's first backup.
-        - name: restic-init
-          image: itzg/mc-backup:latest
-          command: ["sh", "-c", "restic snapshots > /dev/null 2>&1 || restic init"]
-          env:
-            - name: RESTIC_REPOSITORY
-              value: "s3:http://minio.minio-infra.svc.cluster.local:80/minecraft-backups"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: restic-password
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: aws-access-key-id
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: aws-secret-access-key
       containers:
         # ── Minecraft server ───────────────────────────────────────────────
         - name: minecraft
@@ -122,7 +98,7 @@ spec:
             - name: ENFORCE_WHITELIST
               value: "true"
 
-            # ── RCON — required for graceful shutdown + backup coordination ──
+            # ── RCON — required for graceful shutdown (and future restic backups) ──
             - name: ENABLE_RCON
               value: "true"
             - name: RCON_PORT
@@ -179,67 +155,6 @@ spec:
             - name: data
               mountPath: /data     # world, mods, configs, logs
 
-        # ── mc-backup sidecar — RCON-coordinated restic backups to minio-infra ──
-        # Sequence: save-off -> save-all -> restic backup -> save-on -> prune.
-        # Remove this container + the restic-init initContainer if you adopt backup-cronjob.yaml.
-        - name: mc-backup
-          image: itzg/mc-backup:latest
-          env:
-            - name: BACKUP_METHOD
-              value: "restic"
-            - name: BACKUP_INTERVAL
-              value: "6h"
-            - name: INITIAL_DELAY
-              value: "2m"
-            - name: SRC_DIR
-              value: "/data"
-            - name: EXCLUDES
-              value: "*.jar,cache,logs,*.tmp"
-            - name: RCON_HOST
-              value: "localhost"
-            - name: RCON_PORT
-              value: "25575"
-            - name: RCON_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: rcon-password
-            - name: RESTIC_REPOSITORY
-              value: "s3:http://minio.minio-infra.svc.cluster.local:80/minecraft-backups"
-            - name: RESTIC_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: restic-password
-            - name: RESTIC_CACHE_DIR
-              value: "/var/cache/restic"
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: aws-access-key-id
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: minecraft-secrets
-                  key: aws-secret-access-key
-            - name: PRUNE_RESTIC_RETENTION
-              value: "--keep-within 3d --keep-daily 7 --keep-weekly 4"
-            - name: RESTIC_HOSTNAME
-              value: "minecraft"
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
-          volumeMounts:
-            - name: data
-              mountPath: /data
-            - name: cache
-              mountPath: /var/cache/restic
-
   volumeClaimTemplates:
     # World volume — `replicated` (ADR 0007: reschedule on node loss) + best-effort
     # data-locality so a replica stays co-located with the pod and chunk IO hits local
@@ -258,14 +173,3 @@ spec:
         resources:
           requests:
             storage: 50Gi
-    # restic cache — small, single-replica (just speeds repeat backups; loss is harmless).
-    - apiVersion: v1
-      kind: PersistentVolumeClaim
-      metadata:
-        name: cache
-      spec:
-        accessModes: ["ReadWriteOnce"]
-        storageClassName: single-replica
-        resources:
-          requests:
-            storage: 5Gi
