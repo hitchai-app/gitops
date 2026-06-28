@@ -64,6 +64,11 @@ spec:
             # - name: CF_FILE_ID
             #   value: "5476484"
 
+            # Extra server-side mod layered on top of the pack: SAuth (offline-mode
+            # auth gate). Players /register <pw> + /login <pw>; client doesn't need it.
+            - name: MODRINTH_PROJECTS
+              value: "sauth"
+
             # ── Alternative: Modrinth (comment out AUTO_CURSEFORGE above) ──
             # - name: TYPE
             #   value: "MODRINTH"
@@ -89,6 +94,14 @@ spec:
             # ── Server properties ──
             - name: DIFFICULTY
               value: "normal"
+            - name: ALLOW_FLIGHT
+              value: "TRUE"       # tech packs (jetpacks/GregTech/Create) trip vanilla anti-fly -> kicks
+            # Offline mode: no Mojang/Microsoft auth — anyone can join with any username,
+            # gated by SAuth (per-player password) + the whitelist below. NOTE: against the
+            # Minecraft EULA; flipping online->offline changes UUIDs, so existing op/whitelist
+            # entries may need re-adding live via RCON after the first offline boot.
+            - name: ONLINE_MODE
+              value: "FALSE"
             - name: MOTD
               value: "last-try Monifactory"
             - name: OPS
