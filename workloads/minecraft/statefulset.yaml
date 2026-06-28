@@ -82,6 +82,7 @@ spec:
                 secretKeyRef:
                   name: minecraft-secrets
                   key: cf-api-key
+                  optional: true   # add this key to minecraft-secrets when using a CurseForge pack
             - name: CF_PAGE_URL
               value: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-10"
             # Pin a specific file for reproducible deploys (uncomment + set):
