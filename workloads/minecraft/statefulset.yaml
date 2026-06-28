@@ -82,7 +82,6 @@ spec:
                 secretKeyRef:
                   name: minecraft-secrets
                   key: cf-api-key
-                  optional: true   # add this key to minecraft-secrets when using a CurseForge pack
             - name: CF_PAGE_URL
               value: "https://www.curseforge.com/minecraft/modpacks/monifactory"
             # Pin a specific file for reproducible deploys (uncomment + set):
@@ -117,9 +116,9 @@ spec:
             - name: MOTD
               value: "last-try Monifactory"
             - name: OPS
-              value: "YourUsername"
+              value: "flawless111111"
             - name: WHITELIST
-              value: "YourUsername,FriendUsername"
+              value: "flawless111111"   # add friends' usernames here, comma-separated
             - name: ENFORCE_WHITELIST
               value: "true"
 
