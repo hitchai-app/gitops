@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: minecraft
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/hitchai-app/gitops.git
+    targetRevision: HEAD
+    path: workloads/minecraft
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: minecraft-system
+  syncPolicy:
+    automated:
+      prune: false      # stateful — manual prune
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

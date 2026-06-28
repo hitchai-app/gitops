@@ -1,0 +1,23 @@
+# Governing Service for the StatefulSet (spec.serviceName).
+# Stable DNS: minecraft-0.minecraft.minecraft-system.svc.cluster.local
+# Carries NO external traffic — pod identity + in-cluster RCON only.
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft
+  namespace: minecraft-system
+  labels:
+    app: minecraft
+spec:
+  clusterIP: None
+  selector:
+    app: minecraft
+  ports:
+    - name: minecraft
+      port: 25565
+      targetPort: 25565
+      protocol: TCP
+    - name: rcon
+      port: 25575
+      targetPort: 25575
+      protocol: TCP

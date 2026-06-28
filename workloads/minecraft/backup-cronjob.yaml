@@ -1,0 +1,104 @@
+# ALTERNATIVE to the mc-backup sidecar. If you use this, DELETE the mc-backup container
+# and the restic-init initContainer from statefulset.yaml — do not run both (they would
+# both issue save-off/save-on and collide).
+# Mounts the StatefulSet's world PVC directly (claimName: data-minecraft-0) and reaches
+# RCON over the headless service DNS. Runs once per fire and exits (BACKUP_INTERVAL=0).
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: minecraft-backup
+  namespace: minecraft-system
+  labels:
+    app: minecraft
+spec:
+  schedule: "0 */6 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+            fsGroup: 1000
+          restartPolicy: OnFailure
+          initContainers:
+            - name: restic-init
+              image: itzg/mc-backup:latest
+              command: ["sh", "-c", "restic snapshots > /dev/null 2>&1 || restic init"]
+              env:
+                - name: RESTIC_REPOSITORY
+                  value: "s3:http://minio.minio-infra.svc.cluster.local:80/minecraft-backups"
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: restic-password
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: aws-secret-access-key
+          containers:
+            - name: mc-backup
+              image: itzg/mc-backup:latest
+              env:
+                - name: BACKUP_METHOD
+                  value: "restic"
+                - name: BACKUP_INTERVAL
+                  value: "0"          # run once and exit — correct for CronJob
+                - name: SRC_DIR
+                  value: "/data"
+                - name: EXCLUDES
+                  value: "*.jar,cache,logs,*.tmp"
+                - name: RCON_HOST
+                  value: "minecraft-0.minecraft.minecraft-system.svc.cluster.local"
+                - name: RCON_PORT
+                  value: "25575"
+                - name: RCON_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: rcon-password
+                - name: RESTIC_REPOSITORY
+                  value: "s3:http://minio.minio-infra.svc.cluster.local:80/minecraft-backups"
+                - name: RESTIC_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: restic-password
+                - name: AWS_ACCESS_KEY_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: aws-access-key-id
+                - name: AWS_SECRET_ACCESS_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: minecraft-secrets
+                      key: aws-secret-access-key
+                - name: PRUNE_RESTIC_RETENTION
+                  value: "--keep-within 3d --keep-daily 7 --keep-weekly 4"
+                - name: RESTIC_HOSTNAME
+                  value: "minecraft"
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 256Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+              volumeMounts:
+                - name: data
+                  mountPath: /data
+          volumes:
+            - name: data
+              persistentVolumeClaim:
+                claimName: data-minecraft-0   # <pvc-template>-<sts>-<ordinal>
