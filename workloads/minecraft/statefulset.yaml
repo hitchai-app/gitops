@@ -60,7 +60,7 @@ spec:
         - name: minecraft
           # Pin Java to the pack: 1.20.5+ and all NeoForge 1.21.x need java21.
           # Older: 1.12.x->java8, 1.16.x->java11, 1.17.x->java16. Never :latest.
-          image: itzg/minecraft-server:java21
+          image: itzg/minecraft-server:java17   # Monifactory = MC 1.20.1 Forge -> Java 17
           ports:
             - name: minecraft
               containerPort: 25565
@@ -76,7 +76,7 @@ spec:
             - name: TYPE
               value: "AUTO_CURSEFORGE"
             - name: VERSION
-              value: "1.21.1"                      # must match the pack's MC version
+              value: "1.20.1"                      # Monifactory runs on 1.20.1 (Forge)
             - name: CF_API_KEY
               valueFrom:
                 secretKeyRef:
@@ -84,7 +84,7 @@ spec:
                   key: cf-api-key
                   optional: true   # add this key to minecraft-secrets when using a CurseForge pack
             - name: CF_PAGE_URL
-              value: "https://www.curseforge.com/minecraft/modpacks/all-the-mods-10"
+              value: "https://www.curseforge.com/minecraft/modpacks/monifactory"
             # Pin a specific file for reproducible deploys (uncomment + set):
             # - name: CF_FILE_ID
             #   value: "5476484"
@@ -115,7 +115,7 @@ spec:
             - name: DIFFICULTY
               value: "normal"
             - name: MOTD
-              value: "last-try modded server"
+              value: "last-try Monifactory"
             - name: OPS
               value: "YourUsername"
             - name: WHITELIST
