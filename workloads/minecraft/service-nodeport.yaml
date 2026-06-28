@@ -1,0 +1,27 @@
+# Raw TCP exposure — mirrors the gitlab-ssh precedent (NodePort + manual Hetzner LB).
+# No cloud-controller-manager here; type:LoadBalancer is unavailable.
+#
+# MANUAL POST-DEPLOY STEP — add a Hetzner LB TCP service (console / terraform):
+#   protocol:          tcp
+#   listen_port:       25565
+#   destination_port:  30565
+#   health_check:      tcp on 30565, interval 10s, timeout 5s, retries 3
+#   targets:           all cluster nodes
+# RCON (25575) is deliberately NOT exposed here — internal only.
+apiVersion: v1
+kind: Service
+metadata:
+  name: minecraft-nodeport
+  namespace: minecraft-system
+  labels:
+    app: minecraft
+spec:
+  type: NodePort
+  selector:
+    app: minecraft
+  ports:
+    - name: minecraft
+      port: 25565
+      targetPort: 25565
+      nodePort: 30565   # keep in sync with the Hetzner LB destination_port
+      protocol: TCP

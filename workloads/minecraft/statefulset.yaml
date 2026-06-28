@@ -1,0 +1,175 @@
+# Minecraft Java — modded server (itzg/minecraft-server).
+# Docs: https://docker-minecraft-server.readthedocs.io/en/latest/
+#
+# BEFORE DEPLOYING:
+#   1. Set CF_PAGE_URL (or swap to the MODRINTH/NEOFORGE block) + match the :javaNN tag and VERSION
+#   2. Add the Hetzner LB rule: TCP 25565 -> nodePort 30565 (see service-nodeport.yaml)
+# Backups (restic -> the existing shared minio-infra tenant) are a follow-up, not wired here yet.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: minecraft
+  namespace: minecraft-system
+  labels:
+    app: minecraft
+spec:
+  serviceName: minecraft        # matches service-headless.yaml
+  replicas: 1                   # one process owns the world — never scale this
+  selector:
+    matchLabels:
+      app: minecraft
+  template:
+    metadata:
+      labels:
+        app: minecraft
+    spec:
+      # preStop save-all flushes first; SIGTERM then makes mc-server-runner issue
+      # 'stop' via RCON and wait STOP_DURATION (120s) for the JVM to save + exit.
+      # Grace must exceed preStop + STOP_DURATION; 180s leaves margin.
+      terminationGracePeriodSeconds: 180
+      securityContext:
+        runAsUser: 1000          # itzg default UID
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        # ── Minecraft server ───────────────────────────────────────────────
+        - name: minecraft
+          # Pin Java to the pack: 1.20.5+ and all NeoForge 1.21.x need java21.
+          # Older: 1.12.x->java8, 1.16.x->java11, 1.17.x->java16. Never :latest.
+          image: itzg/minecraft-server:java17   # Monifactory = MC 1.20.1 Forge -> Java 17
+          ports:
+            - name: minecraft
+              containerPort: 25565
+              protocol: TCP
+            - name: rcon          # internal only — not in the NodePort service
+              containerPort: 25575
+              protocol: TCP
+          env:
+            - name: EULA
+              value: "TRUE"
+
+            # ── Pack selection: AUTO_CURSEFORGE (default) ──────────────────
+            - name: TYPE
+              value: "AUTO_CURSEFORGE"
+            - name: VERSION
+              value: "1.20.1"                      # Monifactory runs on 1.20.1 (Forge)
+            - name: CF_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secrets
+                  key: cf-api-key
+            - name: CF_PAGE_URL
+              value: "https://www.curseforge.com/minecraft/modpacks/monifactory"
+            # Pin a specific file for reproducible deploys (uncomment + set):
+            # - name: CF_FILE_ID
+            #   value: "5476484"
+
+            # ── Alternative: Modrinth (comment out AUTO_CURSEFORGE above) ──
+            # - name: TYPE
+            #   value: "MODRINTH"
+            # - name: MODRINTH_MODPACK
+            #   value: "adrenaserver"
+            # - name: MODRINTH_LOADER
+            #   value: "neoforge"
+            #
+            # ── Alternative: bare NeoForge (no pack manager) ──
+            # - name: TYPE
+            #   value: "NEOFORGE"
+            # - name: NEOFORGE_VERSION
+            #   value: "21.1.172"
+
+            # ── Memory: INIT_MEMORY -> -Xms, MAX_MEMORY -> -Xmx ──
+            - name: INIT_MEMORY
+              value: "2G"
+            - name: MAX_MEMORY
+              value: "8G"
+            - name: USE_AIKAR_FLAGS
+              value: "true"
+
+            # ── Server properties ──
+            - name: DIFFICULTY
+              value: "normal"
+            - name: MOTD
+              value: "last-try Monifactory"
+            - name: OPS
+              value: "flawless111111"
+            - name: WHITELIST
+              value: "flawless111111"   # add friends' usernames here, comma-separated
+            - name: ENFORCE_WHITELIST
+              value: "true"
+
+            # ── RCON — required for graceful shutdown (and future restic backups) ──
+            - name: ENABLE_RCON
+              value: "true"
+            - name: RCON_PORT
+              value: "25575"
+            - name: RCON_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: minecraft-secrets
+                  key: rcon-password
+
+            - name: STOP_DURATION
+              value: "120"        # runner waits this long after 'stop' for JVM exit (world save)
+
+          resources:
+            requests:
+              cpu: "3"            # whole cores — schedule onto a node with real headroom
+              memory: 10Gi
+            limits:
+              # CPU LIMIT INTENTIONALLY OMITTED — deviation from house style (youtrack sets one).
+              # CFS quota throttling parks the single-threaded 20 TPS tick loop mid-tick even on an
+              # idle node -> MSPT spikes / in-game lag. Request-only = no throttle ceiling. If a hard
+              # safety ceiling is required, set cpu: "8" (full burst, bounds a runaway on a shared node).
+              memory: 10Gi        # request==limit -> Guaranteed memory QoS. Raise to 12-14Gi if a
+                                  # heavy 200+ mod pack OOMKills (exit 137) on off-heap pressure.
+
+          # ── Probes — mc-monitor (bundled) validates the MOTD response, not just TCP ──
+          startupProbe:
+            exec:
+              command: ["mc-monitor", "status", "--host", "localhost", "--port", "25565"]
+            periodSeconds: 10
+            failureThreshold: 120     # 20-min budget for modded cold start (download+install+load+worldgen)
+            successThreshold: 1
+          readinessProbe:
+            exec:
+              command: ["mc-monitor", "status", "--host", "localhost", "--port", "25565"]
+            periodSeconds: 10
+            failureThreshold: 3
+            successThreshold: 1
+          livenessProbe:
+            exec:
+              command: ["mc-monitor", "status", "--host", "localhost", "--port", "25565"]
+            periodSeconds: 60
+            failureThreshold: 5       # restart after ~5 min hard-hung (OOM/deadlock)
+            successThreshold: 1
+
+          lifecycle:
+            preStop:
+              exec:
+                # Flush dirty chunks before SIGTERM. rcon-cli auto-reads RCON env.
+                # || true so a crashed (RCON-down) server doesn't block termination.
+                command: ["/bin/sh", "-c", "rcon-cli save-all || true; sleep 5"]
+
+          volumeMounts:
+            - name: data
+              mountPath: /data     # world, mods, configs, logs
+
+  volumeClaimTemplates:
+    # World volume — `replicated` (ADR 0007: reschedule on node loss) + best-effort
+    # data-locality so a replica stays co-located with the pod and chunk IO hits local
+    # disk instead of the Longhorn network path. Set via PVC annotation (Longhorn reads
+    # longhorn.io/data-locality) to avoid a cluster-scoped StorageClass from a workload.
+    # apiVersion/kind explicit: SSA re-adds them on serialize — keeps ArgoCD diff clean.
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+        annotations:
+          longhorn.io/data-locality: "best-effort"
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: replicated
+        resources:
+          requests:
+            storage: 50Gi
