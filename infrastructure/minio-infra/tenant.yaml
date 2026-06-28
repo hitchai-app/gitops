@@ -1,0 +1,60 @@
+# Shared infrastructure MinIO tenant (ADR 0027).
+# SNSD topology (ADR 0006) but on the `replicated` Longhorn class (ADR 0007):
+# MinIO single-drive has NO app-level redundancy, so durability must come from
+# the storage layer. `replicated` survives a node loss on the 3-node cluster —
+# unlike gitlab-minio (single-replica) and minio-ephemeral (1 replica, reclaim Delete).
+#
+# This is the pragmatic durable bootstrap. The ADR-0006 long-term answer is a
+# distributed MNMD tenant + bucket-replication migration — worth a follow-up ADR
+# now that the cluster is multi-node. Tracked as a known follow-up.
+apiVersion: minio.min.io/v2
+kind: Tenant
+metadata:
+  name: minio-infra
+  namespace: minio-infra
+spec:
+  image: docker.io/minio/minio:RELEASE.2025-09-07T16-13-09Z  # pin to match gitlab-minio
+
+  pools:
+    - name: pool-0
+      servers: 1
+      volumesPerServer: 1  # SNSD per ADR 0006
+      volumeClaimTemplate:
+        metadata:
+          name: data
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: replicated  # ADR 0007 — storage-layer redundancy (no app-level)
+          resources:
+            requests:
+              storage: 50Gi
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: "1"
+          memory: 1Gi
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+  mountPath: /export
+  requestAutoCert: false
+
+  configuration:
+    name: minio-infra-config
+
+  features:
+    bucketDNS: false
+
+  # Internal-only — no external exposure (consumers reach it in-cluster).
+  exposeServices:
+    minio: false
+    console: false
+
+  # Consumer buckets. Add more here as other infra services adopt the shared tenant.
+  buckets:
+    - name: minecraft-backups

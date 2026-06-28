@@ -1,0 +1,29 @@
+# PLACEHOLDER — replace encryptedData with real `kubeseal` output before deploying.
+# This is NOT a real secret. The MinIO operator reads `config.env` from this secret
+# for the tenant root credentials. Generation (creds piped straight into kubeseal,
+# nothing written to disk):
+#
+#   ROOT_USER="minio-infra-root"
+#   ROOT_PW="$(openssl rand -base64 24)"
+#   kubectl create secret generic minio-infra-config \
+#     --namespace minio-infra \
+#     --from-literal=config.env="$(printf 'export MINIO_ROOT_USER=%s\nexport MINIO_ROOT_PASSWORD=%s\n' "$ROOT_USER" "$ROOT_PW")" \
+#     --dry-run=client -o yaml \
+#   | kubeseal --controller-namespace sealed-secrets \
+#       --controller-name sealed-secrets-controller --format yaml \
+#     > infrastructure/minio-infra/config-sealed.yaml
+#
+# Record ROOT_PW — it's the admin credential for the whole shared tenant.
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: minio-infra-config
+  namespace: minio-infra
+spec:
+  encryptedData:
+    config.env: AgB_REPLACE_ME
+  template:
+    metadata:
+      name: minio-infra-config
+      namespace: minio-infra
+    type: Opaque
